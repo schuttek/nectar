@@ -1,0 +1,50 @@
+package org.nectarframework.base.service.websocket;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+import org.java_websocket.WebSocket;
+
+public class WebSocketRequest implements Serializable {
+	private static final long serialVersionUID = -7918570984162183458L;
+
+	private WebSocket webSocket;
+
+	private int _requestId;
+	private String _path;
+	private Map<String, List<String>> _parameters;
+
+	public String getPath() {
+		return _path;
+	}
+
+	public Map<String, List<String>> getParameters() {
+		return _parameters;
+	}
+
+	public int getRequestId() {
+		return _requestId;
+	}
+
+	public void setRequestId(int requestId) {
+		this._requestId = requestId;
+	}
+
+	public void setPath(String path) {
+		this._path = path;
+	}
+
+	public void setParameters(Map<String, List<String>> parameters) {
+		this._parameters = parameters;
+	}
+
+
+	public void setWebSocket(WebSocket conn) {
+		this.webSocket = conn;
+	}
+
+	public WebSocket getWebSocket() {
+		return webSocket;
+	}
+}

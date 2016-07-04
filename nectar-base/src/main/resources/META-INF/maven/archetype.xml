@@ -1,0 +1,9 @@
+<archetype>
+  <id>nectar-base</id>
+  <sources>
+    <source>src/main/App.java</source>
+  </sources>
+  <testSources>
+    <source>src/test/AppTest.java</source>
+  </testSources>
+</archetype>
