@@ -1,14 +1,6 @@
-/** LICENSE
- * 
- * All code in the nectar package is original work by Kai Schutte (schuttek@gmail.com) from 2008 to 2013.
- * and claimed under international copyright laws from 2008 to 2013 by Kai Schutte (schuttek@gmail.com),
- * all Rights Reserved.
- * 
- * (c) 2013 Kai Schutte (schuttek@gmail.com) All rights reserved by Int'l Copyright Law.
- */
 package org.nectarframework.base;
 
-import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.CommandLineParser;  
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
