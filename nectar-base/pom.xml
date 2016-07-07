@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nectarframework</groupId>
 	<artifactId>nectar-base</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>Nectar Framework</name>
 	<url>http://www.nectarframework.org/</url>
 	<description>Nectar is a Java based Web Application Framework.</description>
