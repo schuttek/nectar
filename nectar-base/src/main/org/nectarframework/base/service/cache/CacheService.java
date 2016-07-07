@@ -17,6 +17,7 @@ import org.nectarframework.base.service.xml.XmlService;
 import org.xml.sax.SAXException;
 
 //TODO: implement a cluster level cache that backs up the local cache.
+//FIXME: [23:05:50]566 <TRACE> CacheService update: 0 items using estimated 12609 bytes or a recalculated 0 bytes.
 
 public class CacheService extends Service {
 
