@@ -100,7 +100,7 @@ public class LoggingService extends Service {
 			return;
 		}
 		// TODO: buffering, async...
-		MysqlService my = (MysqlService) ServiceRegister.getServiceByClassName("nectar.base.service.mysql.MysqlService");
+		MysqlService my = (MysqlService) ServiceRegister.getService(MysqlService.class);
 		if (my == null) {
 			return;
 		}
@@ -127,8 +127,6 @@ public class LoggingService extends Service {
 	
 	public void accessLog(String path, Element rawForm, Element validated, Element output, long duration, String remoteIp, Session session) {
 		// TODO: buffering, async...
-
-		XmlService xs = (XmlService) ServiceRegister.getServiceByClassName(XmlService.class.getName());
 		
 		String sql = "INSERT INTO nectar_log_access SET dateMs = ?, path = ?, formRaw = ?, formValid = ?, outputElm = ?, duration = ?, remoteIp = ?, session = ?";
 		
@@ -138,17 +136,17 @@ public class LoggingService extends Service {
 		ps.setLong(1, System.currentTimeMillis());
 		ps.setString(2, path);
 		if (rawForm != null) {
-			ps.setString(3, xs.toXmlString(rawForm).toString());
+			ps.setString(3, XmlService.toXmlString(rawForm).toString());
 		} else {
 			ps.setNull(3);
 		}
 		if (validated != null) {
-		ps.setString(4, xs.toXmlString(validated).toString());
+		ps.setString(4, XmlService.toXmlString(validated).toString());
 		} else {
 			ps.setNull(4);
 		}
 		if (output != null) {
-			ps.setString(5, xs.toXmlString(output).toString());
+			ps.setString(5, XmlService.toXmlString(output).toString());
 		} else {
 			ps.setNull(5);
 		}
@@ -160,7 +158,7 @@ public class LoggingService extends Service {
 			ps.setNull(8);
 		}
 
-		MysqlService my = (MysqlService) ServiceRegister.getServiceByClassName("nectar.base.service.mysql.MysqlService");
+		MysqlService my = (MysqlService) ServiceRegister.getService(MysqlService.class);
 
 		my.asyncUpdate(ps);
 	}

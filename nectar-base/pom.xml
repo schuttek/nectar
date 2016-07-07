@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -49,42 +50,13 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.39</version>
+		</dependency>
 
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-common</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-fxml</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-controls</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-agenda</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-window</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-menu</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-labs</artifactId>
-			<version>8.0-r5</version>
-		</dependency>
 
 
 		<dependency>
@@ -92,5 +64,6 @@
 			<artifactId>Java-WebSocket</artifactId>
 			<version>1.3.0</version>
 		</dependency>
-	</dependencies>
+		</dependencies>
+	<packaging>pom</packaging>
 </project>

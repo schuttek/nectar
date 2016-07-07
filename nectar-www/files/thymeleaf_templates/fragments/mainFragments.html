@@ -1,0 +1,58 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head">
+<title th:text="#{common.title}">Nectar Framework</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" media="all"
+	href="../fileservice_root/s/style.css" th:href="@{s/style.css}" />
+<script type="text/javascript" src="../fileservice_root/s/script.js"
+	th:src="@{s/script.js}"></script>
+</head>
+<body onload="main.load()">
+	<div id="header" th:fragment="headerDiv">
+		<div class="title"><img class="title" src="/s/icon_bird_black.png" height="24" width="24" th:src="@{s/icon_bird_black.png}"/><span th:text="#{common.header.title}">Nectar
+			Framework</span></div>
+		<div class="slogan" th:text="#{common.header.slogan}">a simple
+			and stupidly fast web application framework for massively scalable
+			applications</div>
+	</div>
+	<div class="navbar" th:fragment="navbar">
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{s/icon_home.png}"/><a class="navbar" href="/" th:text="#{common.leftLinks.home}">Home</a>
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{s/icon_overview.png}"/><a class="navbar" href="/overview"
+			th:text="#{common.leftLinks.overview}">Overview</a>
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{s/icon_documentation.png}"/><a class="navbar" href="/documentation"
+			th:text="#{common.leftLinks.documentation}">Documentation</a>
+
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{s/icon_download.png}"/><a class="navbar" href="/download"
+			th:text="#{common.leftLinks.download}">Download</a>
+
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{s/icon_about.png}"/> <a class="navbar" href="/about" th:text="#{common.leftLinks.about}">About</a>
+	</div>
+
+	<div class="content"></div>
+
+	<div class="sidebar" th:fragment="sidebar">
+		<p th:text="#{common.sidebar.nectar_uses}">Nectar Framework uses:</p>
+		<p>
+			- <a href="http://www.simpleframework.org"
+				th:text="#{common.sidebar.simple}">Simple Framework HTTP Server</a><br />
+			- <a href="http://hbase.apache.org/"
+				th:text="#{common.sidebar.hbase}">Apache Hbase database</a><br /> -
+			<a href="http://www.thymeleaf.org/"
+				th:text="#{common.sidebar.thymeleaf}">Thymeleaf template engine</a><br />
+			- <a href="https://maven.apache.org/"
+				th:text="#{common.sidebar.maven}">Maven build system</a><br /> - <a
+				href="https://xerces.apache.org/xerces2-j/"
+				th:text="#{common.sidebar.xerces}">Apache Xerces2 XML Parser</a>
+	</div>
+	<div class="footer" th:fragment="footer">
+		(c)2003-2016 nectarframework.org (schuttek@gmail.com) - LGPL v3 - <a
+			href="/download" th:text="#{common.leftLinks.download}">Download</a>
+		<a href="/about" th:text="#{common.leftLinks.about}">About</a>
+	</div>
+
+</body>
+</html>

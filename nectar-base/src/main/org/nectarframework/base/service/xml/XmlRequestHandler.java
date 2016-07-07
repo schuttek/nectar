@@ -7,20 +7,23 @@ import java.util.List;
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.directory.DirAction;
+import org.nectarframework.base.service.directory.DirPath;
+import org.nectarframework.base.service.directory.DirRedirect;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.session.Session;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 
 public class XmlRequestHandler extends ThreadServiceTask {
-	
+
 	private XmlServerService xmlServerService;
 	private Connection connection;
 	private Session session;
 	private Element element;
 	private DirectoryService directoryService;
 
-	public XmlRequestHandler(XmlServerService xmlServerService, DirectoryService directoryService, Connection connection, Session session, Element element) {
+	public XmlRequestHandler(XmlServerService xmlServerService, DirectoryService directoryService,
+			Connection connection, Session session, Element element) {
 		this.xmlServerService = xmlServerService;
 		this.connection = connection;
 		this.session = session;
@@ -34,6 +37,8 @@ public class XmlRequestHandler extends ThreadServiceTask {
 		long startTime = System.nanoTime();
 		
 		String actionStr = element.get("action");
+		
+		HashMap<String, List<String>> parameters = paramterMap(element.getChildren().getFirst());
 
 		int prefixIdx = actionStr.lastIndexOf('/');
 		String prefix = "";
@@ -46,14 +51,26 @@ public class XmlRequestHandler extends ThreadServiceTask {
 		}
 		
 		
-		DirAction dirAction = directoryService.lookupAction(prefix, actionPath);
+		DirPath dirPath = null;
 		
-		if (dirAction == null) {
-			Log.warn("no action "+prefix+" "+actionPath);
-			return;
+		while (dirPath == null || !(dirPath instanceof DirAction)) {
+			dirPath = directoryService.lookupAction(prefix, actionPath);
+		
+			if (dirPath == null) {
+					Log.warn("no action "+prefix+" "+actionPath);
+					return;
+				}
+		
+			if (dirPath instanceof DirRedirect) {
+				parameters.putAll(((DirRedirect)dirPath).variables);
+				dirPath = directoryService.lookupAction(prefix, ((DirRedirect)dirPath).toPath);
+			}
 		}
 		
-		Form form = new Form(dirAction.form, paramterMap(element.getChildren().getFirst())); 
+		DirAction dirAction = (DirAction)dirPath;
+
+		
+		Form form = new Form(dirAction.form, parameters); 
 		
 		form.setSession(session);
 		
@@ -76,7 +93,7 @@ public class XmlRequestHandler extends ThreadServiceTask {
 			list.add(e.get(key));
 			para.put(key, list);
 		}
-		
+
 		for (Element child : e.getChildren()) {
 
 			if (para.containsKey(child.getName())) {
@@ -87,10 +104,10 @@ public class XmlRequestHandler extends ThreadServiceTask {
 				List<String> list = para.get(e.getName());
 				list.add(e.get("value"));
 			}
-			
+
 		}
-		
+
 		return para;
 	}
-	
+
 }

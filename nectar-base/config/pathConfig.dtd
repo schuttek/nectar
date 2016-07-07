@@ -1,0 +1,26 @@
+<!ELEMENT pathConfig (project*)>
+<!ELEMENT project (action*,form*,path*)>
+<!ATTLIST project namespace CDATA #REQUIRED>
+<!ELEMENT action (thyme?)>
+<!ATTLIST action name CDATA #REQUIRED>
+<!ATTLIST action package CDATA #REQUIRED>
+<!ATTLIST action class CDATA #REQUIRED>
+<!ATTLIST action form CDATA #REQUIRED>
+<!ELEMENT thyme EMPTY>
+<!ATTLIST thyme default (true|false) "false">
+<!ATTLIST thyme templateName CDATA #REQUIRED>
+
+
+<!ELEMENT form (var*)>
+<!ATTLIST form name CDATA #REQUIRED>
+<!ELEMENT var EMPTY>
+<!ATTLIST var name CDATA #REQUIRED>
+<!ATTLIST var type (long|int|double|string|long-array|int-array|double-array|string-array) #REQUIRED>
+<!ATTLIST var required (true|false) "false">
+<!ATTLIST var minValue CDATA #IMPLIED>
+<!ATTLIST var maxValue CDATA #IMPLIED>
+<!ATTLIST var regexp CDATA #IMPLIED>
+
+<!ELEMENT path EMPTY>
+<!ATTLIST path path CDATA #REQUIRED>
+<!ATTLIST path action CDATA #REQUIRED>

@@ -1,0 +1,26 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/mainFragments :: head"></head>
+
+<body onload="main.load()">
+	<div class="wrap">
+		<div class="header" th:replace="fragments/mainFragments :: headerDiv">
+			<div class="title" th:text="#{common.header.title}">Nectar
+				Framework</div>
+			<div class="slogan" th:text="#{common.header.slogan}">a simple
+				and stupidly fast web application framework for massively scalable
+				applications</div>
+		</div>
+		<div class="navbar" th:replace="fragments/mainFragments :: navbar"></div>
+
+		<div class="content" th:utext="${arcticleView.content}"></div>
+
+		<div class="sidebar" th:replace="fragments/mainFragments :: sidebar"></div>
+		<div class="footer" th:replace="fragments/mainFragments :: footer"></div>
+
+	</div>
+</body>
+</html>

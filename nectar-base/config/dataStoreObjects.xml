@@ -1,0 +1,121 @@
+<dataStoreObjects>
+	<dataStoreObject package="w.service.data" className="Blueprint" tableName="w_service_data_blueprint" primaryKeyColName="id"	primaryKeyType="long" primaryKeyLength="8">
+		<column name="id" type="long" />
+		<column name="name" type="string" />
+		<column name="category" type="long" />
+		<column name="description" type="string" />
+		<column name="requiredAbility" type="string" />
+		<column name="timeFactor" type="double" />
+		<column name="wasteFactor" type="double" />
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="Category" tableName="w_service_data_category" primaryKeyColName="id" primaryKeyType="long" primaryKeyLength="8">
+		<column name="id" type="long"/>
+		<column name="parentId" type="long"/>
+		<column name="orderBy" type="float"/>
+		<column name="nameKey" type="string"/>
+		<column name="descriptionKey" type="string"/>
+		<relation column="parentId" methodName="parent" type="long" targetPackage="w.service.data" targetClass="Category"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="Corporation" tableName="w_service_data_corporation" primaryKeyColName="id" primaryKeyType="long" primaryKeyLength="8">
+		<column name="id" type="long"/>
+		<column name="symbol" type="string"/>
+		<column name="name" type="string"/>
+		<column name="ceoId" type="long"/>
+		<relation column="ceoId" methodName="ceo" type="long" targetPackage="w.service.data" targetClass="User"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="ItemType" tableName="w_service_data_itemType" primaryKeyColName="id" primaryKeyType="long" primaryKeyLength="8">
+		<column name="id" type="long"/>
+		<column name="symbol" type="long"/>
+		<column name="name" type="string"/>
+		<column name="shortDescription" type="string"/>
+		<column name="description" type="string"/>
+		<column name="categoryId" type="long"/>
+		<column name="isBulk" type="boolean"/>
+		<column name="bulkDensity" type="double"/>
+		<column name="volumePerUnit" type="double"/>
+		<column name="weightPerUnit" type="double"/>
+		<relation column="categoryId" methodName="category" type="long" targetPackage="w.service.data" targetClass="Category"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="ModuleTypeCargo" tableName="w_service_data_moduleTypeCargo" primaryKeyColName="itemTypeId" primaryKeyType="long" primaryKeyLength="8">
+		<column name="itemTypeId" type="long"/>
+		<column name="cargoVolume" type="double"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="ModuleTypeProduction" tableName="w_service_data_moduleTypeProduction" primaryKeyColName="itemTypeId" primaryKeyType="long" primaryKeyLength="8">
+		<column name="itemTypeId" type="long"/>
+		<column name="categoryId" type="long"/>
+		<column name="name" type="long"/>
+		<column name="powerUseIdle" type="double"/>
+		<column name="powerUseWorking" type="double"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="ShipType" tableName="w_service_data_shipType" primaryKeyColName="id" primaryKeyType="long" primaryKeyLength="8">
+		<column name="id" type="long"/>
+		<column name="isPreset" type="boolean"/>
+		<column name="sizeX" type="int"/>
+		<column name="sizeY" type="int"/>
+		<column name="sizeZ" type="int"/>
+		<column name="emptyMass" type="double"/>
+		<column name="gyroPower" type="double"/>
+		<column name="mainThrust" type="double"/>
+		<column name="mainEngineType" type="long"/>
+		<column name="maneuverThrust" type="double"/>
+		<column name="maneuverEngineType" type="long"/>
+		<column name="baseCargoVolumeCapacity" type="double"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="User" tableName="w_service_data_user" primaryKeyColName="id" primaryKeyType="long" primaryKeyLength="8">
+		<column name="id" type="long"/>
+		<column name="userType" type="byte"/>
+		<column name="homeGroup" type="long"/>
+		<column name="login" type="string"/>
+		<column name="publicUserName" type="string"/>
+		<column name="permission" type="string"/>
+		<column name="lastUserIp" type="string"/>
+		<column name="registrationTimestamp" type="long"/>
+		<column name="emailAddress" type="string"/>
+		<column name="lastVisit" type="long"/>
+		<column name="localeLanguage" type="string"/>
+		<column name="localeCountry" type="string"/>
+		<column name="localeVariant" type="string"/>
+		<column name="options" type="string"/>
+		<column name="timezone" type="string"/>
+		<column name="avatar" type="string"/>
+		<column name="avatarType" type="byte"/>
+		<column name="avatarWidth" type="string"/>
+		<column name="avatarHeight" type="string"/>
+		<column name="signature" type="string"/>
+		<column name="about" type="string"/>
+		<column name="registrationStatus" type="byte"/>
+		<key column="login" type="string"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="Post" tableName="w_service_data_post" primaryKeyColName="postId" primaryKeyType="long" primaryKeyLength="8" primaryKeyAutoIncrement="true">
+		<column name="postId" type="long"/>
+		<column name="threadId" type="long"/>
+		<column name="authorUserId" type="long"/>
+		<column name="createdTimestamp" type="long"/>
+		<column name="lastEditTimestamp" type="long"/>
+		<column name="message" type="string"/>
+		<relation column="threadId" methodName="thread" type="long" targetPackage="w.service.data" targetClass="Thread"/>
+		<relation column="authorUserId" methodName="authorUser" type="long" targetPackage="w.service.data" targetClass="User"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="Structure" tableName="w_service_data_structure" primaryKeyColName="structureId" primaryKeyType="long" primaryKeyLength="8">
+		<column name="structureId" type="long"/>
+		<column name="parentId" type="long"/>
+		<column name="orderWeight" type="float"/>
+		<column name="name" type="string"/>
+		<column name="description" type="string"/>
+		<relation column="parentId" methodName="parent" type="long" targetPackage="w.service.data" targetClass="Structure"/>
+	</dataStoreObject>
+	<dataStoreObject package="w.service.data" className="Thread" tableName="w_service_data_thread" primaryKeyColName="threadId" primaryKeyType="long" primaryKeyLength="8">
+		<column name="threadId" type="long"/>
+		<column name="structureId" type="long"/>
+		<column name="authorUserId" type="long"/>
+		<column name="createdTimestamp" type="long"/>
+		<column name="lastEditTimestamp" type="long"/>
+		<column name="lastReplyTimestamp" type="long"/>
+		<column name="sticky" type="byte"/>
+		<column name="flags" type="int"/>
+		<column name="subject" type="string"/>
+		<column name="message" type="string"/>
+		<relation column="structureId" methodName="structure" type="long" targetPackage="w.service.data" targetClass="Structure"/>
+		<relation column="authorUserId" methodName="authorUser" type="long" targetPackage="w.service.data" targetClass="User"/>
+	</dataStoreObject>
+</dataStoreObjects>

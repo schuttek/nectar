@@ -9,6 +9,7 @@ import org.nectarframework.base.Main;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
+import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.translation.TranslationService;
@@ -22,9 +23,16 @@ public class ThymeleafService extends Service {
 	private TemplateEngine templateEngine;
 	private FileService fileService;
 	private TranslationService translationService;
+	
+	private String templatesDirectory;
 
 	@Override
 	public void checkParameters() throws ConfigurationException {
+		templatesDirectory = this.serviceParameters.getString("templatesDirectory", null);
+	}
+	
+	protected String getTemplatesDirectory() {
+		return templatesDirectory;
 	}
 
 	@Override
@@ -39,7 +47,7 @@ public class ThymeleafService extends Service {
 	protected boolean init() {
 		templateEngine = new TemplateEngine();
 
-		ThymeTemplateResolver templateResolver = new ThymeTemplateResolver(this);
+		ThymeTemplateResolver templateResolver = new ThymeTemplateResolver(this, fileService);
 		templateEngine.setTemplateResolver(templateResolver);
 
 		ThymeMessageResolver messageResolver = new ThymeMessageResolver(this);

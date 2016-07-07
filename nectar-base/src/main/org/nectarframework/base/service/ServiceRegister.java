@@ -20,7 +20,7 @@ public class ServiceRegister {
 	 * if you're not on the register, you're not a real Service...
 	 */
 	private HashMap<Class<? extends Service>, Service> registerByClass;
-	
+
 	private HashMap<Service, List<Service>> dependancies;
 
 	public ServiceRegister() {
@@ -99,6 +99,7 @@ public class ServiceRegister {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean init() {
 		Log.info("ServiceRegister is initializing services...");
 		if (runState != RUN_STATE.configChecked && runState != RUN_STATE.restarting) {
@@ -113,6 +114,11 @@ public class ServiceRegister {
 		}
 		for (Service s : serviceList) {
 			registerByClass.put(s.getClass(), s);
+			Class<?> superClass = s.getClass().getSuperclass();
+			while (!superClass.equals(Service.class)) {
+				registerByClass.put((Class<? extends Service>)superClass, s);
+				superClass = superClass.getSuperclass();
+			}
 		}
 		for (Service s : serviceList) {
 			if (s.state == STATE.none) {
@@ -124,7 +130,8 @@ public class ServiceRegister {
 					return false;
 				}
 			} else if (s.state != STATE.initialized) {
-				Log.fatal("ServiceRegister.init() has Service " + s.getClass().getName() + " in irregular state: " + s.state);
+				Log.fatal("ServiceRegister.init() has Service " + s.getClass().getName() + " in irregular state: "
+						+ s.state);
 				return false;
 			}
 		}
@@ -138,7 +145,8 @@ public class ServiceRegister {
 			// Log.fatal("ServiceResgster.init: Service " +
 			// s.getClass().getName() +
 			// " returned false on Service.establishDependancies().");
-			throw new ServiceUnavailableException("ServiceResgister.init: Service " + s.getClass().getName() + " returned false on Service.establishDependancies().");
+			throw new ServiceUnavailableException("ServiceResgister.init: Service " + s.getClass().getName()
+					+ " returned false on Service.establishDependancies().");
 		}
 
 		if (s.init()) {
@@ -156,8 +164,10 @@ public class ServiceRegister {
 	}
 
 	public boolean shutdown() {
-		Log.info("ServiceRegister.shutdown() triggered. Checking run status. Current run state before check is: " + runState.name());
-		Log.info("ServiceRegister will now try to shut down top level services (aka those that rely on other Services). ");
+		Log.info("ServiceRegister.shutdown() triggered. Checking run status. Current run state before check is: "
+				+ runState.name());
+		Log.info(
+				"ServiceRegister will now try to shut down top level services (aka those that rely on other Services). ");
 		for (Service s : serviceDirectory.values()) {
 			shutdownDependancies(s);
 		}
@@ -204,7 +214,8 @@ public class ServiceRegister {
 	public boolean configCheck() {
 
 		if (Charset.defaultCharset().name().compareTo("UTF-8") != 0) {
-			Log.warn("Nectar should really only run with UTF-8 Charset. default charset is: " + Charset.defaultCharset() + ". This might cause weird problems. Please check your java installation options. ");
+			Log.warn("Nectar should really only run with UTF-8 Charset. default charset is: " + Charset.defaultCharset()
+					+ ". This might cause weird problems. Please check your java installation options. ");
 		}
 
 		try {
@@ -234,16 +245,6 @@ public class ServiceRegister {
 		Log.info("ServiceRegister: All services are up and running.");
 	}
 
-	@Depracated // use getServiceByClass(Class<? extends Service> serviceClass) instead . 
-	public static Service getServiceByClassName(String className) {
-		for (Class<? extends Service> c : instance.registerByClass.keySet()) {
-			if (c.getName().equals(className)) {
-				return instance.registerByClass.get(c);
-			}
-		}
-		return null;
-	}
-
 	public static ServiceRegister getInstance() {
 		return instance;
 	}
@@ -252,11 +253,13 @@ public class ServiceRegister {
 		return config;
 	}
 
-	public static Service addServiceDependancy(Service service, Class<? extends Service> serviceClass) throws ServiceUnavailableException {
+	public static Service addServiceDependancy(Service service, Class<? extends Service> serviceClass)
+			throws ServiceUnavailableException {
 		return instance._addServiceDependancy(service, serviceClass);
 	}
 
-	private Service _addServiceDependancy(Service service, Class<? extends Service> serviceClass) throws ServiceUnavailableException {
+	private Service _addServiceDependancy(Service service, Class<? extends Service> serviceClass)
+			throws ServiceUnavailableException {
 		Service dependant = instance.registerByClass.get(serviceClass);
 		if (dependant == null) {
 			return null;
@@ -279,7 +282,6 @@ public class ServiceRegister {
 		return dependant;
 	}
 
-	
 	public static boolean shutdownDependancies(Service service) {
 		return instance._shutdownDependancies(service);
 	}
@@ -298,5 +300,26 @@ public class ServiceRegister {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * use getServiceByClass(Class<? extends Service> serviceClass) instead:
+	 * it's faster and safer.
+	 * 
+	 * @param className
+	 * @return
+	 */
+	@Deprecated
+	public static Service getServiceByClassName(String className) {
+		for (Class<? extends Service> c : instance.registerByClass.keySet()) {
+			if (c.getName().equals(className)) {
+				return instance.registerByClass.get(c);
+			}
+		}
+		return null;
+	}
+
+	public static Service getService(Class<? extends Service> serviceClass) {
+		return instance.registerByClass.get(serviceClass);
 	}
 }

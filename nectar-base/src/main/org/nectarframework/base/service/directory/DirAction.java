@@ -1,7 +1,7 @@
 package org.nectarframework.base.service.directory;
 
 
-public class DirAction  {
+public class DirAction implements DirPath {
 	
 	public String name;
 	public String packageName;

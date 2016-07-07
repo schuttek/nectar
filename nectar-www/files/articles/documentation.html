@@ -1,0 +1,52 @@
+<h1>Documentation</h1>
+
+<h2>Quick Start</h2>
+
+<h3>Starting your own Nectar Project</h3>
+
+<p></p>
+
+<h3>Download</h3>
+
+<p>From GitHub:<br/>
+<ul>
+<li>https://github.com/schuttek/nectar</li>
+</ul>
+</p>
+	
+<p>Direct Download:<br/>
+<ul>
+<li>Current Release (alpha version): <a href="http://www.nectarframework.org/s/nectar_framework-0.0.1.tar.gz">nectar_framework-0.0.1.tar.gz</a></li>
+</ul>
+</p>
+
+
+<h2>Basic Request Architecture</h2>
+
+
+
+<img src="/s/request_arch.png"/>
+
+<h2>Nectar-base Service Stack</h2>
+
+<img src="/s/service_stack.png"/>
+
+
+<h2>Running and Configuring Nectar</h2>
+
+<h3>Running Nectar</h3>
+<p>The main entry point is <code>org.nectarframework.base.Main.main(String[] args);</code> in the nectar-base.x.y.z.jar file.</p>
+<p>The main and required command line arguments are: </p>
+<pre>
+ -c,--configFile <PATH>   path to the configuration XML file
+ -g,--nodeGroup <GROUP>   the run mode to use, as described in the config
+                          file
+ -n,--nodeName <NAME>     give this instance a name
+</pre>
+<p> The configFile determines which Services should be loaded, and defines configuration variables for each Service. A configFile can define multiple node group types, which allow you to configure multiple nectar instances in a single config file. The nodeGroup argument determines which node group configuration the instance you're launching should use. Finally, the nodeName allows you to uniquely identify an instance of Nectar even when running several instances of the same node group. </p>
+
+<h3>config/config.xml</h3>
+
+<h3>config/dataStoreObjects.xml</h3>
+
+<h3>config/pathConfig.xml</h3>

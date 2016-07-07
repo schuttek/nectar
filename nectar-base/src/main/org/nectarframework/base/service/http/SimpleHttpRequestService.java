@@ -39,6 +39,10 @@ public class SimpleHttpRequestService extends Service implements Container {
 	private int listeningPort = 80;
 	private InetAddress listeningHost;
 
+	private String staticRequestDirectory = "s";
+
+	private String staticLocalDirectory = "public_root";
+	
 	private SocketAddress address;
 	private ContainerSocketProcessor containerSocketProcessor;
 	private SocketConnection socketConnection;
@@ -96,7 +100,9 @@ public class SimpleHttpRequestService extends Service implements Container {
 		compressionMinSize = this.serviceParameters.getInt("compressionMinSize", 0, Integer.MAX_VALUE, compressionMinSize);
 		staticFileBufferSize = this.serviceParameters.getInt("staticFileBufferSize", 1, Integer.MAX_VALUE, staticFileBufferSize);
 		defaultOutput = this.serviceParameters.getString("defaultOutput", defaultOutput);
-
+		staticRequestDirectory = this.serviceParameters.getString("staticRequestDirectory", staticRequestDirectory);
+		staticLocalDirectory = this.serviceParameters.getString("staticLocalDirectory", staticLocalDirectory);
+		
 		this.listeningPort = this.serviceParameters.getInt("listeningPort", 1, 65536, listeningPort);
 
 		this.listeningHost = null;
@@ -119,6 +125,14 @@ public class SimpleHttpRequestService extends Service implements Container {
 	}
 	
 
+	public String getStaticRequestDirectory() {
+		return staticRequestDirectory;
+	}
+
+	public String getStaticLocalDirectory() {
+		return staticLocalDirectory;
+	}
+	
 	public int getCompressionMinSize() {
 		return compressionMinSize;
 	}

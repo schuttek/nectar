@@ -30,6 +30,7 @@ public abstract class StringTools {
 
 	@SuppressWarnings("rawtypes")
 	public static String mapToString(Map map) {
+		if (map == null) return "null";
 		String s = "map(";
 		boolean trip = false;
 		for (Object o : map.keySet()) {

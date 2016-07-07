@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Set;
 
+import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.thymeleaf.context.IContext;
 
@@ -14,7 +15,8 @@ public class ThymeContext implements IContext {
 
 	public ThymeContext(Locale locale, Element elm) {
 		this.locale = locale;
-		this.varMap = buildVarMapRec(elm);
+		varMap = new HashMap<String, Object>();
+		varMap.put(elm.getName(), buildVarMapRec(elm));
 	}
 	
 	
@@ -24,6 +26,7 @@ public class ThymeContext implements IContext {
     }
     
     public Object getVariable(final String name) {
+    	Log.trace("ThymeContext:getVariable() "+name);
     	return varMap.get(name);
     }
 

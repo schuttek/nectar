@@ -1,0 +1,16 @@
+html{font-family:"Open Sans","DejaVu Sans",sans-serif; font-style:normal; text-rendering: optimizeLegibility;letter-spacing:-.01em;background-color:#e3e3e3;color:#000000}}
+body{margin:20px}
+div.wrap{width:60%;margin:0 auto; padding:20px;background-color:#fff0d8}
+div.header{width:100%}
+div.navbar{background-color:#ffe7dd;padding-left:20px;padding-top:2px;padding-bottom:2px;}
+img.navbar{width:23px;height:23px;margin-right:5px;position: relative;top: 4px}
+a.navbar{font-size:1.2em;text-decoration: none;margin-right:15px}
+a.navbar:hover{text-decoration: underline}
+a.navbar:link{color:#761f46}
+a.navbar:visited{color:#761f46}
+div.title{font-size: 3.5em; text-align:right;}
+img.title{width:50px;height:50px;margin-right:5px;position: relative;top: 4px; }
+div.slogan{font-size:.7em; margin-bottom:20px; text-align:right;}
+div.content{float:left; padding:20px;width:70%}
+div.sidebar{float:right; padding:20px;overflow:auto;background-color:#ffe7dd}
+div.footer{clear:both; width:100%;font-size:.7em}

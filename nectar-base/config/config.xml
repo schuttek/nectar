@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config version="1.0">
+
+	<node group="client">
+		<service class="org.nectarframework.base.service.thread.ThreadService">
+			<param name="minWorkerThreads" value="10" />
+			<param name="maxWorkerThreads" value="50" />
+		</service>
+		<service class="org.nectarframework.base.service.xml.XmlService">
+			<param name="transformOnServer" value="false" />
+			<param name="defaultOutput" value="ndo_json" />
+		</service>
+		<service class="org.nectarframework.base.service.xml.XmlClientService">
+			<param name="serverHost" value="127.0.0.1" />
+			<param name="serverPort" value="8009" />
+		</service>
+
+	</node>
+
+	<node group="devServer">
+		<service class="org.nectarframework.base.service.xml.XmlService">
+		</service>
+
+		<service class="org.nectarframework.base.service.directory.DirectoryService">
+			<param name="configFilePath" value="config/pathConfig.xml" />
+		</service>
+		<service
+			class="org.nectarframework.base.service.http.SimpleHttpRequestService">
+			<param name="compressionMinSize" value="1" />
+			<param name="listeningHost" value="127.0.0.1" />
+			<param name="listeningPort" value="8000" />
+		</service>
+
+		<service class="org.nectarframework.base.service.thread.ThreadService">
+			<param name="minWorkerThreads" value="20" />
+			<param name="maxWorkerThreads" value="50" />
+		</service>
+
+		<service class="org.nectarframework.base.service.cache.CacheService">
+		</service>
+		<service class="org.nectarframework.base.service.session.SessionService">
+		</service>
+		<service class="org.nectarframework.base.service.log.LoggingService">
+		</service>
+		<service class="org.nectarframework.base.service.file.FileService">
+			<param name="rootDirectory"
+				value="C:/cygwin64/home/skander/workspace/Nectar/WebContent/" />
+		</service>
+		<service class="org.nectarframework.base.service.mysql.MysqlService">
+			<param name="host" value="127.0.0.1" />
+			<param name="port" value="3306" />
+			<param name="database" value="nectar" />
+			<param name="user" value="nectar" />
+			<param name="password" value="bla bla" />
+		</service>
+
+		<service
+			class="org.nectarframework.base.service.datastore.MysqlDataStoreService">
+			<param name="dataStoreObjectsConfigFile"
+				value="C:/cygwin64/home/skander/workspace/Nectar/config/dataStoreObjects.xml" />
+		</service>
+
+		<service class="org.nectarframework.base.service.xml.XmlServerService">
+			<param name="serverHost" value="127.0.0.1" />
+			<param name="serverPort" value="8009" />
+			<param name="serverSocketBacklog" value="5" />
+			<param name="maxConnections" value="10000" />
+
+			<param name="rsaPublicKey" value="insertKeyHere" />
+			<param name="rsaPrivateKey" value="insertKeyHere" />
+
+		</service>
+
+		<service class="org.nectarframework.base.service.xml.XmlClientService">
+			<param name="serverHost" value="127.0.0.1" />
+			<param name="serverPort" value="8009" />
+		</service>
+
+
+		<service class="org.nectarframework.base.service.thymeleaf.ThymeleafService" />
+
+		<service
+			class="org.nectarframework.base.service.translation.TranslationService" />
+	</node>
+</config>

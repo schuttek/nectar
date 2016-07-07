@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Service;
@@ -16,6 +18,7 @@ import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
+import org.nectarframework.base.tools.StringTools;
 import org.xml.sax.SAXException;
 
 /**
@@ -29,7 +32,7 @@ public class DirectoryService extends Service {
 	
 	private String configFilePath = "config/pathConfig.xml";
 	
-	private HashMap<String, HashMap<String, DirAction>> pathMap;
+	private HashMap<String, HashMap<String, DirPath>> pathMap;
 
 	@Override
 	public void checkParameters() {
@@ -38,7 +41,7 @@ public class DirectoryService extends Service {
 
 	@Override
 	protected boolean init() {
-		pathMap = new HashMap<String, HashMap<String, DirAction>>();
+		pathMap = new HashMap<String, HashMap<String, DirPath>>();
 		boolean ret = buildFromFile(configFilePath);
 
 		if (Log.isTrace() && ret) {
@@ -108,17 +111,35 @@ public class DirectoryService extends Service {
 				actionMap.put(da.name, da);
 			}
 			
-			HashMap<String, DirAction> daMap = new HashMap<String, DirAction>();
+			HashMap<String, DirPath> daMap = new HashMap<String, DirPath>();
 			
 			for (Element path : project.getChildren("path")) {
 				daMap.put(path.get("path"), actionMap.get(path.get("action")));
 			}
 			
+			for (Element redirect : project.getChildren("redirect")) {
+				DirRedirect dirRedirect = new DirRedirect();
+				dirRedirect.path = redirect.get("path");
+				dirRedirect.toPath = redirect.get("toPath");
+				dirRedirect.variables = new HashMap<String, List<String>>();
+				for (Element rv : redirect.getChildren("var")) {
+					if (dirRedirect.variables.containsKey(rv.get("name"))) {
+						dirRedirect.variables.get(rv.get("name")).add(rv.get("value"));
+					} else {
+						LinkedList<String> ls = new LinkedList<String>();
+						ls.add(rv.get("value"));
+						dirRedirect.variables.put(rv.get("name"), ls);
+					}
+				}
+				daMap.put(dirRedirect.path, dirRedirect);
+			}
+			
 			if (!pathMap.containsKey(namespace)) {
-				pathMap.put(namespace, new HashMap<String, DirAction>());
+				pathMap.put(namespace, new HashMap<String, DirPath>());
 			}
 
 			pathMap.get(namespace).putAll(daMap);
+			
 		}
 		
 		return true;
@@ -129,11 +150,15 @@ public class DirectoryService extends Service {
 		StringBuffer sb = new StringBuffer("Path Configuration:");
 		
 		for (String k : pathMap.keySet()) {
-			HashMap<String, DirAction> map = pathMap.get(k);
+			HashMap<String, DirPath> map = pathMap.get(k);
 			sb.append("namespace: '"+k+"'\n");
 			for (String ac : map.keySet()) {
-				DirAction da = map.get(ac);
-				sb.append("Path: '"+ac+ "' -> '"+da.name+"' ("+da.className+") '"+da.formName+"'\n");
+				DirPath dp = map.get(ac);
+				if (dp instanceof DirAction) {
+					sb.append("Path: '"+ac+ "' -> '"+((DirAction)dp).name+"' ("+((DirAction)dp).className+") '"+((DirAction)dp).formName+"'\n");
+				} else if (dp instanceof DirRedirect) {
+					sb.append("Redirect: '"+ac+ "' -> '"+((DirRedirect)dp).path+"' ("+((DirRedirect)dp).toPath+") '"+StringTools.mapToString(((DirRedirect)dp).variables)+"'\n");
+				}
 			}
 		}
 		return sb.toString();
@@ -155,8 +180,8 @@ public class DirectoryService extends Service {
 		return true;
 	}
 
-	public DirAction lookupAction(String prefix, String path) {
-		HashMap<String, DirAction> m = pathMap.get(prefix);
+	public DirPath lookupAction(String prefix, String path) {
+		HashMap<String, DirPath> m = pathMap.get(prefix);
 		if (m != null) {
 			return m.get(path);
 		}

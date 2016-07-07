@@ -46,11 +46,10 @@ public abstract class DatabaseService extends Service {
 	protected String password;
 
 	protected int maxInsertBatchSize = 100;
-	
+
 	public int getMaxInsertBatchSize() {
 		return maxInsertBatchSize;
 	}
-
 
 	protected ThreadService threadService;
 	protected CacheService cacheService;
@@ -64,7 +63,7 @@ public abstract class DatabaseService extends Service {
 			Log.fatal("Unable to close mysql", e);
 			return false;
 		}
-		Log.trace(this.getClass().getName()+": closed all Connections.");
+		Log.trace(this.getClass().getName() + ": closed all Connections.");
 		return true;
 	}
 
@@ -75,7 +74,7 @@ public abstract class DatabaseService extends Service {
 		database = serviceParameters.getValue("database");
 		user = serviceParameters.getValue("user");
 		password = serviceParameters.getValue("password");
-		poolSize = serviceParameters.getInt("poolSize", 1, 1000, 100);
+		poolSize = serviceParameters.getInt("poolSize", 1, 1000, 10);
 		startupConnections = serviceParameters.getInt("startupConnections", 1, 1000, 2);
 		maxInsertBatchSize = serviceParameters.getInt("maxInsertBatchSize", 1, 1000, 100);
 	}
@@ -102,12 +101,12 @@ public abstract class DatabaseService extends Service {
 
 	protected abstract boolean openConnections(int startupConnections);
 
-
 	@Override
 	protected boolean run() {
 
 		// open the rest of the pool connections in a ThreadTask
-		OpenRemainingConnectionsTask orct = new OpenRemainingConnectionsTask(this, this.poolSize - this.startupConnections);
+		OpenRemainingConnectionsTask orct = new OpenRemainingConnectionsTask(this,
+				this.poolSize - this.startupConnections);
 		threadService.execute(orct);
 
 		return true;
@@ -116,7 +115,7 @@ public abstract class DatabaseService extends Service {
 	@Override
 	protected boolean shutdown() {
 		closeConnections();
-		Log.info(this.getClass().getName()+" shut down.");
+		Log.info(this.getClass().getName() + " shut down.");
 		return true;
 	}
 
@@ -140,15 +139,13 @@ public abstract class DatabaseService extends Service {
 		}
 	}
 
-
 	public MysqlTransactionHandle beginTransaction() throws SQLException {
 		Connection conn = getConnection();
 		conn.setAutoCommit(false);
 		MysqlTransactionHandle mth = new MysqlTransactionHandle(conn, this);
 		return mth;
 	}
-	
-	
+
 	public int update(String sql) throws SQLException {
 		if (Log.isWarn()) {
 			this.verifyUpdate(sql);
@@ -241,12 +238,11 @@ public abstract class DatabaseService extends Service {
 		}
 		return at;
 	}
-	
 
 	public AsyncTicket asyncInsert(MysqlPreparedStatement ps) {
 		AsyncTicket at = new AsyncTicket();
 		at.setReady(false);
-		
+
 		AsyncInsertTask ast = new AsyncInsertTask(this, ps, at);
 		try {
 			threadService.execute(ast);
@@ -255,7 +251,6 @@ public abstract class DatabaseService extends Service {
 		}
 		return at;
 	}
-
 
 	/**
 	 * Synchronous - Blocking query, for those that want to wait. this will
@@ -282,13 +277,23 @@ public abstract class DatabaseService extends Service {
 		return rt;
 	}
 
+	/**
+	 * Synchronous select query that doesn't use any local cache like
+	 * CacheService. MySQL may still use it's own cache unless you specify
+	 * NO_CACHE in the query.
+	 * 
+	 * @param mps
+	 * @return
+	 * @throws SQLException
+	 */
 	public ResultTable select(MysqlPreparedStatement mps) throws SQLException {
 		if (Log.isWarn()) {
 			this.verifySelect(mps);
 		}
 
 		Connection conn = getConnection();
-		PreparedStatement prepStat = conn.prepareStatement(mps.getSql(),  ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
+		PreparedStatement prepStat = conn.prepareStatement(mps.getSql(), ResultSet.TYPE_FORWARD_ONLY,
+				ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 		prepStat.setFetchDirection(ResultSet.FETCH_FORWARD);
 		mps._applyToJavaSQLPreparedStatement(prepStat);
 		ResultSet rs = prepStat.executeQuery();
@@ -301,8 +306,8 @@ public abstract class DatabaseService extends Service {
 
 	/**
 	 * Synchronous select query, with a cache timer hint. If the same SQL
-	 * request was performed in the last cacheExpiry milliseconds, then return the
-	 * cached version (CacheService).
+	 * request was performed in the last cacheExpiry milliseconds, then return
+	 * the cached version (CacheService).
 	 * 
 	 * Else, perform the request, and try to load it in cache.
 	 * 
@@ -322,8 +327,8 @@ public abstract class DatabaseService extends Service {
 
 	/**
 	 * Synchronous select query, with a cache timer hint. If the same SQL
-	 * request was performed in the last cacheExpiry milliseconds, then return the
-	 * cached version (CacheService).
+	 * request was performed in the last cacheExpiry milliseconds, then return
+	 * the cached version (CacheService).
 	 * 
 	 * Else, perform the request, and try to load it in cache.
 	 * 
@@ -378,7 +383,6 @@ public abstract class DatabaseService extends Service {
 		}
 		return at;
 	}
-	
 
 	public AsyncTicket asyncSelect(String sql, long cacheExpiry) {
 		ResultTable rt = cacheService.getResultTable(sql, false);
@@ -401,27 +405,27 @@ public abstract class DatabaseService extends Service {
 		}
 		return at;
 	}
-	
-	
-	
 
 	private class SimpleDynamicList {
 		private class Link {
 			Link next;
 			Object[] rowData;
 		}
+
 		private Link first = null;
 		private Link last = null;
+
 		public Object[] popFirst() {
 			Object[] ret = first.rowData;
 			first = first.next;
 			return ret;
 		}
+
 		public void add(Object[] row) {
 			Link newLink = new Link();
 			newLink.rowData = row;
 			newLink.next = null;
-			
+
 			if (first == null) {
 				first = newLink;
 				last = newLink;
@@ -430,9 +434,9 @@ public abstract class DatabaseService extends Service {
 			}
 			last = newLink;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Converts a java.sql.ResultSet into a
 	 * nectar.base.service.mysql.ResultTable
@@ -553,11 +557,11 @@ public abstract class DatabaseService extends Service {
 		Object[] rowData = null;
 		for (int row = 0; row < rowCount; row++) {
 			rowData = rowList.popFirst();
-			for (int t=0; t<colCount; t++) {
+			for (int t = 0; t < colCount; t++) {
 				table[row * colCount + t] = rowData[t];
 			}
 		}
-		
+
 		memorySize += rowCount * colCount * 8 + colCount * 10; // size of the
 																// table itself,
 																// plus the
@@ -568,33 +572,37 @@ public abstract class DatabaseService extends Service {
 	}
 
 	private void verifyUpdate(String sql) throws SQLException {
-		if (!sql.substring(0, 7).toLowerCase().startsWith("update ") && !sql.substring(0, 7).toLowerCase().startsWith("insert ") && !sql.substring(0, 7).toLowerCase().startsWith("delete ")) {
-			Log.warn(this.getClass().getName()+".update called with SQL query other than UPDATE, INSERT, DELETE: " + sql);
-			throw new SQLException(this.getClass().getName()+".update must begin with UPDATE, INSERT, DELETE - called with invalid sql " + sql);
+		if (!sql.substring(0, 7).toLowerCase().startsWith("update ")
+				&& !sql.substring(0, 7).toLowerCase().startsWith("insert ")
+				&& !sql.substring(0, 7).toLowerCase().startsWith("delete ")) {
+			Log.warn(this.getClass().getName() + ".update called with SQL query other than UPDATE, INSERT, DELETE: "
+					+ sql);
+			throw new SQLException(this.getClass().getName()
+					+ ".update must begin with UPDATE, INSERT, DELETE - called with invalid sql " + sql);
 		}
 	}
 
 	private void verifySelect(String selectSql) throws SQLException {
-		if (!selectSql.substring(0, 7).toLowerCase().startsWith("select ") && !selectSql.toLowerCase().startsWith("show ")) {
-			Log.warn(this.getClass().getName()+".select called with SQL query other than SELECT: " + selectSql);
-			throw new SQLException(this.getClass().getName()+".select must begin with SELECT - called with invalid sql " + selectSql);
+		if (!selectSql.substring(0, 7).toLowerCase().startsWith("select ")
+				&& !selectSql.toLowerCase().startsWith("show ")) {
+			Log.warn(this.getClass().getName() + ".select called with SQL query other than SELECT: " + selectSql);
+			throw new SQLException(this.getClass().getName()
+					+ ".select must begin with SELECT - called with invalid sql " + selectSql);
 		}
 	}
 
 	private void verifySelect(MysqlPreparedStatement preparedStatement) throws SQLException {
 		this.verifySelect(preparedStatement.getSql());
 	}
-	
-	
+
 	public void flushTables(String[] tableNames) throws SQLException {
 		String s = "";
 		if (tableNames != null) {
 			s = StringTools.implode(tableNames, ", ");
 		}
-		String sql = "FLUSH TABLES "+s;
+		String sql = "FLUSH TABLES " + s;
 		execute(sql);
 	}
-
 
 	/**
 	 * Execute an "uncommon" SQL command (eg. CREATE, ALTER, TRUNCATE, etc)

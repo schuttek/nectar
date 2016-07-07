@@ -59,12 +59,14 @@ public class Main {
 			sr = runStartup(options, line);
 			if (sr != null && sr.configCheck() && sr.initNode()) {
 				sr.begin();
+			} else {
+				exit();
 			}
 		}
 		
 		} catch (Throwable t) {
 			Log.fatal("CRASH", t);
-			System.exit(-1);
+			exit();
 		}
 		// main thread ends after startup.
 	}
@@ -143,7 +145,7 @@ public class Main {
 	/**
 	 * Exit immediately, don't run shutdown hooks. This is obviously something that should never be done, unless you're purposely trying to break stuff.
 	 */
-	public static void crash() {
+	public static void crash__DO_NOT_USE_THIS_UNLESS_YOU_MEAN_HARM() {
 		Runtime.getRuntime().removeShutdownHook(msh);
 		System.exit(-1);
 	}

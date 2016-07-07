@@ -61,7 +61,7 @@ public class MysqlService extends DatabaseService {
 
 		try {
 			for (int i = 0; i < connCount; i++) {
-				Connection c = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + port + "/" + this.database + "?" + "user=" + this.user + "&password=" + this.password);
+				Connection c = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + port + "/" + this.database + "?useSSL=false&" + "user=" + this.user + "&password=" + this.password);
 				poolConnections.add(c);
 				idleConnections.add(c);
 			}

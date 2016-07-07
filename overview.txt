@@ -1,0 +1,21 @@
+<h1>Overview</h1>
+
+<p>Nectar (aka the Nectar Framework, aka Nectar Web Application Framework, aka Nectar Web Platform) is a request driven, MVC (Model-View-Controller) web application framework written in Java. It's basic request handling model is inherited from the original Apache struts framework from around 2001, where a request is converted into a Form object (holding pre-checked input data), which is in turn interpreted by an Action implementation that does the actual work using a number of Services available to it. </p>
+
+<p>Nectar's Service based architecture allow the implementation of an Action to be surprisingly simple, because the complicated code is in the Services themselves, which become much easier to code when you're focusing just focusing on the Service's design.</p> 
+
+<p>Nectar, like any framework, seems very strict at first, especially to those unfamiliar with Java, which is already strict in it's own way. This strictness (counter intuitively, perhaps to some) allows for great simplification and amazing flexibility. </p>
+
+<p>Finally, the core services were designed with two things in mind: Speed and Scalability.</p>
+
+<p>Speed is first achieved by getting rid of all extra weight many modern frameworks provide, and by providing a basic Service that works, but doesn't do 25 other things you'll never need (and if you do need them, you can always extend a Service, and add it yourself). Secondly, it's achieved by starting up all the Services your Actions may need when the server boots up, instead of starting when your server receives a request (like PHP does, for example), and Thirdly, by pre loading all (or almost all) the data you might need into memory, simply because RAM is dirt cheap nowadays. </p>
+
+<p>A lot of scalability problems are already resolved just by speeding things up. If a request takes 100x less CPU and 10x less disk I/O's to process, a single Nectar instance can probably handle the traffic of what your 4 Apache/PHP servers used to handle, and give you room to breathe. However, Nectar doesn't stop there.</p>
+
+<p>Load Scalability is currently achieved through it's XmlServerService, which can repack any request to another Nectar instance in the cluster, and provide results asynchronously. While this is a good medium scalability solution, it requires a lot of configuration work and planning. In the future, Nectar will be self-aware as a cluster, share performance and load statistics, which will allow for both data replication and durability. </p>
+
+<p>Data Scalability is achieved through Nectar's DataStoreService, which provides simple JavaBean style interface to what one could consider a row in an SQL table. The idea is that you can call on a data structure, and load it by it's unique identifier, and then be able to load it's relations with a simple method call. Implementations for Hbase/Hadoop and Apache Spark are in progress, as well as a home grown key-value database which will be even faster, MySQL is currently the reference implementation. </p>
+
+<h1>History</h1>
+
+<p>Nectar has been a hobby/pet project of mine since 2003, when I grew frustrated</p>

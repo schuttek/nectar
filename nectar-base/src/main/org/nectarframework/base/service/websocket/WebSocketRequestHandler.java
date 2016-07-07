@@ -1,14 +1,17 @@
 package org.nectarframework.base.service.websocket;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.Map;
 
 import org.java_websocket.WebSocket;
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.directory.DirAction;
+import org.nectarframework.base.service.directory.DirPath;
+import org.nectarframework.base.service.directory.DirRedirect;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
@@ -35,16 +38,20 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 		WebSocket webSocket = request.getWebSocket();
 		InetSocketAddress webSocketLocalAddress = webSocket.getLocalSocketAddress();
 
-//		webSocketLocalAddress.getHostName();
-//		webSocketLocalAddress.getPort();
+		// webSocketLocalAddress.getHostName();
+		// webSocketLocalAddress.getPort();
 
-		// Log.trace("WebServiceRequestHandler.execute() for " + request.getPath() + " on " + request.getHost() + ":" + request.getPort() + " reqID:" + request.getWsrr().getRequestId());
+		// Log.trace("WebServiceRequestHandler.execute() for " +
+		// request.getPath() + " on " + request.getHost() + ":" +
+		// request.getPort() + " reqID:" + request.getWsrr().getRequestId());
 
 		// TODO: session handling.
 
 		long execStart = System.nanoTime();
 		ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
 
+		Map<String, List<String>> parameters = request.getParameters();
+		
 		String path = request.getPath();
 
 		int prefixIdx = path.lastIndexOf('/');
@@ -56,37 +63,50 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 		} else {
 			actionPath = path;
 		}
-		
-		DirAction dirAction = ds.lookupAction(prefix, actionPath);
 
-		if (dirAction == null) { // not found
-			Log.warn("no dirAction for dirPath " + prefix + "/"+ request.getPath());
-			handleNotFound();
-			return;
+		DirPath dirPath = null;
+
+		while (dirPath == null || !(dirPath instanceof DirAction)) {
+			dirPath = ds.lookupAction(prefix, actionPath);
+
+			if (dirPath == null) {
+				Log.warn("no dirAction for dirPath " + prefix + "/" + request.getPath());
+				handleNotFound();
+				return;
+			}
+
+			if (dirPath instanceof DirRedirect) {
+				parameters.putAll(((DirRedirect) dirPath).variables);
+				dirPath = ds.lookupAction(prefix, actionPath);
+			}
 		}
+
+		DirAction dirAction = (DirAction) dirPath;
+
 		// instantiate the action
 		Action action = (Action) ClassLoader.getSystemClassLoader().loadClass(dirAction.className).newInstance();
-		
+
 		// set up the form.
-		Form form = new Form(dirAction.form, request.getParameters());
-		
+		Form form = new Form(dirAction.form, parameters);
+
 		action._init(form);
 
 		// execute the action
 		Element elm = action.execute();
 		outputBuffer.write(xs.xmlHeader().getBytes());
-//		xs.transformToOS(elm, form.getXslPath(), outputBuffer);
+		// xs.transformToOS(elm, form.getXslPath(), outputBuffer);
 		outputBuffer.write(XmlService.toXmlBytes(elm));
 
 		finishOutputStream();
 		long execEnd = System.nanoTime();
 
-//		Log.accessLog(request, directoryPath, form, this.outputBuffer.toByteArray(), (execEnd - execStart) / 1000);
+		// Log.accessLog(request, directoryPath, form,
+		// this.outputBuffer.toByteArray(), (execEnd - execStart) / 1000);
 
-		
-		Log.accessLog(request.getPath(), form.getElement(), form.getElement(), elm,  (execEnd - execStart) / 1000, webSocketLocalAddress.getHostName(), form.getSession());
+		Log.accessLog(request.getPath(), form.getElement(), form.getElement(), elm, (execEnd - execStart) / 1000,
+				webSocketLocalAddress.getHostName(), form.getSession());
 
-		Log.trace("Request processed: input "+ form.toString() + " --- output " + this.outputBuffer.toString());
+		Log.trace("Request processed: input " + form.toString() + " --- output " + this.outputBuffer.toString());
 
 	}
 
@@ -124,7 +144,7 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 		Element error = new Element("ncc_ws_error");
 		error.add("code", "404");
 		error.add("message", "Request not Found");
-		
+
 		error.add("ncc_ws_request_id", Integer.toString(request.getRequestId()));
 
 		xs.outputNDOJson(error, this.outputBuffer);

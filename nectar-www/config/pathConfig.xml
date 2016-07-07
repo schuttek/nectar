@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pathConfig>
+	<project namespace="">
+		<action name="indexAction" package="org.nectarframework.www.action"
+			class="IndexAction" form="index" defaultOutput="thymeleaf"
+			templateName="index" />
+		<action name="articleView" package="org.nectarframework.www.action"
+			class="ArticleViewAction" form="articleView" defaultOutput="thymeleaf"
+			templateName="articleView" />
+		<form name="index">
+		</form>
+		<form name="articleView">
+			<var name="id" type="int" required="true" minValue="0"/>
+		</form>
+		
+		<path path="index" action="indexAction" />
+		<path path="" action="indexAction" />
+		<path path="articleView" action="articleView" />
+
+		<redirect path="overview" toPath="articleView">
+			<var name="id" value="2"/>
+		</redirect>
+		<redirect path="documentation" toPath="articleView">
+			<var name="id" value="3"/>
+		</redirect>
+		<redirect path="download" toPath="articleView">
+			<var name="id" value="4"/>
+		</redirect>
+		<redirect path="about" toPath="articleView">
+			<var name="id" value="5"/>
+		</redirect>
+
+	</project>
+
+</pathConfig>

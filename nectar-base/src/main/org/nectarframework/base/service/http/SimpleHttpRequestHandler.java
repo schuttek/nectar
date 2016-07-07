@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.zip.GZIPOutputStream;
 
@@ -13,6 +14,8 @@ import org.nectarframework.base.action.Action;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.form.ValidationError;
 import org.nectarframework.base.service.directory.DirAction;
+import org.nectarframework.base.service.directory.DirPath;
+import org.nectarframework.base.service.directory.DirRedirect;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.file.FileInfo;
 import org.nectarframework.base.service.file.FileService;
@@ -74,14 +77,14 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 	public void execute() {
 
 		Address address = request.getAddress();
-
+		
 		Log.trace("request for " + address.getPath().getPath() + " on " + address.getDomain() + ":" + address.getPort());
 
 		// resolve the action with the directory service
 		String path = request.getAddress().getPath().getPath();
 
 		try {
-		if (path.startsWith("/static/")) {
+		if (path.startsWith("/"+simpleHttpRequestService.getStaticRequestDirectory()+"/")) {
 			try {
 				processStatic();
 			} catch (NotFoundException e) {
@@ -237,16 +240,40 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 		stopwatch.start();
 
-		String actionNamespace = getActionNamespace();
-		String actionPath = getActionPath();
 
-		Log.trace("'"+actionNamespace+"' , '"+actionPath+"'");
-		DirAction dirAction = directoryService.lookupAction(actionNamespace, actionPath);
-		
-		
-		if (dirAction == null) {
-			throw new NotFoundException();
+		HashMap<String, List<String>> parameters = new HashMap<String, List<String>>();
+
+		Query query = request.getQuery();
+		for (String s : query.keySet()) {
+			parameters.put(s, query.getAll(s));
 		}
+		
+		String path = request.getAddress().getPath().getPath();
+		
+		String actionNamespace = getActionNamespace(path);
+		String actionPath = getActionPath(path);
+
+		Log.trace("namespace='"+actionNamespace+"' , action='"+actionPath+"'");
+		DirPath dirPath = null;
+		
+		while (dirPath == null || !(dirPath instanceof DirAction)) {
+			dirPath = directoryService.lookupAction(actionNamespace, actionPath);
+		
+			if (dirPath == null) {
+				throw new NotFoundException();
+			}
+		
+			if (dirPath instanceof DirRedirect) {
+				parameters.putAll(((DirRedirect)dirPath).variables);
+				dirPath = directoryService.lookupAction(actionNamespace, ((DirRedirect)dirPath).toPath);
+				if (dirPath == null) {
+					throw new NotFoundException();
+				}
+			}
+		}
+		
+		DirAction dirAction = (DirAction)dirPath;
+		
 
 		// instantiate the action
 		Action action;
@@ -260,12 +287,6 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			throw new ActionTypeMismatchException(e);
 		}
 
-		HashMap<String, List<String>> parameters = new HashMap<String, List<String>>();
-
-		Query query = request.getQuery();
-		for (String s : query.keySet()) {
-			parameters.put(s, query.getAll(s));
-		}
 
 		
 		
@@ -323,8 +344,12 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			xmlService.toNDOJson(elm, sb);
 		} else if (output.equals("thymeleaf")) {
 			response.setContentType("text/html");
+			Locale locale = Locale.getDefault();
+			if (form.getSession() != null) {
+				locale = form.getSession().getLocale();
+			}
 			try {
-				thymeleafService.output(form.getSession().getLocale(), actionNamespace, dirAction.templateName, elm, sb);
+				thymeleafService.output(locale, actionNamespace, dirAction.templateName, elm, sb);
 			} catch (TemplateEngineException e) {
 				throw new InternalErrorException(e);
 			}
@@ -333,7 +358,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		
 		byte[] byteArray = sb.toString().getBytes();
 
-		byteArray = doCompression(byteArray);
+//		byteArray = doCompression(byteArray);
 		
 		response.setCode(200);
 		response.setContentLength(byteArray.length);
@@ -382,8 +407,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		}
 	}
 
-	private String getActionPath() {
-		String path = request.getAddress().getPath().getPath();
+	private String getActionPath(String path) {
 		if (path.startsWith("/")) {
 			path = path.substring(1, path.length());
 		}
@@ -398,8 +422,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		return actionPath;
 	}
 
-	private String getActionNamespace() {
-		String path = request.getAddress().getPath().getPath();
+	private String getActionNamespace(String path) {
 		if (path.startsWith("/")) {
 			path = path.substring(1, path.length());
 		}
@@ -450,9 +473,11 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			isCompressible = false;
 		}
 
+		/*
 		if (isCompressible && byteArray.length() > simpleHttpRequestService.getCompressionMinSize()) {
 			byteArray = new ByteArray(doCompression(byteArray.getBytes()));
 		}
+		*/
 
 		contentLength = byteArray.length();
 
@@ -466,12 +491,14 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 	}
 
 	private void processStatic() throws NotFoundException, AccessDeniedException {
+		
+		// TODO: add cache layer
 		Stopwatch stopwatch = new Stopwatch();
 
 		InputStream is = null;
 		try {
-			FileInfo fileInfo = fileService.getFileInfo(this.request.getPath().getPath());
-			is = fileService.getFileAsInputStream(this.request.getPath().getPath());
+			FileInfo fileInfo = fileService.getFileInfo("/"+this.simpleHttpRequestService.getStaticLocalDirectory()+this.request.getPath().getPath());
+			is = fileService.getFileAsInputStream("/"+this.simpleHttpRequestService.getStaticLocalDirectory()+this.request.getPath().getPath());
 
 			response.setValue("Server", serverName);
 			response.setDate("Date", fileInfo.getLastModified());

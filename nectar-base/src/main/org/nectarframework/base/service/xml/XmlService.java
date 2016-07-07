@@ -321,7 +321,7 @@ public class XmlService extends Service {
 		return ba.getBytes();
 	}
 	
-	public String toXmlString(Element elm) {
+	public static String toXmlString(Element elm) {
 		StringBuffer sb  = new StringBuffer();
 		toXml(elm, sb);
 		return sb.toString();

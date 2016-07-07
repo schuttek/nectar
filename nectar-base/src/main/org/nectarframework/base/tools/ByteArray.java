@@ -312,5 +312,11 @@ public class ByteArray {
 		return remove(length());
 	}
 
+	public void reset() {
+		front = null;
+		back = null;
+		length = 0;
+	}
+
 
 }

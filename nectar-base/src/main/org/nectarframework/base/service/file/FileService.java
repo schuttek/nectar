@@ -7,7 +7,11 @@ import java.io.InputStream;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceUnavailableException;
+import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.log.Log;
+
+//TODO add cache layer
 
 public class FileService extends Service {
 
@@ -20,6 +24,8 @@ public class FileService extends Service {
 	private int maxFilesInCache;
 	@SuppressWarnings("unused")
 	private int maxCachedFileSize;
+	
+	private CacheService cacheService;
 
 	private static final int maxReadBufferSize = 10485760; // 10MB
 	private static final int maxTotalFileCacheSize = Integer.MAX_VALUE; // 2GB
@@ -64,7 +70,8 @@ public class FileService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() {
+	public boolean establishDependancies() throws ServiceUnavailableException {
+		cacheService = (CacheService)this.dependancy(CacheService.class);
 		return true;
 	}
 
@@ -109,6 +116,13 @@ public class FileService extends Service {
 		return getFileAsInputStream(f);
 	}
 
+	public File getFile(String path) throws ReadFileNotFoundException, ReadFileAccessDeniedException, ReadFileNotAFileException {
+		File f = new File(rootDirectory + "/" + path);
+		testFile(f);
+		return f;
+	}
+
+	
 	public FileInfo getFileInfo(String path) throws ReadFileNotFoundException, ReadFileAccessDeniedException, ReadFileNotAFileException {
 		FileInfo fi = new FileInfo();
 

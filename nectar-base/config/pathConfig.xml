@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pathConfig>
+
+	<project namespace="w">
+		<action name="marketSellOrderCreate" package="w.action.market"
+			class="MarketSellOrderCreate" form="marketSellOrderCreateForm" />
+
+		<form name="marketSellOrderCreateForm">
+			<var name="structureId" type="long" required="true" minValue="1" />
+			<var name="itemTypeId" type="long" required="true" minValue="1" />
+			<var name="itemSuperType" type="int" required="true" minValue="1" />
+			<var name="amountLong" type="long" required="false" minValue="1" />
+			<var name="amountDouble" type="double" required="false" minValue="0" />
+			<var name="price" type="long" required="true" minValue="0" />
+			<var name="bulkScale" type="int" required="true" minValue="0" />
+		</form>
+
+		<path path="marketSellOrderCreate" action="marketSellOrderCreate" />
+
+	</project>
+
+	<project namespace="">
+		<action name="frontPageAction" package="w.web.frontpage.action"
+			class="WFrontPageAction" form="index" defaultOutput="thymeleaf"
+			templateName="frontPage" />
+		<action name="frontPageAction" package="w.web.frontpage.action"
+			class="WFrontPageAction" form="index" defaultOutput="thymeleaf"
+			templateName="frontPage" />
+		<action name="forumView" package="w.web.frontpage.action"
+			class="ForumViewAction" form="forumView" defaultOutput="thymeleaf"
+			templateName="forumView" />
+		<action name="threadView" package="w.web.frontpage.action"
+			class="ThreadViewAction" form="threadView" defaultOutput="thymeleaf"
+			templateName="threadView" />
+		<action name="userView" package="w.web.frontpage.action" class="UserViewAction"
+			form="userView" defaultOutput="thymeleaf" templateName="userView" />
+
+		<form name="index">
+		</form>
+		<form name="forumView">
+		</form>
+		<form name="threadView">
+			<var name="t" type="long" required="true" minValue="0" />
+		</form>
+		<form name="userView">
+			<var name="userName" type="string" required="true" />
+		</form>
+		<form name="index">
+		</form>
+
+
+		<path path="index" action="frontPageAction" />
+		<path path="" action="frontPageAction" />
+		<path path="forum" action="forumView" />
+		<path path="thread" action="threadView" />
+		<path path="user" action="userView" />
+
+	</project>
+
+</pathConfig>
