@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -92,6 +93,9 @@ public class Configuration {
 		// open config.xml file, parse each service and parameters.
 
 		Document dom = parseDOM(this.configFile);
+		
+		//FIXME: make default locale configurable
+		Locale.setDefault(Locale.UK);
 
 		NodeList nodeGroupNodes = dom.getElementsByTagName("node");
 		for (int k = 0; k < nodeGroupNodes.getLength(); k++) {

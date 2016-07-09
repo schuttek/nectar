@@ -64,6 +64,8 @@
 			<artifactId>Java-WebSocket</artifactId>
 			<version>1.3.0</version>
 		</dependency>
-		</dependencies>
-	<packaging>pom</packaging>
+	</dependencies>
+	<build>
+		<sourceDirectory>${basedir}\src\main</sourceDirectory>
+	</build>
 </project>

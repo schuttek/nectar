@@ -16,6 +16,19 @@
 
 <p><b>Data Scalability</b> is achieved through Nectar's DataStoreService, which provides simple JavaBean style interface to what one could consider a row in an SQL table. The idea is that you can call on a data structure, and load it by it's unique identifier, and then be able to load it's relations with a simple method call. Implementations for Hbase/Hadoop and Apache Spark are in progress, as well as a home grown key-value database which will be even faster, MySQL is currently the reference implementation. </p>
 
-<h1>History</h1>
+<h1>Origin &amp; Design Goals</h1>
 
-<p>Nectar has been a hobby/pet project of mine since 2003, when I grew frustrated</p>
+<p>Nectar has been a hobby/pet project of mine since 2003, when I grew frustrated with how most people used PHP. HTML tags interspersed with php tags, and rarely a function call. People just copy pasted code to quick fix something, added an extra mysql query cause they couldn't find the same one near the top of the page anymore. JSP and ASP were, at the time, just trying to catch up to PHP, and mostly provided more of the same. Still, it was a step up from Perl web programming. You youngsters think you have it hard, and I only started in the late 90's. Before Perl there were was really just a C module in NCSA to a UNIX shell script... *shudder*</p>
+
+<p>So I looked around, and found Apache Struts and the beginnings of XSL in 2003, and found an idea I really liked: <b>Keep languages/protocols separate from each other</b>, and provide a way to import data from one to the other in a way that would be as simple and transparent as possible for the developer who would use Nectar. I never had huge ambitions, but I wanted to be able to explain to a coworker how Nectar works, and if he's a bit dim, boil it down to the essentials of his aspect of Nectar works. As a fundamental principle, Nectar keeps configuration data, code that actually does stuff to the database, and HTML templates that produce output in strictly separate files. Moreover, anything that manages a more complex system (say a discussion forum), can be encapsulated in a Service, to provide an additional abstraction layer.</p>
+
+<p>Nectar's first version was actually a progressive rewrite of the first version of Apache Struts, and as I went on I had more and more trouble with Apache Tomcat and JSP's. In 2004, I scrapped the whole thing and started over with SimpleFramework as the HTTP server, a RequestHandlerService, Form, Action and a MysqlDatabaseService and some config files. Many many things have changed since, but the real core is still there (nectar-base's Main Service ServiceRegister classes have barely changed since their original conception). I wanted lean and mean, not Tomcat's seriously weird config files and security restrictions, JSP's bastard mixed heritage and Apache Struts' dependencies were dropping like flies.</p>
+
+<p>I wanted a web application framework primarily, but not just that. The Service architecture helped free me from the whole HTTP constraint. I've written GUI clients that talk to a Nectar server through by exchanging <a href="/documentation#element">Element objects</a>, over an encrypted and compressed network connection. I've write GUI client only programs that at their core use Nectar to get stuff done. </p>
+
+<p>The benefit of Nectar is in the design itself, not even the implementation. In 2007-2008, I was asked bring a PHP/HTML intertwined mess of a dating website to it's next version: full HTML/CSS redesign, major changes in the database (the personal message table had over 8 million entries and 4 indexes). I recreated a PHP version of Nectar, we reordered all requests to Actions, remade all templates... 9 months later, we flipped over to the new version. Server CPU usage dropped by 75% overnight, DB IO by 80%, while our requests/sec increased by 300%. Nectar is a method, not just a piece of software. </p>
+
+
+
+</p>
+<p>
