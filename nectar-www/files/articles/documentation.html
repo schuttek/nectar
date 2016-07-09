@@ -1,24 +1,3 @@
-<h1>Documentation</h1>
-
-<h2>Quick Start</h2>
-
-<h3>Starting your own Nectar Project</h3>
-
-<p></p>
-
-<h3>Download</h3>
-
-<p>From GitHub:<br/>
-<ul>
-<li>https://github.com/schuttek/nectar</li>
-</ul>
-</p>
-	
-<p>Direct Download:<br/>
-<ul>
-<li>Current Release (alpha version): <a href="http://www.nectarframework.org/s/nectar_framework-0.0.1.tar.gz">nectar_framework-0.0.1.tar.gz</a></li>
-</ul>
-</p>
 
 
 <h2>Basic Request Path Example</h2>
@@ -28,7 +7,7 @@
 <img src="/s/request_arch.png"/>
 
 <p>
-This is essentially what just happened when you loaded this very webpage: http://www.nectarframework.org/documentation . 
+This is essentially what just happened when you loaded this very webpage: <a href="http://www.nectarframework.org/documentation">http://www.nectarframework.org/documentation</a> . 
 </p>
 <p>
 You, the Client Web Browser, sent an HTTP request for "/documentation" which Simple's HTTP Server parsed and packaged for the RequestService. Then the RequestService asked the DirectoryService for a definition for the "/documentation" path, which returned a redirect to "/articleView?id=3" (check it out: <a href="http://www.nectarframework.org/articleView?id=3">http://www.nectarframework.org/articleView?id=3</a> is exactly the same page as this one!). This page isn't static HTML, it's actually a chunk of HTML and text in a database plugged into a template. The RequestService then continued searching for the path articleView, and the DirectoryService returned an Action and Form definition to match it. All this was defined the <a href="#pathConfig">config/pathConfig.xml</a> :
@@ -50,7 +29,7 @@ You, the Client Web Browser, sent an HTTP request for "/documentation" which Sim
 &lt;/pathConfig&gt;
 </pre>
 
-The Form Object for this action only has one variable, called "id". That value must be an integer greater than zero, and it must be defined, or the server will throw an HTTP 400 error: try these links: <a href="http://localhost/articleView?id=socks">http://localhost/articleView?id=socks</a>  <a href="http://localhost/articleView">http://localhost/articleView</a>. 
+The Form Object for this action only has one variable, called "id". That value must be an integer greater than zero, and it must be defined, or the server will throw an HTTP 400 error: try these links: <a href="http://www.nectarframework.org/articleView?id=socks">http://www.nectarframework.org/articleView?id=socks</a>  <a href="http://www.nectarframework.org/articleView">http://www.nectarframework.org/articleView</a>. 
 
 And here's the Action implementation in full:
 
@@ -130,13 +109,13 @@ Thymeleaf then produces an HTML document, which the RequestService finally conve
 <p>If you simply want to get something running to see if it works, you'll need a Java SE 8 JRE and this download, which contains all the required libraries: TODO link here.</p>
 <p>On Ubuntu 16.04:
 <pre>
-$ sudo apt install openjdk8* 
-$ sudo adduser nectar --disabled-password --disabled-login
-$ sudo su - nectar
-$ wget **TODO-insert-link**
-$ tar -zxf **TODO-file**
-$ cd bla 
-$ sh run_nectar.sh
+sudo apt install openjdk8* 
+sudo adduser nectar --disabled-password --disabled-login
+sudo su - nectar
+wget **TODO-insert-link**
+tar -zxf **TODO-file**
+cd bla 
+sh run_nectar.sh
 </pre>
 </p>
 <p>If you want to keep up to date with Nectar's development, you should set up a Git / Maven build environment. </p>
@@ -147,13 +126,27 @@ sudo adduser nectar --disabled-password --disabled-login
 sudo su - nectar
 git clone https://github.com/schuttek/nectar.git
 cd nectar/nectar-base
-mvn clean install
+mvn clean test install
 cd ../nectar-www
-mvn clean install
-mvn mvn exec:java -Dexec.mainClass="org.nectarframework.Main" -Dexec.args="-c config/config.xml -g server -n myServer1"
+mvn clean test install
 </pre>
 
-The last line should launch Nectar, but will probably fail since /home/nectar/nectar-www/config/config.xml doesn't have the right MySQL login credentials... so you'll have to edit that file first.
+Then set up a separate directory for the server itself and copy the necessary files.
+<pre>
+cd /home/nectar
+mkdir -p nectar_server
+cp nectar/nectar-www/target/nectar-www-0.0.1.jar nectar_server/
+rm -rf nectar-server/files
+cp -r nectar/nectar-www/files nectar_server/
+cp nectar/nectar-www/config/dataStoreObjects.xml nectar_server/config/
+cp nectar/nectar-www/config/pathConfig.xml nectar_server/config/
+</pre>
+
+Finally run the server: 
+<pre>
+cd nectar_server
+java -cp nectar-www-0.0.1.jar org.nectarframework.base.Main -c config/config.xml -g nodeGroup1 -n serverName1
+
 </p>
 
 
@@ -168,8 +161,27 @@ The last line should launch Nectar, but will probably fail since /home/nectar/ne
 </pre>
 <p> The configFile determines which Services should be loaded, and defines configuration variables for each Service. A configFile can define multiple node group types, which allow you to configure multiple nectar instances in a single config file. The nodeGroup argument determines which node group configuration the instance you're launching should use. Finally, the nodeName allows you to uniquely identify an instance of Nectar even when running several instances of the same node group. </p>
 
+
+<h2>Configuration</h2>
+
 <h3>config/config.xml</h3>
 
 <h3>config/dataStoreObjects.xml</h3>
 
 <h3>config/pathConfig.xml</h3>
+
+
+<h1>Troubleshooting</h1>
+
+<h3>SimpleHttpRequestService can't open port 80</h3>
+<p>SimpleHttpRequestService can't open port 80 as listening port while running as nectar user on Linux. Unless you want to run Nectar as root (which is NOT recommended), you need to configure iptables to reroute port 80 to another port which the nectar user can open: 
+<pre>
+iptables -t mangle -A PREROUTING -p tcp --dport 80 -j MARK --set-mark 1
+iptables -t mangle -A PREROUTING -p tcp --dport 443 -j MARK --set-mark 1
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8181
+iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8080 -m mark --mark 1 -j ACCEPT
+iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8181 -m mark --mark 1 -j ACCEPT
+</pre>
+</p>
+
