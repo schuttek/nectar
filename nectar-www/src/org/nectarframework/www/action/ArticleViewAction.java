@@ -39,8 +39,10 @@ public class ArticleViewAction extends BaseAction {
 		// copy the DataStoreObject's data into the output Element
 		elm.add("name", article.getName());
 		elm.add("content", article.getContent());
-
+		
+	
 		return elm;
 	}
 
 }
+

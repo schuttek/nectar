@@ -1,6 +1,87 @@
 
 
-<h2>Basic Request Path Example</h2>
+
+
+<h1>Running and Configuring Nectar</h1>
+
+<h2>Requirements</h2>
+
+<p>If you simply want to get something running to see if it works, you'll need a Java SE 8 JRE and this download, which contains all the required libraries: <a href="http://www.nectarframework.org/s/nectar-framework-bin-0.0.1.tar.gz">nectar-framework-bin-0.0.1.tar.gz</a>.</p>
+<p>On Ubuntu 16.04:
+<!--?prettify lang=bash linenums=false?-->
+<pre class="prettyprint">
+sudo apt install openjdk8* 
+sudo adduser nectar --disabled-password --disabled-login
+sudo su - nectar
+wget http://www.nectarframework.org/s/nectar-framework-bin-0.0.1.tar.gz
+tar -zxf nectar-framework-bin-0.0.1.tar.gz
+cd nectar-framework-bin-0.0.1
+java -cp nectar-base-0.0.1-allinone.jar org.nectarframework.base.Main -c config/config.xml -g nodeGroup1 -n serverName1
+</pre>
+</p>
+<p>If you want to keep up to date with Nectar's development, you should set up a Git / Maven build environment. </p>
+<p>On Ubuntu 16.04:
+<!--?prettify lang=bash linenums=false?-->
+<pre class="prettyprint">
+sudo apt install openjdk8* maven maven* git
+sudo adduser nectar --disabled-password --disabled-login
+sudo su - nectar
+git clone https://github.com/schuttek/nectar.git
+cd nectar/nectar-base
+mvn clean test install
+cd ../nectar-www
+mvn clean test install
+</pre>
+
+Then set up a separate directory for the server itself and copy the necessary files.
+<!--?prettify lang=bash linenums=false?-->
+<pre class="prettyprint">
+cd /home/nectar
+mkdir -p nectar_server
+cp nectar/nectar-www/target/nectar-www-0.0.1-allinone.jar nectar_server/
+rm -rf nectar-server/files
+cp -r nectar/nectar-www/files nectar_server/
+cp nectar/nectar-www/config/dataStoreObjects.xml nectar_server/config/
+cp nectar/nectar-www/config/pathConfig.xml nectar_server/config/
+</pre>
+
+Finally run the server: 
+<!--?prettify lang=bash linenums=false?-->
+<pre class="prettyprint">
+cd nectar_server
+java -cp nectar-www-0.0.1-allinone.jar org.nectarframework.base.Main -c config/config.xml -g nodeGroup1 -n serverName1
+</pre>
+
+</p>
+
+
+<h2>Running Nectar</h2>
+<p>The main entry point is <code>org.nectarframework.base.Main.main(String[] args);</code> in the nectar-base.x.y.z.jar file.</p>
+<p>The main and required command line arguments are: </p>
+<pre>
+ -c,--configFile <PATH>   path to the configuration XML file
+ -g,--nodeGroup <GROUP>   the run mode to use, as described in the config
+                          file
+ -n,--nodeName <NAME>     give this instance a name
+</pre>
+<p> The configFile determines which Services should be loaded, and defines configuration variables for each Service. A configFile can define multiple node group types, which allow you to configure multiple nectar instances in a single config file. The nodeGroup argument determines which node group configuration the instance you're launching should use. Finally, the nodeName allows you to uniquely identify an instance of Nectar even when running several instances of the same node group. </p>
+
+
+<h2>Configuration</h2>
+
+<h3>config/config.xml</h3>
+
+<h3>config/pathConfig.xml</h3>
+
+
+<h1>Concepts</h1>
+
+<h2>Services and Run State</h2>
+
+
+
+
+<h2 id="basic_request_example">Basic Request Example</h2>
 
 <p>Below you can see a simplified view of how Nectar works when running as an HTTP server. The RequestService (in the center) is responsible for starting up Simple Framework HTTP Server, and processing incoming requests. The DirectoryService determines how request paths are handled, which is configured in the <a href="#pathConfig">config/pathConfig.xml</a> file. The RequestService then builds and validates a Form Object, which holds a predetermined set and range of values (again configured in config/pathConfig.xml). It the creates an Action instance, to which the RequestService feeds the Form. The Action can then interpret the Form, and use any of Nectar's Services to accomplish it's task. Those Services in turn are responsible for saving and storing data. The Action finally returns an <a href="#element">Element</a> object, which contains the resulting data of the Action back to the RequestService. Finally the RequestService feeds that Element's data to the ThymeleafService to plug the data into an HTML template. The resulting HTML is then sent back through HTTP to the client. </p>
 
@@ -11,18 +92,19 @@ This is essentially what just happened when you loaded this very webpage: <a hre
 </p>
 <p>
 You, the Client Web Browser, sent an HTTP request for "/documentation" which Simple's HTTP Server parsed and packaged for the RequestService. Then the RequestService asked the DirectoryService for a definition for the "/documentation" path, which returned a redirect to "/articleView?id=3" (check it out: <a href="http://www.nectarframework.org/articleView?id=3">http://www.nectarframework.org/articleView?id=3</a> is exactly the same page as this one!). This page isn't static HTML, it's actually a chunk of HTML and text in a database plugged into a template. The RequestService then continued searching for the path articleView, and the DirectoryService returned an Action and Form definition to match it. All this was defined the <a href="#pathConfig">config/pathConfig.xml</a> :
-<pre>
+<!--?prettify lang=xml linenums=false?-->
+<pre class="prettyprint">
 &lt;pathConfig&gt;
 	&lt;project namespace=&quot;&quot;&gt;
 	&lt;redirect path=&quot;documentation&quot; toPath=&quot;articleView&quot;&gt;
-			&lt;var name=&quot;id&quot; value=&quot;3&quot;/&gt;
+		&lt;var name=&quot;id&quot; value=&quot;3&quot;/&gt;
 	&lt;/redirect&gt;
 	&lt;path path=&quot;articleView&quot; action=&quot;articleView&quot; /&gt;
 	&lt;action name=&quot;articleView&quot; package=&quot;org.nectarframework.www.action&quot;
-			class=&quot;ArticleViewAction&quot; form=&quot;articleView&quot; defaultOutput=&quot;thymeleaf&quot;
-			templateName=&quot;articleView&quot; /&gt;
+		class=&quot;ArticleViewAction&quot; form=&quot;articleView&quot; defaultOutput=&quot;thymeleaf&quot;
+		templateName=&quot;articleView&quot; /&gt;
 	&lt;form name=&quot;articleView&quot;&gt;
-			&lt;var name=&quot;id&quot; type=&quot;int&quot; required=&quot;true&quot; minValue=&quot;0&quot;/&gt;
+		&lt;var name=&quot;id&quot; type=&quot;int&quot; required=&quot;true&quot; minValue=&quot;0&quot;/&gt;
 	&lt;/form&gt;
 	...
 	&lt;/project&gt;
@@ -33,7 +115,8 @@ The Form Object for this action only has one variable, called "id". That value m
 
 And here's the Action implementation in full:
 
-<pre>
+<!--?prettify lang=java linenums=false?-->
+<pre class="prettyprint">
 package org.nectarframework.www.action;
 
 import org.nectarframework.base.service.log.Log;
@@ -83,7 +166,8 @@ public class ArticleViewAction extends BaseAction {
 
 That Element is then fed back through the RequestService into the Thymeleaf template engine, and we pick up the content attribute of the Element in the files/thymeleaf_templates/articleView.html like this:
 
-<pre>
+<!--?prettify lang=xml linenums=false?-->
+<pre class="prettyprint">
 	...
 	&lt;div class=&quot;content&quot; th:utext=&quot;${arcticleView.content}&quot;&gt;&lt;/div&gt;
 	...
@@ -99,89 +183,125 @@ Thymeleaf then produces an HTML document, which the RequestService finally conve
 
 <h2>Nectar-base Service Stack</h2>
 
+Services should generally be considered abstraction layers for specific functionality. It is therefore only natural that one Service can use one or more other Services to accomplish their task. In the <a href="#basic_request_example">Basic Request Example</a> above, we mentionned a number of Services. Here are what Services each of them depend on:
+
 <img src="/s/service_stack.png"/>
 
+<ul>
+<li>DataStoreService is an abstraction of database rows as Java Objects, whose data is stored in MySQL.</li>
+<li>MySQLService manages MySQL connection pooling, transactions, and relies on CacheService to keep a cache of recent SQL queries and their results.</li>
+<li>ThymeleafService provides an abstraction layer for the Thymeleaf parsers and processors, and reads in template files from the disk through FileService.</li>
+<li>FileService gives access to the file system, while keeping frequently accessed files in the CacheService.</li>
+<li>CacheService basically works like memcached, and holds a large hash map of cached objects ordered by a String key, and regularly removes items that haven't been accessed before a given time delay.</li>
+<li>SimpleHttpRequestService manages the HTTP Server, and handles incoming requests. It can handle many requests at the same time by using the ThreadService for multi-threading, looks up path configurations with the DirectoryService, encodes and decodes Elements with XmlService, generates HTML from templates with the ThymeleafService and serves static content from the file system through FileService.</li>
+</ul>
 
-<h2>Running and Configuring Nectar</h2>
 
-<h3>Requirements</h3>
 
-<p>If you simply want to get something running to see if it works, you'll need a Java SE 8 JRE and this download, which contains all the required libraries: TODO link here.</p>
-<p>On Ubuntu 16.04:
+
+<h2>DataStoreObjects and the DataStoreService</h2>
+
+<p>In Nectar, it's always been a goal to make programming Actions as simple, quick, and portable as possible. While Services can handle a lot of details of managing complex data handling, some Actions inevitably have to manipulate database data directly, and to do that they have to deal with database queries and all the details that comes with it. So if even an index changes in the database, some long forgotten Action code now runs painfully slowly, or at worst spits out an SQLException. If we want to change the underlying database from MySQL to a NoSQL / BigData database, we basically have to rewrite all the Actions, as well as the Services, or write new adapters for old Services.</p>
+
+<p>DataStoreObjects are a direct reflection of tables, columns and rows in a database, which also support primary keys and limited functionality secondary keys (on a single column). Your Actions and Services don't need to know how DSO's are stored physically, they can just count on the fact that any available method will work at best possible speed. DSO's rely very heavily on caching, so most of the time you load a DSO into your Action or Service, it actually comes from local or cluster RAM cache, instead of being a real database server request with a disk I/O. </p>
+
+<p><pre>org.nectarframework.base.service.datastore.dsobuilder.DataStoreObjectBuilder</pre> reads in the configuration file for DataStore objects, and generates the Java classes and MySQL CREATE TABLE queries. The bash commands below will launch the builder script and overwrite the DataStoreObject's in the src/ folder, and create a mysql_dso_create_tables.sql in the config/ directory that you can then import to MySQL to create the tables.</p>
+
+<!--?prettify lang=bash linenums=false?-->
 <pre>
-sudo apt install openjdk8* 
-sudo adduser nectar --disabled-password --disabled-login
-sudo su - nectar
-wget **TODO-insert-link**
-tar -zxf **TODO-file**
-cd bla 
-sh run_nectar.sh
-</pre>
-</p>
-<p>If you want to keep up to date with Nectar's development, you should set up a Git / Maven build environment. </p>
-<p>On Ubuntu 16.04:
-<pre>
-sudo apt install openjdk8* maven maven* git
-sudo adduser nectar --disabled-password --disabled-login
-sudo su - nectar
-git clone https://github.com/schuttek/nectar.git
-cd nectar/nectar-base
-mvn clean test install
-cd ../nectar-www
-mvn clean test install
+cd /home/nectar/nectar/nectar-www/
+java -cp target/nectar-www-0.0.1-allinone.jar \
+	org.nectarframework.base.service.datastore.dsobuilder.DataStoreObjectBuilder \
+	-i config/dataStoreObjects.xml -o src/
 </pre>
 
-Then set up a separate directory for the server itself and copy the necessary files.
-<pre>
-cd /home/nectar
-mkdir -p nectar_server
-cp nectar/nectar-www/target/nectar-www-0.0.1.jar nectar_server/
-rm -rf nectar-server/files
-cp -r nectar/nectar-www/files nectar_server/
-cp nectar/nectar-www/config/dataStoreObjects.xml nectar_server/config/
-cp nectar/nectar-www/config/pathConfig.xml nectar_server/config/
-</pre>
-
-Finally run the server: 
-<pre>
-cd nectar_server
-java -cp nectar-www-0.0.1.jar org.nectarframework.base.Main -c config/config.xml -g nodeGroup1 -n serverName1
-
-</p>
-
-
-<h3>Running Nectar</h3>
-<p>The main entry point is <code>org.nectarframework.base.Main.main(String[] args);</code> in the nectar-base.x.y.z.jar file.</p>
-<p>The main and required command line arguments are: </p>
-<pre>
- -c,--configFile <PATH>   path to the configuration XML file
- -g,--nodeGroup <GROUP>   the run mode to use, as described in the config
-                          file
- -n,--nodeName <NAME>     give this instance a name
-</pre>
-<p> The configFile determines which Services should be loaded, and defines configuration variables for each Service. A configFile can define multiple node group types, which allow you to configure multiple nectar instances in a single config file. The nodeGroup argument determines which node group configuration the instance you're launching should use. Finally, the nodeName allows you to uniquely identify an instance of Nectar even when running several instances of the same node group. </p>
-
-
-<h2>Configuration</h2>
-
-<h3>config/config.xml</h3>
+<p>Remember you'll have to rebuild the project with maven to have your changes be updated in the .jar file.</p>
 
 <h3>config/dataStoreObjects.xml</h3>
 
-<h3>config/pathConfig.xml</h3>
+<p>DataStoreObjects are defined in a config file like the one below: </p>
+<!--?prettify lang=xml linenums=false?-->
+<pre>
+<dataStoreObjects>
+	&lt;dataStoreObject package=&quot;org.nectarframework.www.data&quot;
+		className=&quot;Article&quot; tableName=&quot;org_nectarframework_www_article&quot;
+		primaryKeyColName=&quot;id&quot; primaryKeyType=&quot;int&quot; primaryKeyLength=&quot;4&quot;&gt;
+		&lt;column name=&quot;id&quot; type=&quot;int&quot; /&gt;
+		&lt;column name=&quot;name&quot; type=&quot;string&quot; /&gt;
+		&lt;column name=&quot;content&quot; type=&quot;string&quot; /&gt;
+		&lt;column name=&quot;authorId&quot; type=&quot;long&quot; /&gt;
+		&lt;relation column=&quot;authorId&quot; methodName=&quot;author&quot; type=&quot;long&quot;
+			targetPackage=&quot;org.nectarframework.www.data&quot; targetClass=&quot;User&quot; /&gt;
+	&lt;/dataStoreObject&gt;
+	&lt;dataStoreObject package=&quot;org.nectarframework.www.data&quot;
+		className=&quot;User&quot; tableName=&quot;org_nectarframework_www_user&quot;
+		primaryKeyColName=&quot;id&quot; primaryKeyType=&quot;long&quot; primaryKeyLength=&quot;8&quot;&gt;
+		&lt;column name=&quot;id&quot; type=&quot;long&quot; /&gt;
+		&lt;column name=&quot;name&quot; type=&quot;string&quot; /&gt;
+		&lt;column name=&quot;email&quot; type=&quot;string&quot; /&gt;
+	&lt;/dataStoreObject&gt;
+&lt;/dataStoreObjects&gt;
+</pre>
+
+<p>The DataStoreObjectBuilder will generate two classes that look like this:<p>
+<img src="/s/datastoreobjects.png"/>
+
+<h3>Loading and Saving DataStoreObjects</h3>
+
+<p>The easiest way is use the static load() method on a DataStoreObject subclass, which creates an instance of the DataStoreObject loaded with the data for the given key value. Saving the DataStoreObject in the database is done with the DataStoreService.save() method. The following example loads an Article, converts the article contents to upper case, and saves the changes.</p>
+
+<!--?prettify lang=java linenums=false?-->
+<pre>
+	Article article;
+	try {
+		article = Article.load(id);
+	} catch (Exception e) { // something weird happened
+		Log.warn(e);
+		return null;
+	}
+	if (article == null) { // ID was not found in database
+		return null;
+	}
+
+	String content = article.getContent();
+	content = content.toUpperCase();
+	article.setContent(content);
+
+	DataStoreService dss = (DataStoreService)ServiceRegister.getService(DataStoreService.class);
+	
+	try {
+		dss.save(article);
+	} catch (Exception e) {
+		Log.warn(e);
+		return null;
+	}
+</pre>
+
 
 
 <h1>Troubleshooting</h1>
 
 <h3>SimpleHttpRequestService can't open port 80</h3>
-<p>SimpleHttpRequestService can't open port 80 as listening port while running as nectar user on Linux. Unless you want to run Nectar as root (which is NOT recommended), you need to configure iptables to reroute port 80 to another port which the nectar user can open: 
+<p>SimpleHttpRequestService can't open port 80 as listening port while running as nectar user on Linux. Unless you want to run Nectar as root (which is NOT recommended), you need to configure iptables to reroute port 80 to another port which the nectar user can open.</p>
+
+<p>Let's configure SimpleHttpRequestService to listen on port 8080 instead:</p>
+<!--?prettify lang=xml linenums=false?-->
 <pre>
-iptables -t mangle -A PREROUTING -p tcp --dport 80 -j MARK --set-mark 1
-iptables -t mangle -A PREROUTING -p tcp --dport 443 -j MARK --set-mark 1
-iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
-iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8181
-iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8080 -m mark --mark 1 -j ACCEPT
-iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8181 -m mark --mark 1 -j ACCEPT
+		&lt;service
+			class=&quot;org.nectarframework.base.service.http.SimpleHttpRequestService&quot;&gt;
+			&lt;param name=&quot;listeningHost&quot; value=&quot;your.ip.address&quot; /&gt;
+			&lt;param name=&quot;listeningPort&quot; value=&quot;8080&quot; /&gt;
+			...
+		&lt;/service&gt;
 </pre>
-</p>
+
+<p>Then set iptables to reroute port 80 to port 8080, and block outside connections on 8080:</p>
+<!--?prettify lang=bash linenums=false?-->
+<pre class="prettyprint">
+sudo iptables -t mangle -A PREROUTING -p tcp --dport 80 -j MARK --set-mark 1
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+sudo iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8080 -m mark --mark 1 -j ACCEPT
+sudo iptables-save
+</pre>
+
 

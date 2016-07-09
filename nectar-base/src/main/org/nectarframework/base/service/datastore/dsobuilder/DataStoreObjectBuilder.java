@@ -294,6 +294,14 @@ public class DataStoreObjectBuilder {
 					pw.println("	");
 					
 				}
+				
+				for (Element relation: dsoElm.getChildren("relation")) {
+					pw.println("	public "+relation.get("targetPackage")+"."+relation.get("targetClass")+" get"+relation.get("methodName").substring(0, 1).toUpperCase() + relation.get("methodName").substring(1)+"() throws Exception {");
+					pw.println("		return "+relation.get("targetPackage")+"."+relation.get("targetClass")+ ".load(get"+this.parseJavaType(relation.get("type"))+"(\""+relation.get("column")+"\"));");
+					pw.println("	}");
+					pw.println("	");
+				}
+				
 
 				pw.println("}");
 

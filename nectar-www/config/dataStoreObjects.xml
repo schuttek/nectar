@@ -1,5 +1,7 @@
 <dataStoreObjects>
-	<dataStoreObject package="org.nectarframework.www.data" className="Article" tableName="org_nectarframework_www_article" primaryKeyColName="id" primaryKeyType="int" primaryKeyLength="4">
+	<dataStoreObject package="org.nectarframework.www.data"
+		className="Article" tableName="org_nectarframework_www_article"
+		primaryKeyColName="id" primaryKeyType="int" primaryKeyLength="4">
 		<column name="id" type="int" />
 		<column name="name" type="string" />
 		<column name="content" type="string" />
