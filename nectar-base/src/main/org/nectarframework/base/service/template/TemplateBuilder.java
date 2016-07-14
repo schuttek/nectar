@@ -44,11 +44,13 @@ public class TemplateBuilder {
 				runVersion();
 			} else if (line.hasOption("help")) {
 				runHelp(options);
-			} else if (line.hasOption("configDir") && line.hasOption("output")) {
+			} else if (line.hasOption("configDir") && line.hasOption("output")&& line.hasOption("nodeName")&& line.hasOption("nodeGroup")) {
 				String configDir = line.getOptionValue("configDir");
 				String outputDir = line.getOptionValue("output");
+				String nodeName = line.getOptionValue("nodeName");
+				String nodeGroup = line.getOptionValue("nodeGroup");
 
-				if (init(configDir)) {
+				if (init(configDir, nodeName, nodeGroup)) {
 					try {
 						run(configDir, outputDir);
 					} catch (Exception e) {
@@ -72,11 +74,11 @@ public class TemplateBuilder {
 		ts.buildTemplates(pathConfig, outputDir);
 	}
 
-	private static boolean init(String configDir) {
+	private static boolean init(String configDir, String nodeName, String nodeGroup) {
 		ServiceRegister sr = new ServiceRegister();
 		Configuration config = new Configuration(sr);
-		config.setNodeGroup("templateBuilder");
-		config.setNodeName("templateBuilder");
+		config.setNodeName(nodeName);
+		config.setNodeGroup(nodeGroup);
 
 		Element configElement;
 		try {
@@ -86,8 +88,6 @@ public class TemplateBuilder {
 			return false;
 		}
 		
-		Log.trace("TemplateBuilder service config: " + configElement.toString());
-		Log.trace("TemplateBuilder service config: " + config.toString());
 		sr.setConfiguration(config);
 		sr.setConfigElement(configElement);
 		return (sr.configCheck() && sr.initNode() && sr.begin());
@@ -102,6 +102,12 @@ public class TemplateBuilder {
 		options.addOption(opt);
 		opt = new Option("o", "output", true, "output directory");
 		opt.setArgName("OUTPUT");
+		options.addOption(opt);
+		opt = new Option("n", "nodeName", true, "give this instance a name");
+		opt.setArgName("NAME");
+		options.addOption(opt);
+		opt = new Option("g", "nodeGroup", true, "the run mode to use, as described in the config file");
+		opt.setArgName("GROUP");
 		options.addOption(opt);
 		return options;
 	}

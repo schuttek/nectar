@@ -1,2 +1,2 @@
-java -cp nectar-www-0.0.1-allinone.jar -c config -o src/org/nectarframework/www/templates  org.nectarframework.base.service.template.TemplateBuilder
+java -cp nectar-www-0.0.1-allinone.jar org.nectarframework.base.service.template.TemplateBuilder -c config -o src/org/nectarframework/www/templates -g templateBuilderServer -n ghost
 mvn clean test install
