@@ -12,7 +12,7 @@ import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
-import org.nectarframework.base.service.listener.ListenerService;
+import org.nectarframework.base.service.event.EventService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.xml.XmlService;
@@ -27,7 +27,7 @@ public class WebSocketRequestService extends Service {
 	private WebSocketServer webSocketServer;
 	private HashMap<WebSocket, WebSocketClient> clientMap;
 	
-	private ListenerService listenerService;
+	private EventService eventService;
 	private ThreadService threadService;
 	private DirectoryService directoryService;
 	private XmlService xmlService;
@@ -60,7 +60,7 @@ public class WebSocketRequestService extends Service {
 
 	@Override
 	public boolean establishDependancies() throws ServiceUnavailableException {
-		listenerService = (ListenerService)dependancy(ListenerService.class);
+		eventService = (EventService)dependancy(EventService.class);
 		threadService = (ThreadService)dependancy(ThreadService.class);
 		directoryService = (DirectoryService)dependancy(DirectoryService.class);
 		xmlService = (XmlService)dependancy(XmlService.class);
@@ -121,7 +121,7 @@ public class WebSocketRequestService extends Service {
 		
 		WebSocketClient wsc = this.clientMap.get(conn);
 		if (wsc != null) {
-			listenerService.removeListener(wsc); 
+			eventService.unregisterListener(wsc); 
 		}
 	}
 

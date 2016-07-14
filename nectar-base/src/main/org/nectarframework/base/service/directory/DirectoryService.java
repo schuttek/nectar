@@ -34,6 +34,8 @@ public class DirectoryService extends Service {
 	
 	private HashMap<String, HashMap<String, DirPath>> pathMap;
 
+	private Element pathConfigElement;
+
 	@Override
 	public void checkParameters() {
 		configFilePath = this.serviceParameters.getValue("configFilePath");
@@ -52,9 +54,9 @@ public class DirectoryService extends Service {
 	}
 
 	private boolean buildFromFile(String cfp) {
-		Element configElement = null;
+		pathConfigElement = null;
 		try {
-			configElement = XmlService.staticFromXml(new FileInputStream(cfp));
+			pathConfigElement = XmlService.fromXml(new FileInputStream(cfp));
 		} catch (FileNotFoundException e) {
 			Log.fatal(e);
 			return false;
@@ -67,12 +69,12 @@ public class DirectoryService extends Service {
 		}
 		
 
-		if (!configElement.isName("pathConfig")) {
+		if (!pathConfigElement.isName("pathConfig")) {
 			Log.fatal(cfp + " doesn't contain a valid path config");
 			return false;
 		}
 		
-		for (Element project : configElement.getChildren("project")) {
+		for (Element project : pathConfigElement.getChildren("project")) {
 			String namespace = project.get("namespace");
 			
 			
@@ -186,5 +188,9 @@ public class DirectoryService extends Service {
 			return m.get(path);
 		}
 		return null;
+	}
+
+	public Element getPathConfigElement() {
+		return pathConfigElement;
 	}
 }

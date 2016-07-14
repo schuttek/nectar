@@ -49,7 +49,8 @@ Finally run the server:
 <!--?prettify lang=bash linenums=false?-->
 <pre class="prettyprint">
 cd nectar_server
-java -cp nectar-www-0.0.1-allinone.jar org.nectarframework.base.Main -c config/config.xml -g nodeGroup1 -n serverName1
+java -cp nectar-www-0.0.1-allinone.jar org.nectarframework.base.Main \
+	-c config/config.xml -g nodeGroup1 -n serverName1
 </pre>
 
 </p>
@@ -187,15 +188,16 @@ Services should generally be considered abstraction layers for specific function
 
 <img src="/s/service_stack.png"/>
 
+<p>
 <ul>
-<li>DataStoreService is an abstraction of database rows as Java Objects, whose data is stored in MySQL.</li>
-<li>MySQLService manages MySQL connection pooling, transactions, and relies on CacheService to keep a cache of recent SQL queries and their results.</li>
-<li>ThymeleafService provides an abstraction layer for the Thymeleaf parsers and processors, and reads in template files from the disk through FileService.</li>
-<li>FileService gives access to the file system, while keeping frequently accessed files in the CacheService.</li>
-<li>CacheService basically works like memcached, and holds a large hash map of cached objects ordered by a String key, and regularly removes items that haven't been accessed before a given time delay.</li>
-<li>SimpleHttpRequestService manages the HTTP Server, and handles incoming requests. It can handle many requests at the same time by using the ThreadService for multi-threading, looks up path configurations with the DirectoryService, encodes and decodes Elements with XmlService, generates HTML from templates with the ThymeleafService and serves static content from the file system through FileService.</li>
+<li><b>DataStoreService</b> is an abstraction of database rows as Java Objects, whose data is stored in MySQL.</li>
+<li><b>MySQLService</b> manages MySQL connection pooling, transactions, and relies on CacheService to keep a cache of recent SQL queries and their results.</li>
+<li><b>ThymeleafService</b> provides an abstraction layer for the Thymeleaf parsers and processors, and reads in template files from the disk through FileService.</li>
+<li><b>FileService</b> gives access to the file system, while keeping frequently accessed files in the CacheService.</li>
+<li><b>CacheService</b> basically works like memcached, and holds a large hash map of cached objects ordered by a String key, and regularly removes items that haven't been accessed before a given time delay.</li>
+<li><b>SimpleHttpRequestService</b> manages the HTTP Server, and handles incoming requests. It can handle many requests at the same time by using the ThreadService for multi-threading, looks up path configurations with the DirectoryService, encodes and decodes Elements with XmlService, generates HTML from templates with the ThymeleafService and serves static content from the file system through FileService.</li>
 </ul>
-
+</p>
 
 
 
@@ -205,7 +207,7 @@ Services should generally be considered abstraction layers for specific function
 
 <p>DataStoreObjects are a direct reflection of tables, columns and rows in a database, which also support primary keys and limited functionality secondary keys (on a single column). Your Actions and Services don't need to know how DSO's are stored physically, they can just count on the fact that any available method will work at best possible speed. DSO's rely very heavily on caching, so most of the time you load a DSO into your Action or Service, it actually comes from local or cluster RAM cache, instead of being a real database server request with a disk I/O. </p>
 
-<p><pre>org.nectarframework.base.service.datastore.dsobuilder.DataStoreObjectBuilder</pre> reads in the configuration file for DataStore objects, and generates the Java classes and MySQL CREATE TABLE queries. The bash commands below will launch the builder script and overwrite the DataStoreObject's in the src/ folder, and create a mysql_dso_create_tables.sql in the config/ directory that you can then import to MySQL to create the tables.</p>
+<p><b>org.nectarframework.base.service.datastore.dsobuilder.DataStoreObjectBuilder</b> reads in the configuration file for DataStore objects, and generates the Java classes and MySQL CREATE TABLE queries. The bash commands below will launch the builder script and overwrite the DataStoreObject's in the src/ folder, and create a mysql_dso_create_tables.sql in the config/ directory that you can then import to MySQL to create the tables.</p>
 
 <!--?prettify lang=bash linenums=false?-->
 <pre>
@@ -222,7 +224,7 @@ java -cp target/nectar-www-0.0.1-allinone.jar \
 <p>DataStoreObjects are defined in a config file like the one below: </p>
 <!--?prettify lang=xml linenums=false?-->
 <pre>
-<dataStoreObjects>
+&lt;dataStoreObjects&gt;
 	&lt;dataStoreObject package=&quot;org.nectarframework.www.data&quot;
 		className=&quot;Article&quot; tableName=&quot;org_nectarframework_www_article&quot;
 		primaryKeyColName=&quot;id&quot; primaryKeyType=&quot;int&quot; primaryKeyLength=&quot;4&quot;&gt;
@@ -276,6 +278,23 @@ java -cp target/nectar-www-0.0.1-allinone.jar \
 		return null;
 	}
 </pre>
+
+
+<h1>Core Services in Detail</h1>
+
+<p>
+
+<h2>TemplateService</h2>
+
+<p>
+<ul>
+<li><b>Development Status</b>: Incomplete / Non-functional</li>
+</ul>
+</p>
+
+
+<p>The template service is similar in functionality to an XSL Transform processor and Thymeleaf (in fact it uses a subset of Thymeleaf tags for compatibility). It allows you to write HTML templates in a way they can be easily previewed offline, then converts those templates into a java Class, which once compiled pre server start can be executed "stupidly fast" (as is our motto). Performance gains can be up to 100x over Thymeleaf and 30x over XSLT. </p>
+
 
 
 

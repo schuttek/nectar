@@ -3,10 +3,10 @@
 <pathConfig>
 	<project namespace="">
 		<action name="indexAction" package="org.nectarframework.www.action"
-			class="IndexAction" form="index" defaultOutput="thymeleaf"
+			class="IndexAction" form="index" defaultOutput="template"
 			templateName="index" />
 		<action name="articleView" package="org.nectarframework.www.action"
-			class="ArticleViewAction" form="articleView" defaultOutput="thymeleaf"
+			class="ArticleViewAction" form="articleView" defaultOutput="template"
 			templateName="articleView" />
 		<form name="index">
 		</form>

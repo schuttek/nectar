@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
@@ -56,7 +57,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		return true;
 	}
 
-	private Collection<DataStoreObject> loadFromQuery(MysqlPreparedStatement mps, DataStoreObjectDescriptor dsod) throws SQLException {
+	private List<? extends DataStoreObject> loadFromQuery(MysqlPreparedStatement mps, DataStoreObjectDescriptor dsod) throws SQLException {
 
 		LinkedList<DataStoreObject> dsoList = new LinkedList<DataStoreObject>();
 		ResultTable rt = mysqlService.select(mps);
@@ -80,19 +81,19 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public Collection<DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception {
+	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Collection<DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
+	public List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
 		String sqlQuery = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName();
 		MysqlPreparedStatement mps = new MysqlPreparedStatement(sqlQuery);
 		return loadFromQuery(mps, dsod);
 	}
 
 	@Override
-	public Collection<DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws SQLException {
+	public List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws SQLException {
 		StringBuffer sql = new StringBuffer();
 		sql.append("SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName() + " WHERE " + dsod.getColumnNames()[0] + " IN (");
 		int idsLen = keys.size();

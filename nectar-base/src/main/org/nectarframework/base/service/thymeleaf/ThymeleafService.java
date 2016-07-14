@@ -2,6 +2,7 @@ package org.nectarframework.base.service.thymeleaf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Locale;
 
@@ -9,7 +10,6 @@ import org.nectarframework.base.Main;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
-import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.translation.TranslationService;
@@ -45,7 +45,7 @@ public class ThymeleafService extends Service {
 
 	@Override
 	protected boolean init() {
-		templateEngine = new TemplateEngine();
+		templateEngine = new NectarTemplateEngine();
 
 		ThymeTemplateResolver templateResolver = new ThymeTemplateResolver(this, fileService);
 		templateEngine.setTemplateResolver(templateResolver);
@@ -71,11 +71,15 @@ public class ThymeleafService extends Service {
 	}
 
 	public void output(Locale locale, String packageName, String templateName, Element elm, StringBuffer sb) throws TemplateEngineException {
-		ThymeContext context = new ThymeContext(locale, elm);
-
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		output(locale, packageName, templateName, elm, baos);
+		sb.append(new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8));
+	}
 
-		OutputStreamWriter osw = new OutputStreamWriter(baos);
+	public void output(Locale locale, String packageName, String templateName, Element elm, OutputStream os) throws TemplateEngineException {
+		ThymeContext context = new ThymeContext(locale, elm, null, null);
+
+		OutputStreamWriter osw = new OutputStreamWriter(os);
 		templateEngine.process(templateName, context, osw);
 		try {
 			osw.flush();
@@ -84,9 +88,8 @@ public class ThymeleafService extends Service {
 			Log.fatal(e);
 			Main.exit();
 		}
-		sb.append(new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8));
 	}
-
+	
 	public FileService getFileService() {
 		return fileService;
 	}

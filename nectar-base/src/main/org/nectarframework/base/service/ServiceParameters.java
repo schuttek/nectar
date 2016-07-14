@@ -1,15 +1,17 @@
 package org.nectarframework.base.service;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.nectarframework.base.service.xml.Element;
 
 public class ServiceParameters {
 	private HashMap<String, String> params;
+	private HashMap<String, LinkedList<String>> paramSets;
 
-	public ServiceParameters(HashMap<String, String> params) {
+	public ServiceParameters(HashMap<String, String> params, HashMap<String, LinkedList<String>> paramSets) {
 		this.params = params;
+		this.paramSets = paramSets; 
 	}
 
 	public String getValue(String key) {
@@ -26,17 +28,30 @@ public class ServiceParameters {
 
 	public static ServiceParameters parseServiceParameters(Element serviceElement) {
 		HashMap<String, String> params = new HashMap<String, String>();
+		HashMap<String, LinkedList<String>> paramSets = new HashMap<String, LinkedList<String>>();
 
-		NodeList list = serviceElement.getElementsByTagName("param");
-		for (int i = 0; i < list.getLength(); i++) {
-			Element paramElm = (Element) list.item(i);
-			String key = paramElm.getAttribute("name");
-			String value = paramElm.getAttribute("value");
+		for (Element paramElm : serviceElement.getChildren("param")) {
+			String key = paramElm.get("name");
+			String value = paramElm.get("value");
 			if (key != null && key != "" && value != null && value != "") {
 				params.put(key, value);
 			}
 		}
-		return new ServiceParameters(params);
+		for (Element paramSet : serviceElement.getChildren("paramSet")) {
+			String key = paramSet.get("name");
+			if (key != null && key != "") {
+				LinkedList<String> valueList = new LinkedList<String>();
+				for (Element paramElm : paramSet.getChildren("param")) {
+					String value = paramElm.get("value");
+					if (value != null && value != "") {
+						valueList.add(value);
+					}
+				}
+				paramSets.put(key, valueList);
+			}
+		}
+		
+		return new ServiceParameters(params, paramSets);
 	}
 	
 	public String getString(String key, String def) {
@@ -102,6 +117,10 @@ public class ServiceParameters {
 		} catch (NumberFormatException e) {
 		}
 		return def;
+	}
+
+	public LinkedList<String> getSet(String key) {
+		return paramSets.get(key);
 	}
 
 }

@@ -1,15 +1,10 @@
 package org.nectarframework.base.config;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -19,26 +14,22 @@ import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.Log;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import org.nectarframework.base.service.xml.Element;
 
 public class Configuration {
 	ServiceRegister sr = null;
 
 	HashMap<String, LinkedList<Service>> serviceListByNodeGroup = new HashMap<String, LinkedList<Service>>();
 
-	File configFile;
-	String nodeName;
-	String nodeGroup;
-	String command;
+	private String nodeName;
+	private String nodeGroup;
+	private String command;
 
 	public Configuration(ServiceRegister sr) {
 		this.sr = sr;
 	}
 
-	public boolean parseArgs(Options options, CommandLine line) {
+	public File parseArgs(Options options, CommandLine line) {
 
 		boolean missingArgs = false;
 		if (!line.hasOption("configFile")) {
@@ -56,61 +47,42 @@ public class Configuration {
 
 		if (missingArgs) {
 			Main.runHelp(options);
-			return false;
+			return null;
 		}
 
-		configFile = new File(line.getOptionValue("configFile"));
+		File configFile = new File(line.getOptionValue("configFile"));
 		if (!configFile.exists()) {
 			System.err.println("configuration file: " + line.getOptionValue("configFile") + " cannot be found.");
-			return false;
+			return null;
 		}
 		if (!configFile.canRead()) {
 			System.err.println("configuration file: " + line.getOptionValue("configFile") + " is not readable.");
-			return false;
+			return null;
 		}
 
 		nodeName = line.getOptionValue("nodeName");
 		nodeGroup = line.getOptionValue("nodeGroup");
 
-		return true;
+		return configFile;
 	}
 
-	private Document parseDOM(File f) throws ConfigurationException {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		try {
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			return db.parse(f);
-		} catch (ParserConfigurationException e) {
-			throw new ConfigurationException(e);
-		} catch (SAXException e) {
-			throw new ConfigurationException(e);
-		} catch (IOException e) {
-			throw new ConfigurationException(e);
-		}
-	}
 
-	public boolean parseFullConfig() throws ConfigurationException {
+	public boolean parseFullConfig(Element configElm) throws ConfigurationException {
 		// open config.xml file, parse each service and parameters.
-
-		Document dom = parseDOM(this.configFile);
 		
 		//FIXME: make default locale configurable
 		Locale.setDefault(Locale.UK);
 
-		NodeList nodeGroupNodes = dom.getElementsByTagName("node");
-		for (int k = 0; k < nodeGroupNodes.getLength(); k++) {
-			String nodeGroupName = ((Element) nodeGroupNodes.item(k)).getAttribute("group");
+		for (Element node : configElm.getChildren("node")) {
+			String nodeGroupName = node.get("group");
 			if (nodeGroupName == "") {
 				Log.warn("A node element in the configuration file didn't have a group attribute. This node will be ignored.");
 				continue;
 			}
 
 			LinkedList<Service> serviceList = new LinkedList<Service>();
-
-			NodeList serviceNodes = ((Element) nodeGroupNodes.item(k)).getElementsByTagName("service");
-			for (int i = 0; i < serviceNodes.getLength(); i++) {
-				Element serviceElement = (Element) serviceNodes.item(i);
-				String className = serviceElement.getAttribute("class");
+			for (Element serviceElm : node.getChildren("service")) {
+				String className = serviceElm.get("class");
 				if (className == "") {
 					Log.warn("A service element in the configuration file didn't have a class attribute. This service will be ignored.");
 					continue;
@@ -128,7 +100,7 @@ public class Configuration {
 					Log.warn("While instantiating a Service in the configuration, the indicated class couldn't be found!", e);
 				}
 
-				ServiceParameters serviceParams = ServiceParameters.parseServiceParameters(serviceElement);
+				ServiceParameters serviceParams = ServiceParameters.parseServiceParameters(serviceElm);
 
 				service.setParameters(serviceParams);
 
@@ -146,10 +118,6 @@ public class Configuration {
 		return serviceListByNodeGroup.get(nodeGroup);
 	}
 
-	public File getConfigFile() {
-		return configFile;
-	}
-
 	public String getNodeName() {
 		return nodeName;
 	}
@@ -160,5 +128,13 @@ public class Configuration {
 
 	public String getCommand() {
 		return command;
+	}
+
+	public void setNodeGroup(String nodeGroup) {
+		this.nodeGroup = nodeGroup;
+	}
+	
+	public void setNodeName(String nodeName) {
+		this.nodeName = nodeName;
 	}
 }

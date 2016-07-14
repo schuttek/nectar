@@ -42,6 +42,10 @@ public class TranslationService extends Service {
 
 	@Override
 	protected boolean run() {
+		return loadAll();
+	}
+
+	private boolean loadAll() {
 		PrSt st = new PrSt(
 				"SELECT localeLanguage, localeCountry, localeVariant, namespace, messageKey, translatedText FROM w_lang");
 		try {
@@ -71,45 +75,76 @@ public class TranslationService extends Service {
 	public String get(Locale locale, String namespace, String key, Object[] messageParameters) {
 		// TODO implement cache
 		// TODO implement pluralArgMap
-		
-		String keyStr = locale.getLanguage() + "." + locale.getCountry() + "." + locale.getVariant() + "-" + namespace
-				+ "/" + key;
 
-		byte[] barr = cacheService.getByteArray("translate:" + keyStr, true);
+		String keyStr1 = "translate:" + locale.getLanguage() + "-" + namespace + "/" + key;
+		String keyStr2 = "translate:" + locale.getLanguage() + "." + locale.getCountry() + "-" + namespace + "/" + key;
+		String keyStr3 = "translate:" + locale.getLanguage() + "." + locale.getCountry() + "." + locale.getVariant()
+				+ "-" + namespace + "/" + key;
 
+		byte[] barr = cacheService.getByteArray(keyStr3, true);
 		if (barr != null) {
 			ByteArray ba = new ByteArray(barr);
 			return ba.getString();
+		} else {
+			barr = cacheService.getByteArray(keyStr2, true);
+			if (barr != null) {
+				ByteArray ba = new ByteArray(barr);
+				return ba.getString();
+			} else {
+				barr = cacheService.getByteArray(keyStr1, true);
+				if (barr != null) {
+					ByteArray ba = new ByteArray(barr);
+					return ba.getString();
+				}
+			}
 		}
 
 		PrSt st = new PrSt(
-				"SELECT translatedText FROM w_lang WHERE localeLanguage = ? AND localeCountry = ? AND localeVariant = ? AND namespace = ? AND messageKey = ?");
+				"SELECT localeLanguage, localeCountry, localeVariant, namespace, messageKey, translatedText FROM w_lang WHERE namespace = ? AND messageKey = ?");
 
-		
-		st.setString(1, locale.getLanguage());
-		st.setString(2, locale.getCountry());
-		st.setString(3, locale.getVariant());
-		st.setString(4, namespace);
-		st.setString(5, key);
+		st.setString(1, namespace);
+		st.setString(2, key);
 
+		String[] bestCandidate = new String[3];
+		bestCandidate[0] = bestCandidate[1] = bestCandidate[2] = null;
 		try {
-			ResultTable rt = my.select(st, 100000);
-			if (rt.rowCount() <= 0) {
-				Log.warn("TranslationService.get: did not find " + keyStr);
-				return "??-" + keyStr + "-??";
-			}
-
+			ResultTable rt = my.select(st);
 			ByteArray ba = new ByteArray();
-			ba.add(rt.getString(0, "translatedText"));
-			cacheService.set("translate:" + keyStr, ba.getBytes());
-			
-			return rt.getString(0, "translatedText");
+			for (ResultRow rr : rt) {
+				String keyStr = "translate:" + rr.getString("localeLanguage") + "." + rr.getString("localeCountry")
+						+ "." + rr.getString("localeVariant") + "-" + rr.getString("namespace") + "/"
+						+ rr.getString("messageKey");
+				ba.reset();
+				ba.add(rr.getString("translatedText"));
+				cacheService.set(keyStr, ba.getBytes());
 
+				if (locale.getLanguage().equals(rr.getString("localeLanguage"))) {
+					if (locale.getCountry().equals(rr.getString("localeCountry"))) {
+						if (locale.getVariant().equals(rr.getString("localeVariant"))) {
+							bestCandidate[2] = rr.getString("translatedText");
+						}
+						bestCandidate[1] = rr.getString("translatedText");
+					}
+					bestCandidate[0] = rr.getString("translatedText");
+				}
+			}
 		} catch (SQLException e) {
 			Log.warn(e);
 			return null;
 		}
 
+		if (bestCandidate[2] != null)
+			return bestCandidate[2];
+		if (bestCandidate[1] != null)
+			return bestCandidate[1];
+		if (bestCandidate[0] != null)
+			return bestCandidate[0];
+
+		Log.warn("TranslationService couldn't find a match for " + locale.getLanguage() + "." + locale.getCountry()
+				+ "." + locale.getVariant() + "-" + namespace + "/" + key);
+		
+		return "??"+locale.getLanguage() + "." + locale.getCountry() + "." + locale.getVariant() + "-" + namespace + "/" + key+"??";
+		
 	}
 
 }

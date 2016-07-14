@@ -1,6 +1,8 @@
 package org.nectarframework.base.tools;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -241,13 +243,14 @@ public abstract class StringTools {
 
 		int i = 0;
 		while (i < pie.length()) {
-			int io = pie.indexOf(knife, i);
-			if (io < 0) {
+			int indexOf = pie.indexOf(knife, i);
+			if (indexOf < 0) {
 				v.add(pie.substring(i, pie.length()));
+				return v;
 			} else {
-				v.add(pie.substring(i, io));
+				v.add(pie.substring(i, indexOf));
+				i = indexOf + 1;
 			}
-			i = io + 1;
 		}
 
 		return v;
@@ -321,4 +324,9 @@ public abstract class StringTools {
 		}
 		return new String(hexChars);
 	}
+	
+	public static String msTimeToDatetime(long timestamp) {
+		return (new SimpleDateFormat("d MMM yyyy HH:mm")).format(new Date(timestamp));
+	}
+	
 }

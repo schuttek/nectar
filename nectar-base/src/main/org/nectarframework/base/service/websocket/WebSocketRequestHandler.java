@@ -93,7 +93,7 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 
 		// execute the action
 		Element elm = action.execute();
-		outputBuffer.write(xs.xmlHeader().getBytes());
+		outputBuffer.write(XmlService.xmlHeader().getBytes());
 		// xs.transformToOS(elm, form.getXslPath(), outputBuffer);
 		outputBuffer.write(XmlService.toXmlBytes(elm));
 
@@ -147,7 +147,7 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 
 		error.add("ncc_ws_request_id", Integer.toString(request.getRequestId()));
 
-		xs.outputNDOJson(error, this.outputBuffer);
+		XmlService.toNDOJson(error, this.outputBuffer);
 
 		finishOutputStream();
 	}

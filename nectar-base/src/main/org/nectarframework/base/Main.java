@@ -1,7 +1,12 @@
 package org.nectarframework.base;
 
-import org.apache.commons.cli.CommandLineParser;  
+import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -10,6 +15,9 @@ import org.apache.commons.cli.ParseException;
 import org.nectarframework.base.config.Configuration;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.xml.Element;
+import org.nectarframework.base.service.xml.XmlService;
+import org.xml.sax.SAXException;
 
 /**
  * The base Launcher class of pretty much any server instance of Nectar. Here we
@@ -20,8 +28,8 @@ import org.nectarframework.base.service.log.Log;
 public class Main {
 	public static final String VERSION = "0.0.0";
 
-	
 	private static MainShutdownHandler msh = null;
+
 	/**
 	 * The start point to every Nectar instance.
 	 * 
@@ -30,40 +38,40 @@ public class Main {
 	public static void main(String[] args) {
 
 		try {
-		
-		CommandLineParser parser = new DefaultParser();
-		Options options = buildArgumentOptions();
 
-		// parse the command line arguments
-		CommandLine line;
-		try {
-			line = parser.parse(options, args);
-		} catch (ParseException e) {
-			e.printStackTrace();
-			return;
-		}
+			CommandLineParser parser = new DefaultParser();
+			Options options = buildArgumentOptions();
 
-		ServiceRegister sr = null;
-
-		// startup
-		if (line.hasOption("version")) {
-			runVersion();
-		} else if (line.hasOption("help")) {
-			runHelp(options);
-		} else if (line.hasOption("configCheck")) {
-			sr = runStartup(options, line);
-			if (sr != null) {
-				sr.configCheck();
+			// parse the command line arguments
+			CommandLine line;
+			try {
+				line = parser.parse(options, args);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return;
 			}
-		} else {
-			sr = runStartup(options, line);
-			if (sr != null && sr.configCheck() && sr.initNode()) {
-				sr.begin();
+
+			ServiceRegister sr = null;
+
+			// startup
+			if (line.hasOption("version")) {
+				runVersion();
+			} else if (line.hasOption("help")) {
+				runHelp(options);
+			} else if (line.hasOption("configCheck")) {
+				sr = runStartup(options, line); 
+				if (sr != null) {
+					sr.configCheck();
+				}
 			} else {
-				exit();
+				sr = runStartup(options, line);
+				if (sr != null && sr.configCheck() && sr.initNode()) {
+					sr.begin();
+				} else {
+					exit();
+				}
 			}
-		}
-		
+
 		} catch (Throwable t) {
 			Log.fatal("CRASH", t);
 			exit();
@@ -96,14 +104,24 @@ public class Main {
 	private static ServiceRegister runStartup(Options options, CommandLine line) {
 		ServiceRegister sr = new ServiceRegister();
 		Configuration config = new Configuration(sr);
-		if (config.parseArgs(options, line)) {
-			sr.setConfiguration(config);
-			msh = new MainShutdownHandler(sr);
-			Runtime.getRuntime().addShutdownHook(msh);
-			return sr;
-		} else {
+		File configFile = config.parseArgs(options, line);
+
+		Element configElement;
+		try {
+			configElement = XmlService.fromXml(Files.readAllBytes(configFile.toPath()));
+		} catch (SAXException e1) {
+			Log.fatal(e1);
+			return null;
+		} catch (IOException e1) {
+			Log.fatal(e1);
 			return null;
 		}
+
+		sr.setConfiguration(config);
+		sr.setConfigElement(configElement);
+		msh = new MainShutdownHandler(sr);
+		Runtime.getRuntime().addShutdownHook(msh);
+		return sr;
 	}
 
 	public static void runHelp(Options opts) {
@@ -135,15 +153,17 @@ public class Main {
 	}
 
 	/**
-	 * Begin a controlled shutdown procedure, where all running Services will be asked to shutdown in orderly fashion. 
+	 * Begin a controlled shutdown procedure, where all running Services will be
+	 * asked to shutdown in orderly fashion.
 	 */
 	public static void exit() {
 		ServiceRegister.getInstance().shutdown();
 		System.exit(0);
 	}
-	
+
 	/**
-	 * Exit immediately, don't run shutdown hooks. This is obviously something that should never be done, unless you're purposely trying to break stuff.
+	 * Exit immediately, don't run shutdown hooks. This is obviously something
+	 * that should never be done, unless you're purposely trying to break stuff.
 	 */
 	public static void crash__DO_NOT_USE_THIS_UNLESS_YOU_MEAN_HARM() {
 		Runtime.getRuntime().removeShutdownHook(msh);

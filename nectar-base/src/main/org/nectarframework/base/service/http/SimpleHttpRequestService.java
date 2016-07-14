@@ -13,6 +13,7 @@ import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.xml.XmlService;
@@ -29,6 +30,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 	protected XmlService xmlService;
 	private FileService fileService;
 	private ThymeleafService thymeleafService;
+	private TemplateService templateService;
 	
 	protected HashMap<String, String> mimeTypesByExtension;
 	
@@ -54,7 +56,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 		xmlService = (XmlService) this.dependancy(XmlService.class);
 		fileService = (FileService) this.dependancy(FileService.class);
 		thymeleafService = (ThymeleafService) this.dependancy(ThymeleafService.class);
-		
+		templateService = (TemplateService) this.dependancy(TemplateService.class);
 		return true;
 	}
 
@@ -142,7 +144,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 	}
 
 	public void handle(Request httpRequest, Response httpResponse) {
-		SimpleHttpRequestHandler rh = new SimpleHttpRequestHandler(httpRequest, httpResponse, this, directoryService, xmlService, fileService, thymeleafService);
+		SimpleHttpRequestHandler rh = new SimpleHttpRequestHandler(httpRequest, httpResponse, this, directoryService, xmlService, fileService, thymeleafService, templateService);
 		threadService.execute(rh);
 	}
 

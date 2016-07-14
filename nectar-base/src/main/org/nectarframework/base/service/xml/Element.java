@@ -64,6 +64,11 @@ public class Element {
 		this.children.addAll(elms);
 	}
 
+	public Element(String name, Element child) {
+		this.name = name;
+		this.children.add(child);
+	}
+	
 	/**
 	 * Add an attribute. if value is null, remove the attribute.
 	 * 
@@ -269,6 +274,10 @@ public class Element {
 			return true;
 		}
 		return false;
+	}
+
+	public boolean hasAttribute(String key) {
+		return attributes.containsKey(key);
 	}
 
 }

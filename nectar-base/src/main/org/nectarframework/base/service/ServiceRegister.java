@@ -1,5 +1,6 @@
 package org.nectarframework.base.service;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,10 +10,11 @@ import org.nectarframework.base.config.Configuration;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service.STATE;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.xml.Element;
 
 public class ServiceRegister {
 	private Configuration config = null;
-
+	private Element configElement = null;
 	/** only one instance of this class allowed!! */
 	private static ServiceRegister instance = null;
 
@@ -183,7 +185,8 @@ public class ServiceRegister {
 		return true;
 	}
 
-	public boolean restart() {
+	public boolean restart(File configFile) {
+		// FIXME: this isn't reading / refreshing the config file...
 		Log.info("ServiceRegister is restarting services...");
 		if (runState != RUN_STATE.running) {
 			throw new IllegalStateException();
@@ -193,9 +196,9 @@ public class ServiceRegister {
 		Configuration newConfig = new Configuration(this);
 
 		boolean newConfigSafe = false;
-
+		
 		try {
-			newConfigSafe = newConfig.parseFullConfig();
+			newConfigSafe = newConfig.parseFullConfig(configElement);
 		} catch (ConfigurationException e) {
 			Log.fatal("Configuration Problem detected, restart aborted", e);
 		}
@@ -215,11 +218,11 @@ public class ServiceRegister {
 
 		if (Charset.defaultCharset().name().compareTo("UTF-8") != 0) {
 			Log.warn("Nectar should really only run with UTF-8 Charset. default charset is: " + Charset.defaultCharset()
-					+ ". This might cause weird problems. Please check your java installation options. ");
+					+ ". This might cause weird problems. Please check your java installation / runtime options. ");
 		}
-
+		
 		try {
-			boolean configValid = config.parseFullConfig();
+			boolean configValid = config.parseFullConfig(configElement);
 			if (configValid) {
 				this.runState = RUN_STATE.configChecked;
 				return true;
@@ -232,9 +235,13 @@ public class ServiceRegister {
 		return false;
 	}
 
-	public void begin() {
+	public boolean begin() {
 		Log.info("ServiceRegister is running services...");
 		List<Service> serviceList = config.getServiceList(this.config.getNodeGroup());
+		if (serviceList == null) {
+			Log.fatal("No services configured for node group "+config.getNodeGroup());
+			return false;
+		}
 		for (Service s : serviceList) {
 			if (!s._run()) {
 				Log.info("ServiceRegister: Service " + s.getClass().getName() + " failed to run()");
@@ -243,6 +250,7 @@ public class ServiceRegister {
 		}
 		this.runState = RUN_STATE.running;
 		Log.info("ServiceRegister: All services are up and running.");
+		return true;
 	}
 
 	public static ServiceRegister getInstance() {
@@ -251,6 +259,10 @@ public class ServiceRegister {
 
 	public Configuration getConfiguration() {
 		return config;
+	}
+	
+	public void setConfigElement(Element configElement) {
+		this.configElement = configElement;
 	}
 
 	public static Service addServiceDependancy(Service service, Class<? extends Service> serviceClass)
@@ -322,4 +334,5 @@ public class ServiceRegister {
 	public static Service getService(Class<? extends Service> serviceClass) {
 		return instance.registerByClass.get(serviceClass);
 	}
+
 }

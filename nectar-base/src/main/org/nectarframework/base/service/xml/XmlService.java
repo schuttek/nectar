@@ -3,6 +3,8 @@ package org.nectarframework.base.service.xml;
 // enough imports for ya?
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -110,7 +112,11 @@ public class XmlService extends Service {
 				parent.removeChild(n);
 				Log.warn("missing translation: " + langKey + " in file " + xsl);
 			} else {
-				Vector<String> slicedText = StringTools.slice(translatedText, "??");
+				String[] slicedTextsa = translatedText.split("\\?\\?");
+				Vector<String> slicedText = new Vector<String>();
+				for (String st : slicedTextsa) {
+					slicedText.add(st);
+				}
 				int k = 0;
 				NodeList childNodes = n.getChildNodes();
 				while (slicedText.size() > 1) {
@@ -126,10 +132,10 @@ public class XmlService extends Service {
 				parent.removeChild(n);
 			}
 		}
-		
+
 		// FIXME: doc.toString() ???
 		return null;
-		
+
 	}
 
 	private void loadLanguageMap() {
@@ -163,7 +169,8 @@ public class XmlService extends Service {
 			throw new IOException(e);
 		}
 		try {
-			transformer.transform(new javax.xml.transform.stream.StreamSource(xmlbais), new javax.xml.transform.stream.StreamResult(os));
+			transformer.transform(new javax.xml.transform.stream.StreamSource(xmlbais),
+					new javax.xml.transform.stream.StreamResult(os));
 		} catch (TransformerException e) {
 			Log.fatal("TransformerException", e);
 			throw new IOException(e);
@@ -171,13 +178,13 @@ public class XmlService extends Service {
 
 	}
 
-	public void outputNDOJson(Element elm, OutputStream os) throws IOException {
+	public static void toNDOJson(Element elm, OutputStream os) throws IOException {
 		os.write("{".getBytes());
 		recurseOutputElmJson(elm, os);
 		os.write("}".getBytes());
 	}
 
-	private void recurseOutputElmJson(Element elm, OutputStream os) throws IOException {
+	private static void recurseOutputElmJson(Element elm, OutputStream os) throws IOException {
 		Map<String, String> attribs = elm.getAttributes();
 		LinkedList<Element> children = elm.getChildren();
 		os.write(("\"n\":\"" + elm.getName() + "\"").getBytes());
@@ -189,7 +196,9 @@ public class XmlService extends Service {
 					os.write(",".getBytes());
 				}
 				first = false;
-				os.write(("\"" + StringTools.jsonEncode(key) + "\":\"" + StringTools.jsonEncode(attribs.get(key)) + "\"").getBytes());
+				os.write(
+						("\"" + StringTools.jsonEncode(key) + "\":\"" + StringTools.jsonEncode(attribs.get(key)) + "\"")
+								.getBytes());
 			}
 			os.write("}".getBytes());
 		}
@@ -210,7 +219,7 @@ public class XmlService extends Service {
 		}
 	}
 
-	public void outputXml(Element elm, String xsl, OutputStream os, boolean writeHeader) throws IOException {
+	public static void outputXml(Element elm, String xsl, OutputStream os, boolean writeHeader) throws IOException {
 		if (writeHeader) {
 			os.write(("<?xml version=\"1.0\" encoding=\"" + Charset.defaultCharset().toString() + "\"?>\n").getBytes());
 		}
@@ -222,7 +231,7 @@ public class XmlService extends Service {
 		recurseOutputElmXml(elm, os);
 	}
 
-	private void recurseOutputElmXml(Element elm, OutputStream os) throws IOException {
+	private static void recurseOutputElmXml(Element elm, OutputStream os) throws IOException {
 		Map<String, String> attribs = elm.getAttributes();
 		LinkedList<Element> children = elm.getChildren();
 		os.write(("<" + elm.getName()).getBytes());
@@ -239,14 +248,14 @@ public class XmlService extends Service {
 			os.write(("</" + elm.getName() + ">").getBytes());
 		}
 	}
-	
-	public void toNDOJson(Element elm, StringBuffer sb) {
+
+	public static void toNDOJson(Element elm, StringBuffer sb) {
 		sb.append("{");
 		recurseToNDOJson(elm, sb);
 		sb.append("}");
 	}
-	
-	private void recurseToNDOJson(Element elm, StringBuffer sb) {
+
+	private static void recurseToNDOJson(Element elm, StringBuffer sb) {
 		Map<String, String> attribs = elm.getAttributes();
 		LinkedList<Element> children = elm.getChildren();
 		sb.append("\"n\":\"" + elm.getName() + "\"");
@@ -258,7 +267,8 @@ public class XmlService extends Service {
 					sb.append(",");
 				}
 				first = false;
-				sb.append(("\"" + StringTools.jsonEncode(key) + "\":\"" + StringTools.jsonEncode(attribs.get(key)) + "\""));
+				sb.append(("\"" + StringTools.jsonEncode(key) + "\":\"" + StringTools.jsonEncode(attribs.get(key))
+						+ "\""));
 			}
 			sb.append("}");
 		}
@@ -276,6 +286,23 @@ public class XmlService extends Service {
 				sb.append("}");
 			}
 			sb.append("]");
+		}
+	}
+
+	public static void toXml(Element elm, OutputStream os) throws IOException {
+
+		os.write(("<" + elm.getName()).getBytes());
+		for (String key : elm.getAttributes().keySet()) {
+			os.write((" " + key + "=\"" + StringTools.xmlEncode(elm.getAttributes().get(key)) + "\"").getBytes());
+		}
+		if (elm.getChildren().isEmpty()) {
+			os.write("/>".getBytes());
+		} else {
+			os.write(">".getBytes());
+			for (Element child : elm.getChildren()) {
+				toXml(child, os);
+			}
+			os.write(("</" + elm.getName() + ">").getBytes());
 		}
 	}
 	
@@ -313,25 +340,28 @@ public class XmlService extends Service {
 		}
 	}
 
-	
 	public static byte[] toXmlBytes(Element elm) {
 		// TODO: throughly test this with weird UTF-8 characters
 		ByteArray ba = new ByteArray();
 		toXml(elm, ba);
 		return ba.getBytes();
 	}
-	
+
 	public static String toXmlString(Element elm) {
-		StringBuffer sb  = new StringBuffer();
+		StringBuffer sb = new StringBuffer();
 		toXml(elm, sb);
 		return sb.toString();
 	}
 
-	public Element fromXml(StringBuffer elementXml) throws SAXException {
+	public static Element fromXml(File file) throws SAXException, IOException {
+		return fromXml(new FileInputStream(file));
+	}
+
+	public static Element fromXml(StringBuffer elementXml) throws SAXException {
 		return fromXml(elementXml.toString());
 	}
 
-	public Element fromXml(String elementXml) throws SAXException {
+	public static Element fromXml(String elementXml) throws SAXException {
 		String s = xmlHeader() + elementXml;
 		ByteArrayInputStream bais = new ByteArrayInputStream(s.getBytes());
 
@@ -346,7 +376,7 @@ public class XmlService extends Service {
 
 	public static Element fromXml(byte[] elementXml) throws SAXException {
 		try {
-			return staticFromXml(new ByteArrayInputStream(elementXml));
+			return fromXml(new ByteArrayInputStream(elementXml));
 		} catch (IOException e) {
 			// really can't happen with a ByteArrayInputStream,
 			Log.fatal(e);
@@ -354,12 +384,8 @@ public class XmlService extends Service {
 		}
 	}
 
-	public String xmlHeader() {
+	public static String xmlHeader() {
 		return "<?xml version=\"1.0\" encoding=\"" + Charset.defaultCharset().toString() + "\"?>\n";
-	}
-
-	public Element fromXml(InputStream is) throws SAXException, IOException {
-		return staticFromXml(is);
 	}
 
 	private static Element fromXmlRecurse(org.w3c.dom.Element xe) {
@@ -386,7 +412,6 @@ public class XmlService extends Service {
 		return e;
 	}
 
-
 	public static Element generateTestElement(int childCount, int attrCount, int depth) {
 		Element e = new Element(StringTools.randomStringLowerCase(4, 8));
 		Random rand = new Random();
@@ -404,7 +429,7 @@ public class XmlService extends Service {
 		return e;
 	}
 
-	public static Element staticFromXml(InputStream is) throws SAXException, IOException {
+	public static Element fromXml(InputStream is) throws SAXException, IOException {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = null;
 		try {
@@ -420,6 +445,5 @@ public class XmlService extends Service {
 
 		return root;
 	}
-
 
 }

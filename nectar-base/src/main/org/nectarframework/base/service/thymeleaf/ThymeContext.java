@@ -1,53 +1,56 @@
 package org.nectarframework.base.service.thymeleaf;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.thymeleaf.context.IContext;
 
 public class ThymeContext implements IContext {
 	private Locale locale;
-	private HashMap<String, Object> varMap;
 	
+	private Element actionElement;
+	private Element sessionElement;
+	private Element globalElement;
+	static final HashSet<String> varNames = new HashSet<String>();
 
-	public ThymeContext(Locale locale, Element elm) {
+	static {
+		varNames.add("action");
+		varNames.add("session");
+		varNames.add("global");
+	}
+	
+	public ThymeContext(Locale locale, Element actionElement, Element sessionElement, Element globalElement) {
 		this.locale = locale;
-		varMap = new HashMap<String, Object>();
-		varMap.put(elm.getName(), buildVarMapRec(elm));
+		this.actionElement = actionElement;
+		this.sessionElement = sessionElement;
+		this.globalElement = globalElement;
 	}
 	
 	
 	
     public Set<String> getVariableNames() {
-    	return varMap.keySet();
+    	return varNames;
     }
     
     public Object getVariable(final String name) {
-    	Log.trace("ThymeContext:getVariable() "+name);
-    	return varMap.get(name);
+    	if (name.equals("action")) {
+    		return this.actionElement;
+    	} else if (name.equals("session")) {
+    		return this.sessionElement;
+    	} else if (name.equals("global")) {
+    		return this.globalElement;
+    	}
+    	
+    	return null;
     }
 
 	public Locale getLocale() {
 		return locale;
 	}
 
-	private HashMap<String, Object> buildVarMapRec(Element e) {
-		HashMap<String, Object> m = new HashMap<String, Object>();
-		for (String k : e.getAttributes().keySet()) {
-			m.put(k, e.get(k));
-		}
-		for (Element kid : e.getChildren()) {
-			m.put(kid.getName(), buildVarMapRec(kid));
-		}
-		return m;
-	}
-
-
-
 	public boolean containsVariable(String key) {
-		return varMap.containsKey(key);
+		return varNames.contains(key);
 	}
 }

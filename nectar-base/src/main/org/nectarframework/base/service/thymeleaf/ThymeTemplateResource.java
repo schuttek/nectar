@@ -1,7 +1,6 @@
 package org.nectarframework.base.service.thymeleaf;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;

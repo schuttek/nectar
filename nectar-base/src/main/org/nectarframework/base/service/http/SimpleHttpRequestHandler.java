@@ -24,12 +24,14 @@ import org.nectarframework.base.service.file.ReadFileNotAFileException;
 import org.nectarframework.base.service.file.ReadFileNotFoundException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.log.LoggingService;
+import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.service.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.ByteArrayOutputStream;
+import org.nectarframework.base.tools.FastByteArrayOutputStream;
 import org.nectarframework.base.tools.Stopwatch;
 import org.simpleframework.http.Address;
 import org.simpleframework.http.Query;
@@ -52,6 +54,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 	protected SimpleHttpRequestService simpleHttpRequestService;
 	protected DirectoryService directoryService;
 	protected ThymeleafService thymeleafService;
+	protected TemplateService templateService;
 	protected FileService fileService;
 	protected Request request;
 	protected Response response;
@@ -59,9 +62,11 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 	protected String contentType;
 	protected long contentLength;
-//	protected ByteArrayOutputStream outputBuffer;
+	// protected ByteArrayOutputStream outputBuffer;
 
-	public SimpleHttpRequestHandler(Request httpRequest, Response httpResponse, SimpleHttpRequestService simpleHttpRequestService, DirectoryService directoryService, XmlService xmlService, FileService fileService, ThymeleafService thymeleafService) {
+	public SimpleHttpRequestHandler(Request httpRequest, Response httpResponse,
+			SimpleHttpRequestService simpleHttpRequestService, DirectoryService directoryService, XmlService xmlService,
+			FileService fileService, ThymeleafService thymeleafService, TemplateService templateService) {
 		this.simpleHttpRequestService = simpleHttpRequestService;
 		this.directoryService = directoryService;
 		this.request = httpRequest;
@@ -69,48 +74,50 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		this.xmlService = xmlService;
 		this.fileService = fileService;
 		this.thymeleafService = thymeleafService;
+		this.templateService = templateService;
 
-//		outputBuffer = new ByteArrayOutputStream();
+		// outputBuffer = new ByteArrayOutputStream();
 	}
 
 	@Override
 	public void execute() {
 
 		Address address = request.getAddress();
-		
-		Log.trace("request for " + address.getPath().getPath() + " on " + address.getDomain() + ":" + address.getPort());
+
+		Log.trace(
+				"request for " + address.getPath().getPath() + " on " + address.getDomain() + ":" + address.getPort());
 
 		// resolve the action with the directory service
 		String path = request.getAddress().getPath().getPath();
 
 		try {
-		if (path.startsWith("/"+simpleHttpRequestService.getStaticRequestDirectory()+"/")) {
-			try {
-				processStatic();
-			} catch (NotFoundException e) {
-				handleNotFound(e);
-			} catch (AccessDeniedException e) {
-				handleAccessDenied(e);
+			if (path.startsWith("/" + simpleHttpRequestService.getStaticRequestDirectory() + "/")) {
+				try {
+					processStatic();
+				} catch (NotFoundException e) {
+					handleNotFound(e);
+				} catch (AccessDeniedException e) {
+					handleAccessDenied(e);
+				}
+			} else {
+				try {
+					processDynamic();
+				} catch (NotFoundException e) {
+					handleNotFound(e);
+				} catch (InternalErrorException e) {
+					handleInternalError(e);
+				} catch (ActionTypeMismatchException e) {
+					handleInternalError(e);
+				} catch (FormValidationException e) {
+					handleFormValidationError(e);
+				} catch (ClientWriteException e) {
+					handleClientWriteException(e);
+				}
 			}
-		} else {
-			try {
-				processDynamic();
-			} catch (NotFoundException e) {
-				handleNotFound(e);
-			} catch (InternalErrorException e) {
-				handleInternalError(e);
-			} catch (ActionTypeMismatchException e) {
-				handleInternalError(e);
-			} catch (FormValidationException e) {
-				handleFormValidationError(e);
-			} catch (ClientWriteException e) {
-				handleClientWriteException(e);
-			}
-		}
 		} catch (Throwable t) {
 			handleInternalError(t);
 		}
-		
+
 		try {
 			response.getOutputStream().flush();
 			response.getOutputStream().close();
@@ -119,7 +126,6 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		}
 	}
 
-
 	private void handleNotFound(NotFoundException e) {
 		Log.info("SimpleHttpRequestService: Not Found: " + request.getAddress().getPath().getPath(), e);
 
@@ -127,7 +133,8 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		String path = request.getAddress().getPath().getPath();
 		sb.append("<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1>");
 		sb.append("<p>The requested URL " + path + " was not found on this server.</p>");
-		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port " + request.getAddress().getPort() + "</address>");
+		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port "
+				+ request.getAddress().getPort() + "</address>");
 		sb.append("</body></html>\n");
 
 		byte[] byteArray = sb.toString().getBytes();
@@ -142,7 +149,6 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			Log.warn(e1);
 		}
 	}
-	
 
 	private void handleAccessDenied(AccessDeniedException e) {
 		Log.info("SimpleHttpRequestService: Access Denied: " + request.getAddress().getPath().getPath(), e);
@@ -150,8 +156,9 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		StringBuffer sb = new StringBuffer();
 		String path = request.getAddress().getPath().getPath();
 		sb.append("<!DOCTYPE html><html><head><title>403 Forbidden</title></head><body><h1>Forbidden</h1>");
-		sb.append("<p>You don't have permission to access "+path+" on this server.</p>");
-		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port " + request.getAddress().getPort() + "</address>");
+		sb.append("<p>You don't have permission to access " + path + " on this server.</p>");
+		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port "
+				+ request.getAddress().getPort() + "</address>");
 		sb.append("</body></html>\n");
 
 		byte[] byteArray = sb.toString().getBytes();
@@ -172,10 +179,12 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 		StringBuffer sb = new StringBuffer();
 		String path = request.getAddress().getPath().getPath();
-		sb.append("<!DOCTYPE html><html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1>");
+		sb.append(
+				"<!DOCTYPE html><html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1>");
 		sb.append("<p>The requested URL " + path + " was generated the following error:</p>");
 		sb.append("<pre>" + LoggingService.throwableStackTracetoString(e) + "</pre>");
-		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port " + request.getAddress().getPort() + "</address>");
+		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port "
+				+ request.getAddress().getPort() + "</address>");
 		sb.append("</body></html>\n");
 
 		byte[] byteArray = sb.toString().getBytes();
@@ -189,8 +198,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		} catch (IOException e1) {
 			Log.warn(e1);
 		}
-		
-		
+
 	}
 
 	private void handleFormValidationError(FormValidationException e) {
@@ -199,9 +207,11 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 		StringBuffer sb = new StringBuffer();
 		String path = request.getAddress().getPath().getPath();
-		sb.append("<!DOCTYPE html><html><head><title>400 Input Validation Error</title></head><body><h1>Input Validation Error</h1>");
-		sb.append("<p>The requested URL " + path + "?" + request.getQuery().toString() + " requires the input form "+form.getName()+" generated the following validation errors:</p>");
-		
+		sb.append(
+				"<!DOCTYPE html><html><head><title>400 Input Validation Error</title></head><body><h1>Input Validation Error</h1>");
+		sb.append("<p>The requested URL " + path + "?" + request.getQuery().toString() + " requires the input form "
+				+ form.getName() + " generated the following validation errors:</p>");
+
 		List<ValidationError> vel = form.getValidationErrors();
 		for (ValidationError ve : vel) {
 			String description = "";
@@ -213,7 +223,8 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			sb.append("<p>" + ve.getKey() + ": " + description + "</p>");
 		}
 
-		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port " + request.getAddress().getPort() + "</address>");
+		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port "
+				+ request.getAddress().getPort() + "</address>");
 		sb.append("</body></html>\n");
 
 		byte[] byteArray = sb.toString().getBytes();
@@ -229,17 +240,15 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		}
 	}
 
-
 	private void handleClientWriteException(Exception e) {
 		Log.warn("SimpleHttpRequestService: ClientWriteException: " + request.getAddress().getPath().getPath(), e);
 	}
 
-	
-	public void processDynamic() throws NotFoundException, InternalErrorException, ActionTypeMismatchException, FormValidationException, ClientWriteException {
+	public void processDynamic() throws NotFoundException, InternalErrorException, ActionTypeMismatchException,
+			FormValidationException, ClientWriteException {
 		Stopwatch stopwatch = new Stopwatch();
 
 		stopwatch.start();
-
 
 		HashMap<String, List<String>> parameters = new HashMap<String, List<String>>();
 
@@ -247,38 +256,40 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		for (String s : query.keySet()) {
 			parameters.put(s, query.getAll(s));
 		}
-		
+
 		String path = request.getAddress().getPath().getPath();
-		
+
 		String actionNamespace = getActionNamespace(path);
 		String actionPath = getActionPath(path);
 
-		Log.trace("namespace='"+actionNamespace+"' , action='"+actionPath+"'");
+		Log.trace("namespace='" + actionNamespace + "' , action='" + actionPath + "'");
 		DirPath dirPath = null;
+
+		stopwatch.mark("init");
 		
 		while (dirPath == null || !(dirPath instanceof DirAction)) {
 			dirPath = directoryService.lookupAction(actionNamespace, actionPath);
-		
+
 			if (dirPath == null) {
 				throw new NotFoundException();
 			}
-		
+
 			if (dirPath instanceof DirRedirect) {
-				parameters.putAll(((DirRedirect)dirPath).variables);
-				dirPath = directoryService.lookupAction(actionNamespace, ((DirRedirect)dirPath).toPath);
+				parameters.putAll(((DirRedirect) dirPath).variables);
+				dirPath = directoryService.lookupAction(actionNamespace, ((DirRedirect) dirPath).toPath);
 				if (dirPath == null) {
 					throw new NotFoundException();
 				}
 			}
 		}
-		
-		DirAction dirAction = (DirAction)dirPath;
-		
+
+		DirAction dirAction = (DirAction) dirPath;
 
 		// instantiate the action
 		Action action;
 		try {
-			action = (Action) ClassLoader.getSystemClassLoader().loadClass(dirAction.packageName +"."+ dirAction.className).newInstance();
+			action = (Action) ClassLoader.getSystemClassLoader()
+					.loadClass(dirAction.packageName + "." + dirAction.className).newInstance();
 		} catch (InstantiationException e) {
 			throw new InternalErrorException(e);
 		} catch (IllegalAccessException e) {
@@ -287,14 +298,13 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			throw new ActionTypeMismatchException(e);
 		}
 
+		stopwatch.mark("actionLoad");
 
-		
-		
 		// set up the form.
 		Form form = new SimpleHttpForm(dirAction.form, parameters, request);
 
 		form.setHttpRequest(request);
-		
+
 		if (!form.isValid()) {
 			throw new FormValidationException(form);
 		}
@@ -306,7 +316,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		if (dirAction.defaultOutput != null) {
 			output = dirAction.defaultOutput;
 		}
-		
+
 		response.setValue("Server", "Nectar/" + org.nectarframework.base.Main.VERSION);
 
 		// cache settings
@@ -314,34 +324,55 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		cacheHeaders(time, time, time);
 
 		// Raw output
-		
+
 		Element elm = null;
-		
-		
+		stopwatch.mark("actionInit");
+
 		// a raw action is special...
 		if (output.equals("raw")) {
 			elm = handleRawAction(action);
 			stopwatch.stop();
-			Log.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(), request.getClientAddress().toString(), form.getSession());
+			Log.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(),
+					request.getClientAddress().toString(), form.getSession());
 			Log.trace("Request processed");
 			return;
 		}
-		
-		
+
 		// the action's implementation runs now.
 		elm = action.execute();
+		stopwatch.mark("actionExec");
 
-		
-		StringBuffer sb = new StringBuffer();
-		
+		FastByteArrayOutputStream outputByteArrayOutputStream = new FastByteArrayOutputStream();
+
 		// processing the resulting element:
 		if (output.equals("xml")) {
 			response.setContentType("text/xml");
-			sb.append(("<?xml version=\"1.0\" encoding=\"" + Charset.defaultCharset().toString() + "\"?>\n").getBytes());
-			XmlService.toXml(elm, sb);
+			try {
+				outputByteArrayOutputStream
+						.write(("<?xml version=\"1.0\" encoding=\"" + Charset.defaultCharset().toString() + "\"?>\n")
+								.getBytes());
+				XmlService.toXml(elm, outputByteArrayOutputStream);
+			} catch (IOException e) {
+				throw new InternalErrorException(e);
+			}
 		} else if (output.equals("json")) {
 			response.setContentType("application/json");
-			xmlService.toNDOJson(elm, sb);
+			try {
+				XmlService.toNDOJson(elm, outputByteArrayOutputStream);
+			} catch (IOException e) {
+				throw new InternalErrorException(e);
+			}
+		} else if (output.equals("template")) {
+			response.setContentType("text/html");
+			
+			Log.trace("ActionElement: "+elm.toString());
+			
+			try {
+				templateService.outputTemplate(outputByteArrayOutputStream, dirAction.templateName, Locale.getDefault(),
+						elm, null);
+			} catch (Exception e) {
+				throw new InternalErrorException(e);
+			}
 		} else if (output.equals("thymeleaf")) {
 			response.setContentType("text/html");
 			Locale locale = Locale.getDefault();
@@ -349,32 +380,31 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 				locale = form.getSession().getLocale();
 			}
 			try {
-				thymeleafService.output(locale, actionNamespace, dirAction.templateName, elm, sb);
+				thymeleafService.output(locale, actionNamespace, dirAction.templateName, elm,
+						outputByteArrayOutputStream);
 			} catch (TemplateEngineException e) {
 				throw new InternalErrorException(e);
 			}
-		}
+		} // TODO add default output?
+		stopwatch.mark("output");
 
-		
-		byte[] byteArray = sb.toString().getBytes();
+		// byteArray = doCompression(byteArray);
 
-//		byteArray = doCompression(byteArray);
-		
 		response.setCode(200);
-		response.setContentLength(byteArray.length);
+		response.setContentLength(outputByteArrayOutputStream.size());
 
 		try {
-			response.getOutputStream().write(byteArray);
+			response.getOutputStream().write(outputByteArrayOutputStream.toByteArray());
 		} catch (IOException e) {
 			throw new ClientWriteException(e);
 		}
 
-		
 		stopwatch.stop();
 
-		Log.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(), request.getClientAddress().toString(), form.getSession());
+		Log.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(),
+				request.getClientAddress().toString(), form.getSession());
 
-		Log.trace("Request processed");
+		Log.trace("Request processed: "+stopwatch.toString());
 	}
 
 	private byte[] doCompression(byte[] byteArray) throws InternalErrorException {
@@ -401,7 +431,8 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			response.setValue("Content-Encoding", "gzip");
 
 			long compressEnd = System.nanoTime();
-			Log.trace("compression: time " + ((compressEnd - compressStart) / 1000) + "us ratio: " + baos.size() + "/" + uncompressedSize + ":" + ((baos.size() * 100) / uncompressedSize));
+			Log.trace("compression: time " + ((compressEnd - compressStart) / 1000) + "us ratio: " + baos.size() + "/"
+					+ uncompressedSize + ":" + ((baos.size() * 100) / uncompressedSize));
 
 			return baos.toByteArray();
 		}
@@ -411,7 +442,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		if (path.startsWith("/")) {
 			path = path.substring(1, path.length());
 		}
-		
+
 		int prefixIdx = path.lastIndexOf('/');
 		String actionPath = "";
 		if (prefixIdx > 0) {
@@ -474,10 +505,10 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		}
 
 		/*
-		if (isCompressible && byteArray.length() > simpleHttpRequestService.getCompressionMinSize()) {
-			byteArray = new ByteArray(doCompression(byteArray.getBytes()));
-		}
-		*/
+		 * if (isCompressible && byteArray.length() >
+		 * simpleHttpRequestService.getCompressionMinSize()) { byteArray = new
+		 * ByteArray(doCompression(byteArray.getBytes())); }
+		 */
 
 		contentLength = byteArray.length();
 
@@ -491,14 +522,16 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 	}
 
 	private void processStatic() throws NotFoundException, AccessDeniedException {
-		
+
 		// TODO: add cache layer
 		Stopwatch stopwatch = new Stopwatch();
 
 		InputStream is = null;
 		try {
-			FileInfo fileInfo = fileService.getFileInfo("/"+this.simpleHttpRequestService.getStaticLocalDirectory()+this.request.getPath().getPath());
-			is = fileService.getFileAsInputStream("/"+this.simpleHttpRequestService.getStaticLocalDirectory()+this.request.getPath().getPath());
+			FileInfo fileInfo = fileService.getFileInfo(
+					"/" + this.simpleHttpRequestService.getStaticLocalDirectory() + this.request.getPath().getPath());
+			is = fileService.getFileAsInputStream(
+					"/" + this.simpleHttpRequestService.getStaticLocalDirectory() + this.request.getPath().getPath());
 
 			response.setValue("Server", serverName);
 			response.setDate("Date", fileInfo.getLastModified());
@@ -510,7 +543,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 				contentType = "application/octet-stream";
 			}
 			response.setContentType(contentType);
-			response.setContentLength( (int) fileInfo.getLength());
+			response.setContentLength((int) fileInfo.getLength());
 
 		} catch (ReadFileNotFoundException e) {
 			throw new NotFoundException(e);
@@ -563,7 +596,8 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 		stopwatch.stop();
 
-		Log.accessLog(this.request.getPath().getPath(), null, null, null, stopwatch.sinceStart(), request.getClientAddress().toString(), null);
+		Log.accessLog(this.request.getPath().getPath(), null, null, null, stopwatch.sinceStart(),
+				request.getClientAddress().toString(), null);
 
 		Log.trace("Request processed");
 	}

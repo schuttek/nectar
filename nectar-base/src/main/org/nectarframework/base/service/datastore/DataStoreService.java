@@ -43,11 +43,11 @@ public abstract class DataStoreService extends Service {
 
 	protected abstract boolean _init();
 
-	public abstract Collection<DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception;
+	public abstract List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception;
 
-	public abstract Collection<DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception;
+	public abstract List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception;
 
-	public abstract Collection<DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws Exception;
+	public abstract List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws Exception;
 
 	public abstract DataStoreObject loadDSO(DataStoreObjectDescriptor dsod, Object key) throws Exception;
 
@@ -74,6 +74,10 @@ public abstract class DataStoreService extends Service {
 		dsodMap.put(dsod.getDsoClass(), dsod);
 	}
 
+	public final List<? extends DataStoreObject> loadAll(Class<? extends DataStoreObject> dsoClass) throws Exception {
+		return loadAll(getDataStoreObjectDescriptor(dsoClass));
+	}
+	
 	public final DataStoreObjectDescriptor getDataStoreObjectDescriptor(Class<? extends DataStoreObject> dsoClass) {
 		DataStoreObjectDescriptor dsod = dsodMap.get(dsoClass);
 		if (dsod == null) {

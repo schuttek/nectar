@@ -13,7 +13,6 @@ import java.util.List;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.LockedConfigException;
 import org.nectarframework.base.service.Service;
-import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
@@ -196,7 +195,7 @@ public class InternodeService extends Service {
 		List<String> cmdarray = new ArrayList<String>();
 		cmdarray.add(getJreExecutable().toString());
 		cmdarray.add("nectar.base.Main");
-		cmdarray.add("-c " + ServiceRegister.getInstance().getConfiguration().getConfigFile().getPath());
+//		cmdarray.add("-c " + ServiceRegister.getInstance().getConfiguration().getConfigFile().getPath());
 		cmdarray.add("-g " + nodeGroup);
 		cmdarray.add("-n " + nodeName);
 

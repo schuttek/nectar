@@ -2,20 +2,22 @@ package org.nectarframework.base.service.datastore;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cluster.ClusterDatabaseService;
+import org.nectarframework.base.service.file.FileService;
 
 
 /**
- * A DataStoreService adaptor for nectar.base.service.cluster.ClusterDataBaseService
+ * A DataStoreService that saves
  * @author skander
  *
  */
-public class ClusterDataStoreService extends DataStoreService {
+public class LocalDataStoreService extends DataStoreService {
 
-	private ClusterDatabaseService cdbs;
+	private FileService fs;
 
 	@Override
 	protected boolean _init() {
@@ -31,7 +33,7 @@ public class ClusterDataStoreService extends DataStoreService {
 
 	@Override
 	public boolean establishDependancies() throws ServiceUnavailableException {
-		this.cdbs = (ClusterDatabaseService)dependancy(ClusterDatabaseService.class);
+		this.fs = (FileService)dependancy(FileService.class);
 		return true;
 	}
 
@@ -50,19 +52,19 @@ public class ClusterDataStoreService extends DataStoreService {
 	
 
 	@Override
-	public Collection<DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
+	public List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Collection<DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception {
+	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Collection<DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws Exception {
+	public List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

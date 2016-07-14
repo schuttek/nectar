@@ -239,15 +239,23 @@ public class ByteArray {
 	}
 
 	public void addToFront(String s) {
-		byte[] b = s.getBytes();
-		add(b.length);
-		addToFront(b);
+		if (s == null) {
+			addToFront(0);
+		} else {
+			byte[] b = s.getBytes();
+			addToFront(b);
+			addToFront(b.length);
+		}
 	}
 
 	public void add(String s) {
-		byte[] b = s.getBytes();
-		add(b.length);
-		add(b);
+		if (s == null) {
+			add(0);
+		} else {
+			byte[] b = s.getBytes();
+			add(b.length);
+			add(b);
+		}
 	}
 
 	public void addToFront(boolean bool) {

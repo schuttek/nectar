@@ -351,9 +351,4 @@ public class CacheService extends Service {
 		threadService.executeLater(new CheckFlushTimerTask(this), this.flushDelay -1);
 	}
 
-	public boolean fillCacheableObject(CacheableObject dso, String cacheKey) {
-		// TODO fill from byte array
-		
-		return false;
-	}
 }
