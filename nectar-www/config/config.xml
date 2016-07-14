@@ -2,7 +2,43 @@
 
 <config version="1.0">
 
-	<node group="templateBuilder">
+	<node group="templateBuilderServer">
+		<service class="org.nectarframework.base.service.thread.ThreadService">
+			<param name="minWorkerThreads" value="10" />
+			<param name="maxWorkerThreads" value="50" />
+		</service>
+		<service class="org.nectarframework.base.service.xml.XmlService">
+		</service>
+		<service class="org.nectarframework.base.service.cache.CacheService">
+		</service>
+		<service class="org.nectarframework.base.service.file.FileService">
+			<param name="rootDirectory" value="files" />
+		</service>
+		<service class="org.nectarframework.base.service.mysql.MysqlService">
+			<param name="host" value="127.0.0.1" />
+			<param name="port" value="3306" />
+			<param name="database" value="nectar" />
+			<param name="user" value="nectar" />
+			<param name="password" value="u0JRAbbXF8VpqZH8" />
+		</service>
+		<service
+			class="org.nectarframework.base.service.translation.TranslationService" />
+		<service class="org.nectarframework.base.service.template.TemplateService">
+			<param name="templatePackageName" value="org.nectarframework.www.templates" />
+			<param name="rawTemplatesRootDir" value="files/templates" />
+
+			<paramSet name="locale">
+				<param value="en" />
+			</paramSet>
+		</service>
+		<service class="org.nectarframework.base.service.directory.DirectoryService">
+			<param name="configFilePath" value="config/pathConfig.xml" />
+		</service>
+
+	</node>
+
+
+	<node group="templateBuilderDev">
 		<service class="org.nectarframework.base.service.thread.ThreadService">
 			<param name="minWorkerThreads" value="10" />
 			<param name="maxWorkerThreads" value="50" />
