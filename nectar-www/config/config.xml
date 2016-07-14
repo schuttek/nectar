@@ -128,6 +128,14 @@
 		<service class="org.nectarframework.base.service.thymeleaf.ThymeleafService">
 			<param name="templatesDirectory" value="thymeleaf_templates" />
 		</service>
+		<service class="org.nectarframework.base.service.template.TemplateService">
+			<param name="templatePackageName" value="org.nectarframework.www.templates" />
+			<param name="rawTemplatesRootDir" value="files/templates" />
+
+			<paramSet name="locale">
+				<param value="en" />
+			</paramSet>
+		</service>
 
 		<service
 			class="org.nectarframework.base.service.translation.TranslationService" />
