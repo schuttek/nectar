@@ -83,7 +83,7 @@
 		<service
 			class="org.nectarframework.base.service.http.SimpleHttpRequestService">
 			<param name="compressionMinSize" value="1" />
-			<param name="listeningHost" value="127.0.0.1" />
+			<param name="listeningHost" value="167.114.240.14" />
 			<param name="listeningPort" value="80" />
 			<param name="staticRequestDirectory" value="s" />
 			<param name="staticLocalDirectory" value="public_root" />
