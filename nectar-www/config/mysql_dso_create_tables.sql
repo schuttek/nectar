@@ -4,16 +4,17 @@ USE `nectar`;
 
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_article` (
 	`id` INT NOT NULL AUTO_INCREMENT, 
-	`name` TEXT COLLATE utf8_unicode_ci, 
-	`content` TEXT COLLATE utf8_unicode_ci, 
+	`name` TEXT COLLATE utf8_unicode_ci NOT NULL, 
+	`content` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_user` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT, 
-	`userType` TINYINT, 
-	`homeGroup` BIGINT, 
-	`login` TEXT COLLATE utf8_unicode_ci, 
-	`publicUserName` TEXT COLLATE utf8_unicode_ci, 
+	`userType` TINYINT NOT NULL, 
+	`homeGroup` BIGINT NOT NULL, 
+	`login` TEXT COLLATE utf8_unicode_ci NOT NULL, 
+	`publicUserName` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	`permission` TEXT COLLATE utf8_unicode_ci, 
 	`lastUserIp` TEXT COLLATE utf8_unicode_ci, 
 	`registrationTimestamp` BIGINT, 
@@ -35,41 +36,41 @@ CREATE TABLE IF NOT EXISTS `org_nectarframework_www_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_blog_post` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT, 
-	`authorUserId` BIGINT, 
-	`createdTimestamp` BIGINT, 
+	`authorUserId` BIGINT NOT NULL, 
+	`createdTimestamp` BIGINT NOT NULL, 
 	`lastEditTimestamp` BIGINT, 
-	`title` TEXT COLLATE utf8_unicode_ci, 
-	`message` TEXT COLLATE utf8_unicode_ci, 
+	`title` TEXT COLLATE utf8_unicode_ci NOT NULL, 
+	`message` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	`tags` TEXT COLLATE utf8_unicode_ci, 
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_post` (
 	`postId` BIGINT NOT NULL AUTO_INCREMENT, 
-	`threadId` BIGINT, 
-	`authorUserId` BIGINT, 
-	`createdTimestamp` BIGINT, 
+	`threadId` BIGINT NOT NULL, 
+	`authorUserId` BIGINT NOT NULL, 
+	`createdTimestamp` BIGINT NOT NULL, 
 	`lastEditTimestamp` BIGINT, 
-	`message` TEXT COLLATE utf8_unicode_ci, 
+	`message` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	PRIMARY KEY (`postId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_structure` (
 	`structureId` BIGINT NOT NULL AUTO_INCREMENT, 
-	`parentId` BIGINT, 
-	`orderWeight` FLOAT, 
-	`name` TEXT COLLATE utf8_unicode_ci, 
+	`parentId` BIGINT NOT NULL, 
+	`orderWeight` FLOAT NOT NULL, 
+	`name` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	`description` TEXT COLLATE utf8_unicode_ci, 
 	PRIMARY KEY (`structureId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_thread` (
 	`threadId` BIGINT NOT NULL AUTO_INCREMENT, 
-	`structureId` BIGINT, 
-	`authorUserId` BIGINT, 
-	`createdTimestamp` BIGINT, 
+	`structureId` BIGINT NOT NULL, 
+	`authorUserId` BIGINT NOT NULL, 
+	`createdTimestamp` BIGINT NOT NULL, 
 	`lastEditTimestamp` BIGINT, 
 	`lastReplyTimestamp` BIGINT, 
 	`sticky` TINYINT, 
 	`flags` INT, 
-	`subject` TEXT COLLATE utf8_unicode_ci, 
-	`message` TEXT COLLATE utf8_unicode_ci, 
+	`subject` TEXT COLLATE utf8_unicode_ci NOT NULL, 
+	`message` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	PRIMARY KEY (`threadId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

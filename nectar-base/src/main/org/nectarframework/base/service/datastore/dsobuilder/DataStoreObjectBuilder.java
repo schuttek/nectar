@@ -20,6 +20,7 @@ import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.StringTools;
+import org.nectarframework.base.tools.Triple;
 import org.nectarframework.base.tools.Tuple;
 
 public class DataStoreObjectBuilder {
@@ -227,31 +228,43 @@ public class DataStoreObjectBuilder {
 				boolean primaryKeyAutoIncrement = (dsoElm.get("primaryKeyAutoIncrement") != null && dsoElm.get("primaryKeyAutoIncrement").equals("true"));
 
 				List<Element> colElmList = dsoElm.getChildren("column");
-				List<Tuple<String, String>> colList = new LinkedList<Tuple<String, String>>();
+				List<Triple<String, String, Boolean>> colList = new LinkedList<Triple<String, String, Boolean>>();
 				for (Element cel : colElmList) {
 					String name = cel.get("name");
 					String type = cel.get("type");
-					colList.add(new Tuple<String, String>(name, type));
+					String nullAllowed = cel.get("nullAllowed");
+					boolean nullAb = false;
+					if (nullAllowed != null && (nullAllowed.equalsIgnoreCase("true") || nullAllowed.equals("1"))) {
+						nullAb = true;
+					}
+					colList.add(new Triple<String, String, Boolean>(name, type, nullAb));
 				}
 
 				FileOutputStream fos = new FileOutputStream(new File(outputDir + "/" + packageName.replace('.', '/') + "/" + className + ".java"), false);
 				PrintWriter pw = new PrintWriter(fos);
 
+				// DSOD 
 				String initLine = "dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor(";
 				initLine += "\"" + tableName + "\", ";
 				initLine += "new DataStoreKey(\"" + primaryKeyColName + "\", " + parseType(primaryKeyType) + ", " + primaryKeyLength + ", "+(primaryKeyAutoIncrement?"true":"false")+"), ";
 				Vector<String> sa = new Vector<String>();
-				for (Tuple<String, String> tup : colList) {
+				for (Triple<String, String, Boolean> tup : colList) {
 					sa.add("\"" + tup.getLeft() + "\"");
 				}
 				initLine += "new String[] { " + StringTools.implode(sa, ", ") + " }, ";
 				sa.clear();
-				for (Tuple<String, String> tup : colList) {
-					sa.add(parseType(tup.getRight()));
+				for (Triple<String, String, Boolean> tup : colList) {
+					sa.add(parseType(tup.getMiddle()));
 				}
 				initLine += "new DataStoreObjectDescriptor.Type[] {" + StringTools.implode(sa, ", ") + "}, ";
+				sa.clear();
+				for (Triple<String, String, Boolean> tup : colList) {
+					sa.add((tup.getRight()?"true":"false"));
+				}
+				initLine += "new boolean[] {" + StringTools.implode(sa, ", ") +"}, ";
 				initLine += className + ".class));";
 
+				// the class file...
 				pw.println("package " + packageName + ";");
 				pw.println();
 				pw.println("import org.nectarframework.base.service.ServiceRegister;");
@@ -282,13 +295,13 @@ public class DataStoreObjectBuilder {
 				pw.println("	}");
 				pw.println("	");
 
-				for (Tuple<String, String> tup : colList) {
-					pw.println("	public " + parseJavaType(tup.getRight()) + " get" + tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "() {");
-					pw.println("		return get" + parseJavaType(tup.getRight()) + "(\"" + tup.getLeft() + "\");");
+				for (Triple<String, String, Boolean> tup : colList) {
+					pw.println("	public " + parseJavaType(tup.getMiddle()) + " get" + tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "() {");
+					pw.println("		return get" + parseJavaType(tup.getMiddle()) + "(\"" + tup.getLeft() + "\");");
 					pw.println("	}");
 					pw.println("	");
 					
-					pw.println("	public void set" + tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "(" + parseJavaType(tup.getRight()) + " "+tup.getLeft()+") {");
+					pw.println("	public void set" + tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "(" + parseJavaType(tup.getMiddle()) + " "+tup.getLeft()+") {");
 					pw.println("		set(\""+tup.getLeft()+"\", "+tup.getLeft()+");");
 					pw.println("	}");
 					pw.println("	");
@@ -317,15 +330,17 @@ public class DataStoreObjectBuilder {
 				LinkedList<String> sqlColLinesList = new LinkedList<String>();
 				
 				
-				for (Tuple<String,String> tup: colList) {
-					String sqlstr = "	`"+tup.getLeft()+"` "+getmysqlType(tup.getRight());
+				for (Triple<String, String, Boolean> tup: colList) {
+					String sqlstr = "	`"+tup.getLeft()+"` "+getmysqlType(tup.getMiddle());
 					if (tup.getLeft().equals(primaryKeyColName)) {
-						String typestr = tup.getRight().toLowerCase();
+						String typestr = tup.getMiddle().toLowerCase();
 						if (typestr.equals("byte") ||typestr.equals("short") ||typestr.equals("int") ||typestr.equals("long")) {
 							sqlstr += " NOT NULL AUTO_INCREMENT";
 						} else {
 							sqlstr += " NOT NULL";
 						}
+					} else if (!tup.getRight()) {
+						sqlstr += " NOT NULL";
 					}
 					sqlColLinesList.add(sqlstr);
 				}

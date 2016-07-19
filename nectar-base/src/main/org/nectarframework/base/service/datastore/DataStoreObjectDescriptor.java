@@ -13,6 +13,7 @@ public class DataStoreObjectDescriptor {
 	private DataStoreKey primaryKey;
 	private String[] colNames;
 	private Type[] colTypes;
+	private boolean[] nullAllowed;
 	private HashMap<String, Integer> colMap;
 	private Class<? extends DataStoreObject> dsoClass;
 
@@ -174,6 +175,9 @@ public class DataStoreObjectDescriptor {
 		public Object fromResultRow(ResultRow rr, String colName) throws SQLException {
 			int len, i;
 			ByteArray ba = null;
+			if (rr.isNull(colName)) {
+				return null;
+			}
 			switch (this) {
 			case BOOLEAN:
 				return rr.getBoolean(colName);
@@ -362,14 +366,18 @@ public class DataStoreObjectDescriptor {
 
 	}
 
-	public DataStoreObjectDescriptor(String table, DataStoreKey primaryKey, String[] colNames, Type[] colTypes, Class<? extends DataStoreObject> dsoClass) {
+	public DataStoreObjectDescriptor(String table, DataStoreKey primaryKey, String[] colNames, Type[] colTypes, boolean[] nullAllowed, Class<? extends DataStoreObject> dsoClass) {
 		this.table = table;
 		this.primaryKey = primaryKey;
 		this.colNames = colNames;
 		this.colTypes = colTypes;
+		this.nullAllowed = nullAllowed;
 
 		if (colNames.length != colTypes.length) {
 			throw new IllegalArgumentException(" colNames.length != colTypes.length ");
+		}
+		if (nullAllowed.length != colTypes.length) {
+			throw new IllegalArgumentException(" nullAllowed.length != colTypes.length ");
 		}
 
 		this.colMap = new HashMap<String, Integer>();
@@ -420,5 +428,13 @@ public class DataStoreObjectDescriptor {
 
 	public String getCacheKey() {
 		return "DSO" + getTableName();
+	}
+
+	public int getNullAllowedCount() {
+		return nullAllowed.length;
+	}
+
+	public boolean isNullAllowed(int columnIndex) {
+		return nullAllowed[columnIndex];
 	}
 }

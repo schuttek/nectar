@@ -53,7 +53,7 @@ public class EventService extends Service {
 	 * 
 	 * @param event
 	 */
-	public void publishEvent(Event event) {
+	public synchronized void publishEvent(Event event) {
 		EventChannel ec = event.getChannel();
 		for (EventListener el : this.channelListeners.get(ec)) {
 			threadService.execute(new ThreadServiceTask() {

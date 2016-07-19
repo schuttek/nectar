@@ -8,6 +8,8 @@ import java.util.Set;
 import org.nectarframework.base.service.directory.DirForm;
 import org.nectarframework.base.service.directory.DirFormvar;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.pathfinder.FormResolution;
+import org.nectarframework.base.service.pathfinder.FormvarResolution;
 import org.nectarframework.base.service.session.Session;
 import org.nectarframework.base.service.xml.Element;
 import org.simpleframework.http.Request;
@@ -43,6 +45,14 @@ public class Form {
 		element = new Element(name);
 	}
 
+	public Form(FormResolution formRes, Map<String, List<String>> parameters) {
+		element = new Element(formRes.getName());
+		for (FormvarResolution dfv : formRes.getFormvars()) {
+			List<String> valueList = parameters.get(dfv.getName());
+			validateFormVariable(dfv.getName(), dfv.getType(), dfv.isNullAllowed(), valueList);
+		}
+	}
+	
 	public Form(DirForm dirForm, Map<String, List<String>> parameters) {
 		element = new Element(dirForm.name);
 		for (DirFormvar dfv : dirForm.formvars) {

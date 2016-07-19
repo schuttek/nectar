@@ -54,30 +54,20 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 		
 		String path = request.getPath();
 
-		int prefixIdx = path.lastIndexOf('/');
-		String prefix = "";
-		String actionPath = "";
-		if (prefixIdx > 0) {
-			prefix = path.substring(0, prefixIdx);
-			actionPath = path.substring(prefixIdx + 1, path.length());
-		} else {
-			actionPath = path;
-		}
-
 		DirPath dirPath = null;
 
 		while (dirPath == null || !(dirPath instanceof DirAction)) {
-			dirPath = ds.lookupAction(prefix, actionPath);
+			dirPath = ds.lookupPath(path);
 
 			if (dirPath == null) {
-				Log.warn("no dirAction for dirPath " + prefix + "/" + request.getPath());
+				Log.warn("no dirAction for dirPath " +path);
 				handleNotFound();
 				return;
 			}
 
 			if (dirPath instanceof DirRedirect) {
 				parameters.putAll(((DirRedirect) dirPath).variables);
-				dirPath = ds.lookupAction(prefix, actionPath);
+				dirPath = ds.lookupPath(path);
 			}
 		}
 

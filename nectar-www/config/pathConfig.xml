@@ -31,6 +31,10 @@
 			<var name="id" value="5"/>
 		</redirect>
 
+		<proxy path="mantis" protocol="http" port="8000" host="www.nectarframework.org" requestPath="/mantis/"></proxy>
+
+		<static path="s" toPath="s"/>
+
 	</project>
 
 </pathConfig>

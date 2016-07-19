@@ -7,11 +7,13 @@ import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor.Type;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.mysql.ResultRow;
+import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 
 public abstract class DataStoreObject implements CacheableObject {
 	private DataStoreObjectDescriptor dsod = null;
 	protected Object[] data;
+	protected byte[] nullMap;
 
 	public DataStoreObject() {
 	}
@@ -37,6 +39,8 @@ public abstract class DataStoreObject implements CacheableObject {
 		}
 
 		dso.dsod = dsod;
+		this.nullMap = new byte[dso.nullMap.length];
+		System.arraycopy(dso.nullMap, 0, this.nullMap, 0, dso.nullMap.length);
 		data = new Object[dsod.getColumnCount()];
 		Type[] colType = dsod.getColumnTypes();
 		int len, t;
@@ -55,45 +59,74 @@ public abstract class DataStoreObject implements CacheableObject {
 				break;
 			case BLOB:
 			case BYTE_ARRAY:
-				len = ((byte[]) dso.data[i]).length;
-				data[i] = new byte[len];
-				System.arraycopy((byte[]) dso.data[i], 0, (byte[]) data[i], 0, len);
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+					len = ((byte[]) dso.data[i]).length;
+					data[i] = new byte[len];
+					System.arraycopy((byte[]) dso.data[i], 0, (byte[]) data[i], 0, len);
+				}
 				break;
 			case DOUBLE_ARRAY:
-				len = ((double[]) dso.data[i]).length;
-				data[i] = new double[len];
-				for (t = 0; t < len; t++)
-					((double[]) data[i])[t] = ((double[]) dso.data[i])[t];
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+					len = ((double[]) dso.data[i]).length;
+					data[i] = new double[len];
+					for (t = 0; t < len; t++)
+						((double[]) data[i])[t] = ((double[]) dso.data[i])[t];
+				}
 				break;
 			case FLOAT_ARRAY:
-				len = ((float[]) dso.data[i]).length;
-				data[i] = new float[len];
-				for (t = 0; t < len; t++)
-					((float[]) data[i])[t] = ((float[]) dso.data[i])[t];
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+
+					len = ((float[]) dso.data[i]).length;
+					data[i] = new float[len];
+					for (t = 0; t < len; t++)
+						((float[]) data[i])[t] = ((float[]) dso.data[i])[t];
+				}
 				break;
 			case INT_ARRAY:
-				len = ((int[]) dso.data[i]).length;
-				data[i] = new int[len];
-				for (t = 0; t < len; t++)
-					((int[]) data[i])[t] = ((int[]) dso.data[i])[t];
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+					len = ((int[]) dso.data[i]).length;
+					data[i] = new int[len];
+					for (t = 0; t < len; t++)
+						((int[]) data[i])[t] = ((int[]) dso.data[i])[t];
+				}
 				break;
 			case LONG_ARRAY:
-				len = ((long[]) dso.data[i]).length;
-				data[i] = new long[len];
-				for (t = 0; t < len; t++)
-					((long[]) data[i])[t] = ((long[]) dso.data[i])[t];
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+					len = ((long[]) dso.data[i]).length;
+					data[i] = new long[len];
+					for (t = 0; t < len; t++)
+						((long[]) data[i])[t] = ((long[]) dso.data[i])[t];
+				}
 				break;
 			case SHORT_ARRAY:
-				len = ((short[]) dso.data[i]).length;
-				data[i] = new short[len];
-				for (t = 0; t < len; t++)
-					((short[]) data[i])[t] = ((short[]) dso.data[i])[t];
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+					len = ((short[]) dso.data[i]).length;
+					data[i] = new short[len];
+					for (t = 0; t < len; t++)
+						((short[]) data[i])[t] = ((short[]) dso.data[i])[t];
+				}
 				break;
 			case STRING_ARRAY:
-				len = ((String[]) dso.data[i]).length;
-				data[i] = new byte[len];
-				for (t = 0; t < len; t++)
-					((String[]) data[i])[t] = new String(((String[]) dso.data[i])[t]);
+				if (BitMap.is(dso.nullMap, i)) {
+					data[i] = null;
+				} else {
+					len = ((String[]) dso.data[i]).length;
+					data[i] = new byte[len];
+					for (t = 0; t < len; t++)
+						((String[]) data[i])[t] = new String(((String[]) dso.data[i])[t]);
+				}
 				break;
 			}
 		}
@@ -103,16 +136,24 @@ public abstract class DataStoreObject implements CacheableObject {
 	public final void fromBytes(ByteArray bq) {
 		data = new Object[dsod.getColumnCount()];
 		Type[] colType = dsod.getColumnTypes();
+		nullMap = bq.getBytes();
 		for (int i = 0; i < data.length; i++) {
-			data[i] = colType[i].fromBytes(bq);
+			if (BitMap.is(nullMap, i)) {
+				data[i] = null;
+			} else {
+				data[i] = colType[i].fromBytes(bq);
+			}
 		}
 	}
 
 	public final ByteArray toBytes() {
 		ByteArray bq = new ByteArray();
 		Type[] colType = dsod.getColumnTypes();
+		bq.add(nullMap);
 		for (int i = 0; i < data.length; i++) {
-			colType[i].toBytes(data[i], bq);
+			if (!BitMap.is(nullMap, i)) {
+				colType[i].toBytes(data[i], bq);
+			}
 		}
 		return bq;
 	}
@@ -121,8 +162,14 @@ public abstract class DataStoreObject implements CacheableObject {
 		data = new Object[dsod.getColumnCount()];
 		Type[] colType = dsod.getColumnTypes();
 		String[] colName = dsod.getColumnNames();
+		nullMap = BitMap.init(dsod.getColumnCount());
 		for (int i = 0; i < data.length; i++) {
 			data[i] = colType[i].fromResultRow(rr, colName[i]);
+			if (data[i] == null) {
+				BitMap.set(nullMap, i);
+			} else {
+				BitMap.clear(nullMap, i);
+			}
 		}
 	}
 
@@ -323,7 +370,14 @@ public abstract class DataStoreObject implements CacheableObject {
 	}
 
 	protected final void set(String colName, Object value) {
-		data[dsod.getColumnIndex(colName)] = value;
+		set(dsod.getColumnIndex(colName), value);
+	}
+
+	protected final void set(int columnIndex, Object value) {
+		if (value == null && !dsod.isNullAllowed(columnIndex)) {
+			throw new IllegalArgumentException("Value on this field may not be null");
+		}
+		data[columnIndex] = value;
 	}
 
 	public DataStoreObjectDescriptor getDataStoreObjectDescriptor() {
@@ -333,9 +387,4 @@ public abstract class DataStoreObject implements CacheableObject {
 	public Object getPrimaryKey() {
 		return data[dsod.getColumnIndex(dsod.getPrimaryKey().getColumnName())];
 	}
-
-	public final void setValue(String column, Object value) {
-		data[dsod.getColumnIndex(column)] = value;
-	}
-
 }

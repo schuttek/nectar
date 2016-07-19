@@ -68,7 +68,7 @@ public class Element {
 		this.name = name;
 		this.children.add(child);
 	}
-	
+
 	/**
 	 * Add an attribute. if value is null, remove the attribute.
 	 * 
@@ -217,6 +217,34 @@ public class Element {
 	 */
 	public String get(String key) {
 		return attributes.get(key);
+	}
+
+	public Integer getAsInt(String key) {
+		String s = get(key);
+		if (s == null)
+			return null;
+		return Integer.parseInt(s);
+	}
+
+	public Long getAsLong(String key) {
+		String s = get(key);
+		if (s == null)
+			return null;
+		return Long.parseLong(s);
+	}
+
+	public Float getAsFloat(String key) {
+		String s = get(key);
+		if (s == null)
+			return null;
+		return Float.parseFloat(s);
+	}
+
+	public Double getAsDouble(String key) {
+		String s = get(key);
+		if (s == null)
+			return null;
+		return Double.parseDouble(s);
 	}
 
 	/**

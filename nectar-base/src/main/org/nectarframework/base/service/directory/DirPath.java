@@ -1,5 +1,5 @@
 package org.nectarframework.base.service.directory;
 
-public interface DirPath {
-
+public class DirPath {
+	public String namespace;
 }

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pathConfig version="2.0">
+	<virtualServer hostname="localhost" port="80">
+		<project name="www.nectarframework.org" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="localhost" port="443">
+		<project name="www.nectarframework.org" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="www.nectarframework.org" port="80">
+		<project name="www.nectarframework.org" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="www.nectarframework.org" port="443">
+		<project name="www.nectarframework.org" namespace="" />
+	</virtualServer>
+	
+	
+	<virtualServer hostname="www.nectarframework.net" port="80">
+		<project name="www.nectarframework.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="nectarframework.net" port="80">
+		<project name="www.nectarframework.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="www.nectarframework.com" port="80">
+		<project name="www.nectarframework.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="nectarframework.com" port="80">
+		<project name="www.nectarframework.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="www.nectarframework.net" port="443">
+		<project name="www.nectarframework.ssl.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="nectarframework.net" port="443">
+		<project name="www.nectarframework.ssl.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="www.nectarframework.com" port="443">
+		<project name="www.nectarframework.ssl.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="nectarframework.com" port="443">
+		<project name="www.nectarframework.ssl.redirect" namespace="" />
+	</virtualServer>
+
+	<project name="www.nectarframework.redirect">
+		<redirect path="*" code="308" toUrl="http://www.nectarframework.org/" />
+	</project>
+	<project name="www.nectarframework.ssl.redirect">
+		<redirect path="*" code="308" toUrl="https://www.nectarframework.org/" />
+	</project>
+
+	<project name="www.nectarframework.org">
+		<action name="indexAction" package="org.nectarframework.www.action"
+			class="IndexAction" form="index" defaultOutput="template"
+			templateName="index" />
+		<action name="articleView" package="org.nectarframework.www.action"
+			class="ArticleViewAction" form="articleView" defaultOutput="template"
+			templateName="articleView" />
+		<form name="index">
+		</form>
+		<form name="articleView">
+			<var name="id" type="int" required="true" minValue="0" />
+		</form>
+
+		<path path="index" action="indexAction" />
+		<path path="" action="indexAction" />
+		<path path="articleView" action="articleView" />
+
+		<alias path="overview" toPath="articleView" relative="true">
+			<var name="id" value="2" />
+		</alias>
+		<alias path="documentation" toPath="articleView" relative="true">
+			<var name="id" value="3" />
+		</alias>
+		<alias path="download" toPath="articleView" relative="true">
+			<var name="id" value="4" />
+		</alias>
+		<alias path="about" toPath="articleView" relative="true">
+			<var name="id" value="5" />
+		</alias>
+
+		<proxy path="mantis" protocol="http" port="8000"
+			host="www.nectarframework.org" requestPath="/mantis/"></proxy>
+
+		<static path="s" toPath="s" />
+
+	</project>
+
+</pathConfig>

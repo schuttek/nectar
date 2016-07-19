@@ -1,5 +1,7 @@
 package org.nectarframework.base.service.thread;
 
+import org.nectarframework.base.service.log.Log;
+
 public class ThreadServiceWorker extends Thread {
 	private ThreadService ts = null;
 	private ThreadServiceTask task = null;
@@ -14,7 +16,7 @@ public class ThreadServiceWorker extends Thread {
 			while (task != null) {
 				try {
 					task.execute();
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					task.setException(e);
 					ts.reportException(this, task, e);
 				}

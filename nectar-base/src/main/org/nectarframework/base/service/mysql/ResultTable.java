@@ -208,6 +208,11 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		throw new SQLException("Type mismatch. Column " + column + " is a " + obj.getClass().getName());
 	}
 
+
+	public boolean isNull(int rowIndex, String colName) throws SQLException {
+		return (getObject(rowIndex, colName) == null);
+	}
+	
 	public Object getObject(int row, String column) throws SQLException {
 		return getObject(row, lookupColumn(column));
 	}
@@ -357,4 +362,5 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		return ret;
 
 	}
+
 }

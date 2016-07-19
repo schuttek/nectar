@@ -39,6 +39,7 @@ import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.pathfinder.IPathFinder;
 import org.nectarframework.base.service.translation.TranslationService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
@@ -55,7 +56,7 @@ public class TemplateService extends Service {
 	private String rawTemplatesRootDir;
 
 	private TranslationService translationService;
-	private DirectoryService directoryService;
+	private IPathFinder directoryService;
 
 	private static Namespace NS = Namespace.getNamespace("th", "http://www.thymeleaf.org");
 
@@ -93,7 +94,7 @@ public class TemplateService extends Service {
 	public boolean establishDependancies() throws ServiceUnavailableException {
 		dependancy(XmlService.class);
 		translationService = (TranslationService) dependancy(TranslationService.class);
-		directoryService = (DirectoryService) dependancy(DirectoryService.class);
+		directoryService = (IPathFinder) dependancy(IPathFinder.class);
 		return true;
 	}
 

@@ -15,7 +15,7 @@ public class Post extends DataStoreObject {
 	
 	@Override
 	public void initDataStoreObjectDescriptor(DataStoreService dss) {
-		dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor("org_nectarframework_www_post", new DataStoreKey("postId", DataStoreObjectDescriptor.Type.LONG, 8, true), new String[] { "postId", "threadId", "authorUserId", "createdTimestamp", "lastEditTimestamp", "message" }, new DataStoreObjectDescriptor.Type[] {DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.STRING}, Post.class));
+		dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor("org_nectarframework_www_post", new DataStoreKey("postId", DataStoreObjectDescriptor.Type.LONG, 8, true), new String[] { "postId", "threadId", "authorUserId", "createdTimestamp", "lastEditTimestamp", "message" }, new DataStoreObjectDescriptor.Type[] {DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.STRING}, new boolean[] {false, false, false, false, true, false}, Post.class));
 	}
 	
 	public static Post load(Long key) throws Exception {

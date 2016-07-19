@@ -1,5 +1,6 @@
 package org.nectarframework.base.service.http;
 
+import org.nectarframework.base.action.Action;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.Tuple;
@@ -20,21 +21,21 @@ import org.nectarframework.base.tools.Tuple;
  * @author skander
  *
  */
-public abstract class RawAction extends org.nectarframework.base.action.Action {
+public abstract class RawAction extends Action {
 
-	private ByteArray byteArray;
+	private byte[] byteArray;
 	
 	
 	@Override
 	public final Element execute() {
-		Tuple<ByteArray, Element> tuple = rawActionExecute();
+		Tuple<byte[], Element> tuple = rawActionExecute();
 		byteArray = tuple.getLeft();
 		return tuple.getRight();
 	}
 
-	protected abstract Tuple<ByteArray, Element> rawActionExecute();
+	protected abstract Tuple<byte[], Element> rawActionExecute();
 
-	public ByteArray getRawByteArray() {
+	public byte[] getRawByteArray() {
 		return byteArray;
 	}
 }

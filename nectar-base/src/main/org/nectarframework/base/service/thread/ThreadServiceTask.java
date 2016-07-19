@@ -1,17 +1,17 @@
 package org.nectarframework.base.service.thread;
 
 public abstract class ThreadServiceTask implements Comparable<ThreadServiceTask> {
-	private Exception exception = null;
+	private Throwable exception = null;
 	private boolean completed = false;
 	private long executeTime = -1;
 
 	public abstract void execute() throws Exception;
 
-	public void setException(Exception e) {
+	public void setException(Throwable e) {
 		this.exception = e;
 	}
 
-	public Exception getException() {
+	public Throwable getException() {
 		return exception;
 	}
 

@@ -64,6 +64,9 @@ public class Stopwatch {
 	}
 
 	private String timeDiffToString(long t) {
+		if (t < 0) {
+			return "?-1?";
+		}
 		long days = t / (24 * 60 * 60 * 1000 * 1000 * 1000);
 		t -= days * 24 * 60 * 60 * 1000 * 1000 * 1000;
 		long hours = t / (60 * 60 * 1000 * 1000 * 1000);

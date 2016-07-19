@@ -145,16 +145,16 @@
 		<service class="org.nectarframework.base.service.xml.XmlService">
 		</service>
 
-		<service class="org.nectarframework.base.service.directory.DirectoryService">
-			<param name="configFilePath" value="config/pathConfig.xml" />
+		<service class="org.nectarframework.base.service.pathfinder.PathFinderService">
+			<param name="pathConfigFile" value="config/pathConfig2.xml" />
 		</service>
 		<service
-			class="org.nectarframework.base.service.http.SimpleHttpRequestService">
-			<param name="compressionMinSize" value="1" />
+			class="org.nectarframework.base.service.nanohttp.NanoHttpService">
 			<param name="listeningHost" value="127.0.0.1" />
 			<param name="listeningPort" value="80" />
-			<param name="staticRequestDirectory" value="s" />
-			<param name="staticLocalDirectory" value="public_root" />
+			
+			<param name="listeningSSLPort" value="443" />
+			
 		</service>
 
 		<service class="org.nectarframework.base.service.thread.ThreadService">

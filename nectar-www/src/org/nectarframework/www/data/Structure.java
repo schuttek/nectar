@@ -15,7 +15,7 @@ public class Structure extends DataStoreObject {
 	
 	@Override
 	public void initDataStoreObjectDescriptor(DataStoreService dss) {
-		dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor("org_nectarframework_www_structure", new DataStoreKey("structureId", DataStoreObjectDescriptor.Type.LONG, 8, false), new String[] { "structureId", "parentId", "orderWeight", "name", "description" }, new DataStoreObjectDescriptor.Type[] {DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.FLOAT, DataStoreObjectDescriptor.Type.STRING, DataStoreObjectDescriptor.Type.STRING}, Structure.class));
+		dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor("org_nectarframework_www_structure", new DataStoreKey("structureId", DataStoreObjectDescriptor.Type.LONG, 8, false), new String[] { "structureId", "parentId", "orderWeight", "name", "description" }, new DataStoreObjectDescriptor.Type[] {DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.LONG, DataStoreObjectDescriptor.Type.FLOAT, DataStoreObjectDescriptor.Type.STRING, DataStoreObjectDescriptor.Type.STRING}, new boolean[] {false, false, false, false, true}, Structure.class));
 	}
 	
 	public static Structure load(Long key) throws Exception {

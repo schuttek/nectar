@@ -128,4 +128,8 @@ public class ResultRow implements Iterator<ResultRow> {
 		return this.resultTable.getObject(rowIndex, column);
 	}
 
+	public boolean isNull(String colName) throws SQLException {
+		return this.resultTable.isNull(rowIndex, colName);
+	}
+
 }

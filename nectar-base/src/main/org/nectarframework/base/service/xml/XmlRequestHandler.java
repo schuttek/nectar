@@ -40,30 +40,20 @@ public class XmlRequestHandler extends ThreadServiceTask {
 		
 		HashMap<String, List<String>> parameters = paramterMap(element.getChildren().getFirst());
 
-		int prefixIdx = actionStr.lastIndexOf('/');
-		String prefix = "";
-		String actionPath = "";
-		if (prefixIdx > 0) {
-			prefix = actionStr.substring(0, prefixIdx);
-			actionPath = actionStr.substring(prefixIdx +1, actionStr.length());
-		} else {
-			actionPath = actionStr;
-		}
-		
 		
 		DirPath dirPath = null;
 		
 		while (dirPath == null || !(dirPath instanceof DirAction)) {
-			dirPath = directoryService.lookupAction(prefix, actionPath);
+			dirPath = directoryService.lookupPath(actionStr);
 		
 			if (dirPath == null) {
-					Log.warn("no action "+prefix+" "+actionPath);
+					Log.warn("no action "+actionStr);
 					return;
 				}
 		
 			if (dirPath instanceof DirRedirect) {
 				parameters.putAll(((DirRedirect)dirPath).variables);
-				dirPath = directoryService.lookupAction(prefix, ((DirRedirect)dirPath).toPath);
+				dirPath = directoryService.lookupPath(actionStr);
 			}
 		}
 		

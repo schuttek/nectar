@@ -343,7 +343,7 @@ public class CacheService extends Service {
 			cache.remove(key);
 		}
 		
-		Log.trace("CacheService update: "+cache.size()+" items using estimated "+this.memoryUsage+" bytes or a recalculated "+recalcMemoryUsage+" bytes.");
+//		Log.trace("CacheService update: "+cache.size()+" items using estimated "+this.memoryUsage+" bytes or a recalculated "+recalcMemoryUsage+" bytes.");
 	}
 
 	public void checkFlushTimerTaskCallback() {

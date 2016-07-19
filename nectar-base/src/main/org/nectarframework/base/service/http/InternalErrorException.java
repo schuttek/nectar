@@ -1,14 +1,24 @@
 package org.nectarframework.base.service.http;
 
-public class InternalErrorException extends Exception {
+import org.nectarframework.base.exception.NectarException;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4530996086039639069L;
+public class InternalErrorException extends NectarException {
+	private static final long serialVersionUID = -3911331336494880191L;
 
-	public InternalErrorException(Exception e) {
-		super(e);
+	public InternalErrorException() {
+		super();
+	}
+
+	public InternalErrorException(String msg) {
+		super(msg);
+	}
+
+	public InternalErrorException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
+
+	public InternalErrorException(Throwable cause) {
+		super(cause);
 	}
 
 }

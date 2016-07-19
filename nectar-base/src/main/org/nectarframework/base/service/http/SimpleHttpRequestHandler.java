@@ -90,8 +90,19 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		// resolve the action with the directory service
 		String path = request.getAddress().getPath().getPath();
 
+		
+		DirPath dirPath = directoryService.lookupPath(path);
+		if (dirPath == null) {
+			handleNotFound(null);
+		}
+		while (dirPath != null && dirPath instanceof DirRedirect) {
+			
+		}
+			
+		
+		// request level errors don't go past this point!
 		try {
-			if (path.startsWith("/" + simpleHttpRequestService.getStaticRequestDirectory() + "/")) {
+			if (path.startsWith("/s/")) {
 				try {
 					processStatic();
 				} catch (NotFoundException e) {
@@ -105,8 +116,6 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 				} catch (NotFoundException e) {
 					handleNotFound(e);
 				} catch (InternalErrorException e) {
-					handleInternalError(e);
-				} catch (ActionTypeMismatchException e) {
 					handleInternalError(e);
 				} catch (FormValidationException e) {
 					handleFormValidationError(e);
@@ -244,7 +253,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		Log.warn("SimpleHttpRequestService: ClientWriteException: " + request.getAddress().getPath().getPath(), e);
 	}
 
-	public void processDynamic() throws NotFoundException, InternalErrorException, ActionTypeMismatchException,
+	public void processDynamic() throws NotFoundException, InternalErrorException,
 			FormValidationException, ClientWriteException {
 		Stopwatch stopwatch = new Stopwatch();
 
@@ -268,7 +277,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		stopwatch.mark("init");
 		
 		while (dirPath == null || !(dirPath instanceof DirAction)) {
-			dirPath = directoryService.lookupAction(actionNamespace, actionPath);
+			dirPath = directoryService.lookupPath(path);
 
 			if (dirPath == null) {
 				throw new NotFoundException();
@@ -276,7 +285,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 			if (dirPath instanceof DirRedirect) {
 				parameters.putAll(((DirRedirect) dirPath).variables);
-				dirPath = directoryService.lookupAction(actionNamespace, ((DirRedirect) dirPath).toPath);
+				dirPath = directoryService.lookupPath(((DirRedirect) dirPath).toPath);
 				if (dirPath == null) {
 					throw new NotFoundException();
 				}
@@ -295,7 +304,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		} catch (IllegalAccessException e) {
 			throw new InternalErrorException(e);
 		} catch (ClassNotFoundException e) {
-			throw new ActionTypeMismatchException(e);
+			throw new InternalErrorException(e);
 		}
 
 		stopwatch.mark("actionLoad");
@@ -484,10 +493,10 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		response.setValue("Date", dateFormat.format(lastModified));
 	}
 
-	private Element handleRawAction(Action action) throws ActionTypeMismatchException, InternalErrorException {
+	private Element handleRawAction(Action action) throws InternalErrorException {
 
 		if (!(action instanceof RawAction)) {
-			throw new ActionTypeMismatchException();
+			throw new InternalErrorException("Only actions that inherit "+RawAction.class.getName()+" may be configured for raw output");
 		}
 		RawAction rawAction = (RawAction) action;
 
@@ -497,7 +506,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			contentType = "application/octet-stream";
 		}
 
-		ByteArray byteArray = rawAction.getRawByteArray();
+		byte[] byteArray = rawAction.getRawByteArray();
 
 		boolean isCompressible = true;
 		if (elm.get("httpCompressible").equals("false")) {
@@ -510,7 +519,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		 * ByteArray(doCompression(byteArray.getBytes())); }
 		 */
 
-		contentLength = byteArray.length();
+		contentLength = byteArray.length;
 
 		response.setCode(200);
 		response.setContentLength(contentLength);

@@ -11,26 +11,26 @@
 		primaryKeyLength="8">
 		<column name="id" type="long" />
 		<column name="userType" type="byte" />
-		<column name="homeGroup" type="long" />
+		<column name="homeGroup" type="long" nullAllowed=""/>
 		<column name="login" type="string" />
 		<column name="publicUserName" type="string" />
-		<column name="permission" type="string" />
-		<column name="lastUserIp" type="string" />
-		<column name="registrationTimestamp" type="long" />
-		<column name="emailAddress" type="string" />
-		<column name="lastVisit" type="long" />
-		<column name="localeLanguage" type="string" />
-		<column name="localeCountry" type="string" />
-		<column name="localeVariant" type="string" />
-		<column name="options" type="string" />
-		<column name="timezone" type="string" />
-		<column name="avatar" type="string" />
-		<column name="avatarType" type="byte" />
-		<column name="avatarWidth" type="string" />
-		<column name="avatarHeight" type="string" />
-		<column name="signature" type="string" />
-		<column name="about" type="string" />
-		<column name="registrationStatus" type="byte" />
+		<column name="permission" type="string" nullAllowed="true"/>
+		<column name="lastUserIp" type="string" nullAllowed="true"/>
+		<column name="registrationTimestamp" type="long" nullAllowed="true"/>
+		<column name="emailAddress" type="string" nullAllowed="true"/>
+		<column name="lastVisit" type="long" nullAllowed="true"/>
+		<column name="localeLanguage" type="string" nullAllowed="true"/>
+		<column name="localeCountry" type="string" nullAllowed="true"/>
+		<column name="localeVariant" type="string" nullAllowed="true"/>
+		<column name="options" type="string" nullAllowed="true"/>
+		<column name="timezone" type="string" nullAllowed="true"/>
+		<column name="avatar" type="string" nullAllowed="true"/>
+		<column name="avatarType" type="byte" nullAllowed="true"/>
+		<column name="avatarWidth" type="string" nullAllowed="true"/>
+		<column name="avatarHeight" type="string" nullAllowed="true"/>
+		<column name="signature" type="string" nullAllowed="true"/>
+		<column name="about" type="string" nullAllowed="true"/>
+		<column name="registrationStatus" type="byte" nullAllowed="true"/>
 		<key column="login" type="string" />
 	</dataStoreObject>
 	<dataStoreObject package="org.nectarframework.www.data" className="BlogPost"
@@ -39,10 +39,10 @@
 		<column name="id" type="long" />
 		<column name="authorUserId" type="long" />
 		<column name="createdTimestamp" type="long" />
-		<column name="lastEditTimestamp" type="long" />
+		<column name="lastEditTimestamp" type="long" nullAllowed="true"/>
 		<column name="title" type="string" />
 		<column name="message" type="string" />
-		<column name="tags" type="string" />
+		<column name="tags" type="string" nullAllowed="true"/>
 		<relation column="authorUserId" methodName="author" type="long"
 			targetPackage="org.nectarframework.www.data" targetClass="User" />
 	</dataStoreObject>
@@ -53,7 +53,7 @@
 		<column name="threadId" type="long" />
 		<column name="authorUserId" type="long" />
 		<column name="createdTimestamp" type="long" />
-		<column name="lastEditTimestamp" type="long" />
+		<column name="lastEditTimestamp" type="long" nullAllowed="true"/>
 		<column name="message" type="string" />
 		<relation column="threadId" methodName="thread" type="long"
 			targetPackage="org.nectarframework.www.data" targetClass="Thread" />
@@ -67,7 +67,7 @@
 		<column name="parentId" type="long" />
 		<column name="orderWeight" type="float" />
 		<column name="name" type="string" />
-		<column name="description" type="string" />
+		<column name="description" type="string" nullAllowed="true"/>
 		<relation column="parentId" methodName="parent" type="long"
 			targetPackage="org.nectarframework.www.data" targetClass="Structure" />
 	</dataStoreObject>
@@ -78,10 +78,10 @@
 		<column name="structureId" type="long" />
 		<column name="authorUserId" type="long" />
 		<column name="createdTimestamp" type="long" />
-		<column name="lastEditTimestamp" type="long" />
-		<column name="lastReplyTimestamp" type="long" />
-		<column name="sticky" type="byte" />
-		<column name="flags" type="int" />
+		<column name="lastEditTimestamp" type="long" nullAllowed="true"/>
+		<column name="lastReplyTimestamp" type="long" nullAllowed="true"/>
+		<column name="sticky" type="byte" nullAllowed="true"/>
+		<column name="flags" type="int" nullAllowed="true"/>
 		<column name="subject" type="string" />
 		<column name="message" type="string" />
 		<relation column="structureId" methodName="structure" type="long"

@@ -4,7 +4,6 @@ package org.nectarframework.base.service.directory;
  * The DirectoryService maps request paths to Actions.
  */
 
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,6 +15,7 @@ import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.pathfinder.IPathFinder;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.StringTools;
@@ -28,11 +28,11 @@ import org.xml.sax.SAXException;
  * It also deals with configured Forms, redirects and path rewriting.
  * 
  */
-public class DirectoryService extends Service {
-	
+public class DirectoryService extends IPathFinder {
+
 	private String configFilePath = "config/pathConfig.xml";
-	
-	private HashMap<String, HashMap<String, DirPath>> pathMap;
+
+	private HashMap<String, DirPath> pathMap;
 
 	private Element pathConfigElement;
 
@@ -43,13 +43,13 @@ public class DirectoryService extends Service {
 
 	@Override
 	protected boolean init() {
-		pathMap = new HashMap<String, HashMap<String, DirPath>>();
+		pathMap = new HashMap<String, DirPath>();
 		boolean ret = buildFromFile(configFilePath);
 
 		if (Log.isTrace() && ret) {
 			Log.trace(configToString());
 		}
-		
+
 		return ret;
 	}
 
@@ -67,22 +67,20 @@ public class DirectoryService extends Service {
 			Log.fatal(e);
 			return false;
 		}
-		
 
 		if (!pathConfigElement.isName("pathConfig")) {
 			Log.fatal(cfp + " doesn't contain a valid path config");
 			return false;
 		}
-		
+
 		for (Element project : pathConfigElement.getChildren("project")) {
 			String namespace = project.get("namespace");
-			
-			
+
 			HashMap<String, DirForm> formMap = new HashMap<String, DirForm>();
-			
+
 			for (Element form : project.getChildren("form")) {
 				DirFormvar[] fva = new DirFormvar[form.getChildren().size()];
-				int t=0;
+				int t = 0;
 				for (Element formvar : form.getChildren("var")) {
 					DirFormvar fv = new DirFormvar();
 					fv.name = formvar.get("name");
@@ -90,7 +88,7 @@ public class DirectoryService extends Service {
 					fv.nullAllowed = formvar.isAttribute("null", "true");
 					fva[t] = fv;
 				}
-				
+
 				DirForm f = new DirForm();
 				f.formvars = fva;
 				f.name = form.get("name");
@@ -98,7 +96,7 @@ public class DirectoryService extends Service {
 			}
 
 			HashMap<String, DirAction> actionMap = new HashMap<String, DirAction>();
-			
+
 			for (Element action : project.getChildren("action")) {
 				DirAction da = new DirAction();
 				da.name = action.get("name");
@@ -107,18 +105,16 @@ public class DirectoryService extends Service {
 				da.defaultOutput = action.get("defaultOutput");
 				da.templateName = action.get("templateName");
 				da.formName = action.get("form");
-				
+
 				da.form = formMap.get(da.formName);
-				
+
 				actionMap.put(da.name, da);
 			}
-			
-			HashMap<String, DirPath> daMap = new HashMap<String, DirPath>();
-			
+
 			for (Element path : project.getChildren("path")) {
-				daMap.put(path.get("path"), actionMap.get(path.get("action")));
+				pathMap.put(getAbsolutePath(namespace, path.get("path")), actionMap.get(path.get("action")));
 			}
-			
+
 			for (Element redirect : project.getChildren("redirect")) {
 				DirRedirect dirRedirect = new DirRedirect();
 				dirRedirect.path = redirect.get("path");
@@ -133,40 +129,73 @@ public class DirectoryService extends Service {
 						dirRedirect.variables.put(rv.get("name"), ls);
 					}
 				}
-				daMap.put(dirRedirect.path, dirRedirect);
-			}
-			
-			if (!pathMap.containsKey(namespace)) {
-				pathMap.put(namespace, new HashMap<String, DirPath>());
+				pathMap.put(getAbsolutePath(namespace, dirRedirect.path), dirRedirect);
 			}
 
-			pathMap.get(namespace).putAll(daMap);
-			
+			for (Element proxy : project.getChildren("proxy")) {
+				DirProxy dirProxy = new DirProxy();
+				dirProxy.path = proxy.get("path");
+
+				dirProxy.protocol = proxy.get("protocol");
+				dirProxy.port = proxy.get("port");
+				dirProxy.host = proxy.get("host");
+				dirProxy.requestPath = proxy.get("requestPath");
+
+				pathMap.put(getAbsolutePath(namespace, dirProxy.path), dirProxy);
+			}
+
+			for (Element staticElm : project.getChildren("static")) {
+				DirStatic dirStatic = new DirStatic();
+				dirStatic.path = staticElm.get("path");
+				dirStatic.toPath = staticElm.get("toPath");
+				pathMap.put(getAbsolutePath(namespace, dirStatic.path), dirStatic);
+			}
+
 		}
-		
+
 		return true;
 	}
 
+	private String getAbsolutePath(String namespace, String path) {
+		if (namespace.startsWith("/")) {
+			namespace = namespace.substring(1);
+		}
+		if (!namespace.endsWith("/")) {
+			namespace += "/";
+		}
+		if (path.startsWith("/")) {
+			path = path.substring(1);
+		}
+		if (path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+
+		return "/" + namespace + "/" + path;
+	}
 
 	private String configToString() {
 		StringBuffer sb = new StringBuffer("Path Configuration:");
-		
-		for (String k : pathMap.keySet()) {
-			HashMap<String, DirPath> map = pathMap.get(k);
-			sb.append("namespace: '"+k+"'\n");
-			for (String ac : map.keySet()) {
-				DirPath dp = map.get(ac);
-				if (dp instanceof DirAction) {
-					sb.append("Path: '"+ac+ "' -> '"+((DirAction)dp).name+"' ("+((DirAction)dp).className+") '"+((DirAction)dp).formName+"'\n");
-				} else if (dp instanceof DirRedirect) {
-					sb.append("Redirect: '"+ac+ "' -> '"+((DirRedirect)dp).path+"' ("+((DirRedirect)dp).toPath+") '"+StringTools.mapToString(((DirRedirect)dp).variables)+"'\n");
-				}
+
+		for (String ac : pathMap.keySet()) {
+			DirPath dp = pathMap.get(ac);
+			if (dp instanceof DirAction) {
+				sb.append("Path: '" + ac + "' -> '" + ((DirAction) dp).name + "' (" + ((DirAction) dp).className + ") '"
+						+ ((DirAction) dp).formName + "'\n");
+			} else if (dp instanceof DirRedirect) {
+				sb.append("Redirect: '" + ac + "' -> '" + ((DirRedirect) dp).path + "' (" + ((DirRedirect) dp).toPath
+						+ ") '" + StringTools.mapToString(((DirRedirect) dp).variables) + "'\n");
+			} else if (dp instanceof DirProxy) {
+				sb.append("Proxy: '" + ac + "' -> '" + ((DirProxy) dp).path + "' (" + ((DirProxy) dp).protocol + " "
+						+ ((DirProxy) dp).host + ":" + ((DirProxy) dp).port + " -> " + ((DirProxy) dp).requestPath
+						+ ")\n");
+			} else if (dp instanceof DirStatic) {
+				sb.append(
+						"Static: '" + ac + "' -> '" + ((DirStatic) dp).path + "' (" + ((DirStatic) dp).toPath + ")\n");
 			}
 		}
 		return sb.toString();
 	}
 
-	
 	@Override
 	protected boolean run() {
 		return true;
@@ -182,15 +211,11 @@ public class DirectoryService extends Service {
 		return true;
 	}
 
-	public DirPath lookupAction(String prefix, String path) {
-		HashMap<String, DirPath> m = pathMap.get(prefix);
-		if (m != null) {
-			return m.get(path);
-		}
-		return null;
-	}
-
 	public Element getPathConfigElement() {
 		return pathConfigElement;
+	}
+
+	public DirPath lookupPath(String path) {
+		return this.pathMap.get(path);
 	}
 }

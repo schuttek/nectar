@@ -100,7 +100,7 @@ public class ThreadService extends Service {
 					// let's just wait a while
 					// Log.trace("ThreadService task queue is full. waiting a bit.");
 					try {
-						this.wait(1000);
+						this.wait(100);
 					} catch (InterruptedException e) {
 						Log.trace(e);
 					}
@@ -140,7 +140,7 @@ public class ThreadService extends Service {
 		return true;
 	}
 
-	public void reportException(ThreadServiceWorker threadServiceWorker, ThreadServiceTask task, Exception e) {
+	public void reportException(ThreadServiceWorker threadServiceWorker, ThreadServiceTask task, Throwable e) {
 		Log.fatal(task.getClass().getName(), e);
 	}
 
@@ -184,24 +184,5 @@ public class ThreadService extends Service {
 	public void executeAtTime(ThreadServiceTask task, long time) {
 		task.setExecuteTime(time);
 		this.waitingThread.addTask(task);
-	}
-	
-	public static void main(String[] args) {
-		ThreadService threadService = new ThreadService();
-		threadService.init();
-		threadService.run();
-		int t=0;
-		while (true) {
-			final int copyT = t;
-			threadService.execute(new ThreadServiceTask() {
-				public void execute() throws InterruptedException {
-					synchronized(this) {
-						wait(100);
-					}
-					Log.trace("test"+copyT);
-				}
-			});
-			t++;
-		}
 	}
 }

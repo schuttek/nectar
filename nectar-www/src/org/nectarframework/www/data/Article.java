@@ -15,7 +15,7 @@ public class Article extends DataStoreObject {
 	
 	@Override
 	public void initDataStoreObjectDescriptor(DataStoreService dss) {
-		dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor("org_nectarframework_www_article", new DataStoreKey("id", DataStoreObjectDescriptor.Type.INT, 4, false), new String[] { "id", "name", "content" }, new DataStoreObjectDescriptor.Type[] {DataStoreObjectDescriptor.Type.INT, DataStoreObjectDescriptor.Type.STRING, DataStoreObjectDescriptor.Type.STRING}, Article.class));
+		dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor("org_nectarframework_www_article", new DataStoreKey("id", DataStoreObjectDescriptor.Type.INT, 4, false), new String[] { "id", "name", "content" }, new DataStoreObjectDescriptor.Type[] {DataStoreObjectDescriptor.Type.INT, DataStoreObjectDescriptor.Type.STRING, DataStoreObjectDescriptor.Type.STRING}, new boolean[] {false, false, false}, Article.class));
 	}
 	
 	public static Article load(Integer key) throws Exception {
