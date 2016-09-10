@@ -81,9 +81,13 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception {
+		String sqlQuery = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM `" + dsod.getTableName() + "` WHERE `"+dsod.getPrimaryKey().getColumnName()+"` >= ? AND "+ dsod.getPrimaryKey().getColumnName() +" <= ?" ;
+		MysqlPreparedStatement mps = new MysqlPreparedStatement(sqlQuery);
+		
+		dsod.getPrimaryKey().getType().toMps(mps, 1, startKey);
+		dsod.getPrimaryKey().getType().toMps(mps, 2, endKey);
+		return loadFromQuery(mps, dsod);
 	}
 
 	public List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {

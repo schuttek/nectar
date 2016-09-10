@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
-import org.nectarframework.base.service.cluster.ClusterDatabaseService;
 import org.nectarframework.base.service.file.FileService;
 
 
@@ -58,7 +57,7 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception {
+	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

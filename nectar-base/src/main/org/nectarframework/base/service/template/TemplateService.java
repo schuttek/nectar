@@ -32,7 +32,6 @@ import org.jdom2.Text;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.located.LocatedElement;
 import org.jdom2.located.LocatedJDOMFactory;
-import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;

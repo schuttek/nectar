@@ -45,7 +45,7 @@ public abstract class DataStoreService extends Service {
 
 	public abstract List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception;
 
-	public abstract List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, DataStoreKey startKey, DataStoreKey endKey) throws Exception;
+	public abstract List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception;
 
 	public abstract List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws Exception;
 
