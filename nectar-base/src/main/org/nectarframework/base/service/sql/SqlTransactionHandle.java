@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,18 +7,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Vector;
 
-public class MysqlTransactionHandle {
+public class SqlTransactionHandle {
 
 	Connection connection;
-	DatabaseService my;
+	SqlService my;
 
-	public MysqlTransactionHandle(Connection connection, DatabaseService my) {
+	public SqlTransactionHandle(Connection connection, SqlService my) {
 		this.connection = connection;
 		this.my = my;
 	}
 
 	
-	public Vector<Long> insert(MysqlPreparedStatement mps) throws SQLException {
+	public Vector<Long> insert(SqlPreparedStatement mps) throws SQLException {
 		PreparedStatement prepStat = connection.prepareStatement(mps.getSql(), Statement.RETURN_GENERATED_KEYS);
 		mps._applyToJavaSQLPreparedStatement(prepStat, my.getMaxInsertBatchSize());
 		Vector<Long> ids = new Vector<Long>();
@@ -30,7 +30,7 @@ public class MysqlTransactionHandle {
 		return ids;
 	}
 	
-	public int update(MysqlPreparedStatement mps) throws SQLException {
+	public int update(SqlPreparedStatement mps) throws SQLException {
 		PreparedStatement prepStat = connection.prepareStatement(mps.getSql());
 		mps._applyToJavaSQLPreparedStatement(prepStat);
 		int rows = prepStat.executeUpdate();

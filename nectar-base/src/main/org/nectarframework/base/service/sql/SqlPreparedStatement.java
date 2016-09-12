@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -20,13 +20,13 @@ import java.util.Vector;
 
 import org.nectarframework.base.service.log.Log;
 
-public class MysqlPreparedStatement {
+public class SqlPreparedStatement {
 	// TODO: extends Lockable
 
-	public MysqlPreparedStatement() {
+	public SqlPreparedStatement() {
 	}
 
-	public MysqlPreparedStatement(String sql) {
+	public SqlPreparedStatement(String sql) {
 		setSql(sql);
 	}
 

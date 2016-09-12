@@ -10,11 +10,11 @@ import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.mysql.MysqlPreparedStatement;
-import org.nectarframework.base.service.mysql.MysqlService;
-import org.nectarframework.base.service.mysql.MysqlTransactionHandle;
-import org.nectarframework.base.service.mysql.ResultRow;
-import org.nectarframework.base.service.mysql.ResultTable;
+import org.nectarframework.base.service.sql.SqlPreparedStatement;
+import org.nectarframework.base.service.sql.SqlTransactionHandle;
+import org.nectarframework.base.service.sql.ResultRow;
+import org.nectarframework.base.service.sql.ResultTable;
+import org.nectarframework.base.service.sql.mysql.MysqlService;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 
@@ -57,7 +57,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		return true;
 	}
 
-	private List<? extends DataStoreObject> loadFromQuery(MysqlPreparedStatement mps, DataStoreObjectDescriptor dsod) throws SQLException {
+	private List<? extends DataStoreObject> loadFromQuery(SqlPreparedStatement mps, DataStoreObjectDescriptor dsod) throws SQLException {
 
 		LinkedList<DataStoreObject> dsoList = new LinkedList<DataStoreObject>();
 		ResultTable rt = mysqlService.select(mps);
@@ -83,7 +83,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	@Override
 	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception {
 		String sqlQuery = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM `" + dsod.getTableName() + "` WHERE `"+dsod.getPrimaryKey().getColumnName()+"` >= ? AND "+ dsod.getPrimaryKey().getColumnName() +" <= ?" ;
-		MysqlPreparedStatement mps = new MysqlPreparedStatement(sqlQuery);
+		SqlPreparedStatement mps = new SqlPreparedStatement(sqlQuery);
 		
 		dsod.getPrimaryKey().getType().toMps(mps, 1, startKey);
 		dsod.getPrimaryKey().getType().toMps(mps, 2, endKey);
@@ -92,7 +92,7 @@ public class MysqlDataStoreService extends DataStoreService {
 
 	public List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
 		String sqlQuery = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName();
-		MysqlPreparedStatement mps = new MysqlPreparedStatement(sqlQuery);
+		SqlPreparedStatement mps = new SqlPreparedStatement(sqlQuery);
 		return loadFromQuery(mps, dsod);
 	}
 
@@ -108,7 +108,7 @@ public class MysqlDataStoreService extends DataStoreService {
 				sql.append("?");
 		}
 		sql.append(")");
-		MysqlPreparedStatement mps = new MysqlPreparedStatement(sql.toString());
+		SqlPreparedStatement mps = new SqlPreparedStatement(sql.toString());
 
 		int t = 1;
 		for (Object o : keys) {
@@ -145,7 +145,7 @@ public class MysqlDataStoreService extends DataStoreService {
 
 		String sql = "SELECT " + StringTools.implode(dso.getColumnNames(), ",") + " FROM " + dso.getTableName() + " WHERE " + dso.getColumnNames()[0] + " = ?";
 		Log.trace(sql);
-		MysqlPreparedStatement mps = new MysqlPreparedStatement(sql);
+		SqlPreparedStatement mps = new SqlPreparedStatement(sql);
 		dsod.getPrimaryKey().getType().toMps(mps, 1, key);
 
 		ResultTable rt = mysqlService.select(mps);
@@ -185,7 +185,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		
 		/* batch inserts are faster when running in a transaction, but transactions also add some overhead. So 5 is an arbitrary threshold to keep single and small insert batches fast (transaction-less), while large batches will get a speed boost from being in a transaction */
 		
-		MysqlTransactionHandle mth = null;
+		SqlTransactionHandle mth = null;
 		if (dsoList.size() > 5) {
 			mth = mysqlService.beginTransaction();
 		}
@@ -217,7 +217,7 @@ public class MysqlDataStoreService extends DataStoreService {
 			
 			
 			String sql = "INSERT INTO "+dsod.getTableName()+" SET "+StringTools.implode(colList, ", ") + " ON DUPLICATE KEY UPDATE SET "+StringTools.implode(colNoKeyList, ", ")+ ";";
- 			MysqlPreparedStatement mps = new MysqlPreparedStatement(sql);
+ 			SqlPreparedStatement mps = new SqlPreparedStatement(sql);
 			
  			for (DataStoreObject dso : dsodMap.get(dsod)) {
  				for (int i=0;i<dsod.getColumnCount();i++) {

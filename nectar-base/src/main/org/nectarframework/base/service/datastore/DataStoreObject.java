@@ -6,7 +6,7 @@ import org.nectarframework.base.Main;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor.Type;
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.mysql.ResultRow;
+import org.nectarframework.base.service.sql.ResultRow;
 import org.nectarframework.base.tools.ByteArray;
 
 public abstract class DataStoreObject implements CacheableObject {

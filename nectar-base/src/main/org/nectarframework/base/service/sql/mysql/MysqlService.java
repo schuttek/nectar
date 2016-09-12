@@ -1,10 +1,11 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql.mysql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.sql.SqlService;
 
 /**
  * The MySQL database access Service.
@@ -46,7 +47,7 @@ import org.nectarframework.base.service.log.Log;
  * @author skander
  *
  */
-public class MysqlService extends DatabaseService {
+public class MysqlService extends SqlService {
 
 	protected boolean openConnections(int connCount) {
 
