@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS `org_nectarframework_www_article` (
 	`content` TEXT COLLATE utf8_unicode_ci NOT NULL, 
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `org_nectarframework_www_user` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT, 
 	`userType` TINYINT NOT NULL, 

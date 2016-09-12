@@ -26,7 +26,7 @@ public abstract class Service {
 	public ServiceParameters getParameters() {
 		return this.serviceParameters;
 	}
-	
+
 	/**
 	 * This method is the first step setting up a Service.
 	 * 
@@ -51,33 +51,45 @@ public abstract class Service {
 	 */
 	public abstract void checkParameters() throws ConfigurationException;
 
-
 	/**
-	 * Stage 2: If your Service will make use of another Service, make sure
+	 * Stage 2: If your Service will make use of another Service, make sure you
+	 * declare it in this method with the dependancy() method.
 	 * 
 	 * 
-	 * @return
+	 * @return true if every thing worked successfully, false will halt the
+	 *         startup process and exit Nectar.
 	 * @throws ServiceUnavailableException
 	 */
 	public abstract boolean establishDependancies() throws ServiceUnavailableException;
 
 	/**
-	 * This is the third stage towards starting up a service. At this point, if
-	 * your service has declared a dependancy, that Service has performed it's
-	 * init() method
+	 * Stage 3: At this point, if your service has declared a dependancy, that
+	 * Service has performed it's init() method, so those Services can now
+	 * provide basic functionality.
 	 * 
-	 * @return
+	 * @return true if every thing worked successfully, false will halt the
+	 *         startup process and exit Nectar.
+	 * 
 	 */
 	protected abstract boolean init();
-	
+
+	/**
+	 * Declares the given serviceClass as a dependency for this Service.
+	 * 
+	 * @param serviceClass
+	 * @return the shared instance of serviceClass
+	 * @throws ServiceUnavailableException
+	 *             if the serviceClass couldn't be found, or isn't configured to
+	 *             be started.
+	 */
 	protected Service dependancy(Class<? extends Service> serviceClass) throws ServiceUnavailableException {
 		Service service = ServiceRegister.addServiceDependancy(this, serviceClass);
 		if (service == null) {
-			throw new ServiceUnavailableException(this.getClass().getName() + " requires the Service " + serviceClass.getName());
+			throw new ServiceUnavailableException(
+					this.getClass().getName() + " requires the Service " + serviceClass.getName());
 		}
 		return service;
 	}
-	
 
 	public final boolean _run() {
 		if (state != STATE.initialized)
@@ -89,6 +101,14 @@ public abstract class Service {
 		return false;
 	}
 
+	/**
+	 * Stage 4: This is the final startup step. All dependencies have already
+	 * passed this stage. By the end of this method, your Service should be
+	 * fully operational.
+	 * 
+	 * @return true if every thing worked successfully, false will halt the
+	 *         startup process and exit Nectar.
+	 */
 	protected abstract boolean run();
 
 	public final boolean _shutdown() {
@@ -101,5 +121,12 @@ public abstract class Service {
 		return false;
 	}
 
+	/**
+	 * This is called when Nectar shuts down or restarts. All resources should
+	 * be released, Threads rejoined, connections closed, etc.
+	 * 
+	 * @return true if every thing worked successfully, false will halt a
+	 *         restart and exit Nectar.
+	 */
 	protected abstract boolean shutdown();
 }

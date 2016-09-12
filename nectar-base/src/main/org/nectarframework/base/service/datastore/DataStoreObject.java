@@ -136,7 +136,7 @@ public abstract class DataStoreObject implements CacheableObject {
 	public final void fromBytes(ByteArray bq) {
 		data = new Object[dsod.getColumnCount()];
 		Type[] colType = dsod.getColumnTypes();
-		nullMap = bq.getBytes();
+		nullMap = bq.getByteArray();
 		for (int i = 0; i < data.length; i++) {
 			if (BitMap.is(nullMap, i)) {
 				data[i] = null;
@@ -149,7 +149,7 @@ public abstract class DataStoreObject implements CacheableObject {
 	public final ByteArray toBytes() {
 		ByteArray bq = new ByteArray();
 		Type[] colType = dsod.getColumnTypes();
-		bq.add(nullMap);
+		bq.addByteArray(nullMap);
 		for (int i = 0; i < data.length; i++) {
 			if (!BitMap.is(nullMap, i)) {
 				colType[i].toBytes(data[i], bq);

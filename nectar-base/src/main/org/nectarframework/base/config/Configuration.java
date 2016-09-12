@@ -70,6 +70,8 @@ public class Configuration {
 	public boolean parseFullConfig(Element configElm) throws ConfigurationException {
 		// open config.xml file, parse each service and parameters.
 		
+		expandInheritance(configElm);
+		
 		//FIXME: make default locale configurable
 		Locale.setDefault(Locale.UK);
 
@@ -112,6 +114,41 @@ public class Configuration {
 		}
 
 		return true;
+	}
+
+	private Element expandInheritance(Element configElm) {
+		Log.trace(configElm.toString());
+		
+		for (Element node : configElm.getChildren("node")) {
+			if (node.hasAttribute("inherits")) {
+				String inheritsNode = node.get("inherits");
+				boolean found = false;
+				for (Element superNode : configElm.getChildren("node")) {
+					if (superNode.isAttribute("group", inheritsNode)) {
+						found = true;
+						Element copyNode = superNode.copy();
+						for (Element serv : node.getChildren("service")) {
+							for (Element serv2 : copyNode.getChildren("service")) {
+								if (serv2.isAttribute("class", serv.get("class"))) {
+										copyNode.removeChild(serv2);
+										copyNode.add(serv);
+									}
+								}
+						}
+						copyNode.add("group", node.get("group"));
+						configElm.removeChild(node);
+						configElm.add(copyNode);
+					}
+				}
+				if (found == false) {
+					Log.warn("Config for node "+node.get("group")+" inherits from "+node.get("inherits")+" which could not be found");
+				}
+			}
+		}
+		
+		Log.trace(configElm.toString());
+		
+		return configElm;
 	}
 
 	public List<Service> getServiceList(String nodeGroup) {

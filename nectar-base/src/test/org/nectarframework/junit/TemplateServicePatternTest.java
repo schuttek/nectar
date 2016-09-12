@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
+import org.nectarframework.base.service.template.CompiledTemplateService;
 import org.nectarframework.base.service.template.TemplateService;
 
 public class TemplateServicePatternTest {
@@ -28,17 +29,17 @@ public class TemplateServicePatternTest {
 
 	@Test
 	public void test() {
-		System.out.println("Testing: variable "+TemplateService.variablePattern.pattern());
-		assertTrue(testPattern(TemplateService.variablePattern, "${cow}", new String[]{"cow"}));
-		assertFalse(testPattern(TemplateService.variablePattern, "${cow}", new String[]{"co1w"}));
-		assertTrue(testPattern(TemplateService.variablePattern, "${ cow}", new String[]{"cow"}));
-		assertFalse(testPattern(TemplateService.variablePattern, "$ {cow}", new String[]{"cow"}));
-		assertTrue(testPattern(TemplateService.variablePattern, " ${cow} ", new String[]{"cow"}));
-		assertTrue(testPattern(TemplateService.variablePattern, "${c.o.w}", new String[]{"c.o.w"}));
+		System.out.println("Testing: variable "+CompiledTemplateService.variablePattern.pattern());
+		assertTrue(testPattern(CompiledTemplateService.variablePattern, "${cow}", new String[]{"cow"}));
+		assertFalse(testPattern(CompiledTemplateService.variablePattern, "${cow}", new String[]{"co1w"}));
+		assertTrue(testPattern(CompiledTemplateService.variablePattern, "${ cow}", new String[]{"cow"}));
+		assertFalse(testPattern(CompiledTemplateService.variablePattern, "$ {cow}", new String[]{"cow"}));
+		assertTrue(testPattern(CompiledTemplateService.variablePattern, " ${cow} ", new String[]{"cow"}));
+		assertTrue(testPattern(CompiledTemplateService.variablePattern, "${c.o.w}", new String[]{"c.o.w"}));
 		
-		System.out.println("Testing: eachTag "+TemplateService.eachTagPattern.pattern());
-		assertTrue(testPattern(TemplateService.eachTagPattern, "milk : ${c.o.w}", new String[]{"milk", "c.o.w"}));
-		assertFalse(testPattern(TemplateService.eachTagPattern, "$milk : ${c.o.w}", new String[]{"milk", "c.o.w"}));
+		System.out.println("Testing: eachTag "+CompiledTemplateService.eachTagPattern.pattern());
+		assertTrue(testPattern(CompiledTemplateService.eachTagPattern, "milk : ${c.o.w}", new String[]{"milk", "c.o.w"}));
+		assertFalse(testPattern(CompiledTemplateService.eachTagPattern, "$milk : ${c.o.w}", new String[]{"milk", "c.o.w"}));
 		
 	}
 }

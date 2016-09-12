@@ -1,13 +1,14 @@
 package org.nectarframework.base.service.pathfinder;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class ProjectResolution extends PathFinderResolution {
 
 	protected String name;
 	protected String namespace;
 
-	public HashMap<String, UriResolution> urForPathMap = new HashMap<>();
+	protected HashMap<String, UriResolution> urForPathMap = new HashMap<>();
 
 	public ProjectResolution() {
 		super();
@@ -17,6 +18,7 @@ public class ProjectResolution extends PathFinderResolution {
 		return urForPathMap.get(path);
 	}
 
+	
 	public void addPath(String path, UriResolution ar) {
 		urForPathMap.put(path, ar);
 	}

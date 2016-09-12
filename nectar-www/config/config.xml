@@ -2,7 +2,7 @@
 
 <config version="1.0">
 
-	<node group="templateBuilderServer">
+	<node group="templateBuilderDefault">
 		<service class="org.nectarframework.base.service.thread.ThreadService">
 			<param name="minWorkerThreads" value="10" />
 			<param name="maxWorkerThreads" value="50" />
@@ -23,7 +23,8 @@
 		</service>
 		<service
 			class="org.nectarframework.base.service.translation.TranslationService" />
-		<service class="org.nectarframework.base.service.template.TemplateService">
+		<service
+			class="org.nectarframework.base.service.template.CompiledTemplateService">
 			<param name="templatePackageName" value="org.nectarframework.www.templates" />
 			<param name="rawTemplatesRootDir" value="files/templates" />
 
@@ -31,61 +32,50 @@
 				<param value="en" />
 			</paramSet>
 		</service>
-		<service class="org.nectarframework.base.service.directory.DirectoryService">
-			<param name="configFilePath" value="config/pathConfig.xml" />
+		<service
+			class="org.nectarframework.base.service.pathfinder.PathFinderService">
+			<param name="pathConfigFile" value="config/pathConfig.xml" />
 		</service>
-
+		
+		<service class="org.nectarframework.base.service.template.TemplateBuilderService">
+		<param name="outputDir" value="src/org/nectarframework/www/templates"/>
+		<param name="pathConfig" value="config/pathConfig.xml"/>
+		</service>
+		
 	</node>
 
 
-	<node group="templateBuilderDev">
-		<service class="org.nectarframework.base.service.thread.ThreadService">
-			<param name="minWorkerThreads" value="10" />
-			<param name="maxWorkerThreads" value="50" />
-		</service>
-		<service class="org.nectarframework.base.service.xml.XmlService">
-		</service>
-		<service class="org.nectarframework.base.service.cache.CacheService">
-		</service>
-		<service class="org.nectarframework.base.service.file.FileService">
-			<param name="rootDirectory" value="files" />
-		</service>
+	<node group="templateBuilderDev" inherits="templateBuilderDefault">
 		<service class="org.nectarframework.base.service.mysql.MysqlService">
-			<param name="host" value="10.188.47.139" />
+			<param name="host" value="10.42.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
 			<param name="user" value="nectar" />
 			<param name="password" value="lYbeoDQ0fBPGw153" />
 		</service>
-		<service
-			class="org.nectarframework.base.service.translation.TranslationService" />
-		<service class="org.nectarframework.base.service.template.TemplateService">
-			<param name="templatePackageName" value="org.nectarframework.www.templates" />
-			<param name="rawTemplatesRootDir" value="files/templates" />
-
-			<paramSet name="locale">
-				<param value="en" />
-			</paramSet>
+	</node>
+	<node group="templateBuilderMoth" inherits="templateBuilderDefault">
+		<service class="org.nectarframework.base.service.mysql.MysqlService">
+			<param name="host" value="127.0.0.1" />
+			<param name="port" value="3306" />
+			<param name="database" value="nectar" />
+			<param name="user" value="nectar" />
+			<param name="password" value="lYbeoDQ0fBPGw153" />
 		</service>
-		<service class="org.nectarframework.base.service.directory.DirectoryService">
-			<param name="configFilePath" value="config/pathConfig.xml" />
-		</service>
-
 	</node>
 
 	<node group="productionServer">
+		<service
+			class="org.nectarframework.base.service.pathfinder.PathFinderService">
+			<param name="pathConfigFile" value="config/pathConfig.xml" />
+		</service>
 		<service class="org.nectarframework.base.service.xml.XmlService">
 		</service>
-
-		<service class="org.nectarframework.base.service.directory.DirectoryService">
-			<param name="configFilePath" value="config/pathConfig.xml" />
-		</service>
 		<service
-			class="org.nectarframework.base.service.http.SimpleHttpRequestService">
-			<param name="compressionMinSize" value="1" />
+			class="org.nectarframework.base.service.nanohttp.NanoHttpService">
 			<param name="listeningHost" value="167.114.240.14" />
 			<param name="listeningPort" value="80" />
-			<param name="staticRequestDirectory" value="s" />
+			<param name="listeningSSLPort" value="443" />
 			<param name="staticLocalDirectory" value="public_root" />
 		</service>
 
@@ -124,11 +114,8 @@
 			/> </service> <service class="org.nectarframework.base.service.xml.XmlClientService"> 
 			<param name="serverHost" value="127.0.0.1" /> <param name="serverPort" value="8009" 
 			/> </service> -->
-
-		<service class="org.nectarframework.base.service.thymeleaf.ThymeleafService">
-			<param name="templatesDirectory" value="thymeleaf_templates" />
-		</service>
-		<service class="org.nectarframework.base.service.template.TemplateService">
+		<service
+			class="org.nectarframework.base.service.template.CompiledTemplateService">
 			<param name="templatePackageName" value="org.nectarframework.www.templates" />
 			<param name="rawTemplatesRootDir" value="files/templates" />
 
@@ -141,70 +128,35 @@
 			class="org.nectarframework.base.service.translation.TranslationService" />
 	</node>
 
-	<node group="devServer">
-		<service class="org.nectarframework.base.service.xml.XmlService">
-		</service>
-
-		<service class="org.nectarframework.base.service.pathfinder.PathFinderService">
-			<param name="pathConfigFile" value="config/pathConfig2.xml" />
-		</service>
-		<service
-			class="org.nectarframework.base.service.nanohttp.NanoHttpService">
+	<node group="devServer" inherits="productionServer">
+		<service class="org.nectarframework.base.service.nanohttp.NanoHttpService">
 			<param name="listeningHost" value="127.0.0.1" />
 			<param name="listeningPort" value="80" />
-			
 			<param name="listeningSSLPort" value="443" />
-			
-		</service>
-
-		<service class="org.nectarframework.base.service.thread.ThreadService">
-			<param name="minWorkerThreads" value="20" />
-			<param name="maxWorkerThreads" value="50" />
-		</service>
-
-		<service class="org.nectarframework.base.service.cache.CacheService">
-		</service>
-		<service class="org.nectarframework.base.service.session.SessionService">
-		</service>
-		<service class="org.nectarframework.base.service.log.LoggingService">
-		</service>
-		<service class="org.nectarframework.base.service.file.FileService">
-			<param name="rootDirectory" value="files" />
+			<param name="staticFileLocalDirectory" value="public_root" />
 		</service>
 		<service class="org.nectarframework.base.service.mysql.MysqlService">
-			<param name="host" value="10.188.47.139" />
+			<param name="host" value="10.42.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
 			<param name="user" value="nectar" />
 			<param name="password" value="lYbeoDQ0fBPGw153" />
 		</service>
+	</node>
 
-		<service
-			class="org.nectarframework.base.service.datastore.MysqlDataStoreService">
-			<param name="dataStoreObjectsConfigFile" value="config/dataStoreObjects.xml" />
+	<node group="mothServer" inherits="productionServer">
+		<service class="org.nectarframework.base.service.nanohttp.NanoHttpService">
+			<param name="listeningHost" value="10.42.0.1" />
+			<param name="listeningPort" value="8000" />
+			<param name="listeningSSLPort" value="443" />
+			<param name="staticFileLocalDirectory" value="public_root" />
 		</service>
-
-		<!-- <service class="org.nectarframework.base.service.xml.XmlServerService"> 
-			<param name="serverHost" value="127.0.0.1" /> <param name="serverPort" value="8009" 
-			/> <param name="serverSocketBacklog" value="5" /> <param name="maxConnections" 
-			value="10000" /> <param name="rsaPublicKey" value="MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqILKz5R01C7wlSdWuy5EauAHYZF6xQ7tsnL59/sVk8LsOqUfhW6y9wgOWERKD3Ldqtsj5h5YseOuNw3gxCmNrKjXP7w5jyRWqW0JsotCgbsJa9Troyf3Crjo3pI2EsMG1Xw/LZbh3rGGQ4b2/uV7Llv005exXMiV04glI8Wt9xD09sD4RXPLWzikXALBDGGlKwOOmZcmgtgYAN6RKspZbCLA/AhcPZy4SXGsRSPazI382T82OoFTQ/pHmqRWnCItKBfDtU0U8mm92Ne/2ZI6RfgvIHJIYvVCdeXka42Q274P6y6nl9NFnBf1vmPSOVDYBqCVmEYaJgKWX4gLbuSd6rzWZDKWqD/DocqhkFKY1brrGFTF/ROKQxNy6iWzxKTNfgotab8di58OifhX4Qx+z+3ej72c93wsK2FDMS1sbt4ShUVgmqfZTYbAyOW9DePuEawi4EJTf0kziuAo3jp+NIUDSTWYahszDboA4xKVf9o1OxyiGZC6J7/XHaUrYLe3IWtY/FGnduMhpMEItE7t9HB3VhItkpAHqVgLrIulcukLfwSoFr6Unz74ng65mjyW7YBXSesmagFGBNcEyBOjsmi3OTT0Bz84Sv36cdSyg2ynIou6iH1hmLs6aLmSptMOsNUyeYKuBGzhxaQaeQsveqHF3rZ0C5abnY2abg4reQ0CAwEAAQ==" 
-			/> <param name="rsaPrivateKey" value="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" 
-			/> </service> <service class="org.nectarframework.base.service.xml.XmlClientService"> 
-			<param name="serverHost" value="127.0.0.1" /> <param name="serverPort" value="8009" 
-			/> </service> -->
-
-		<service class="org.nectarframework.base.service.thymeleaf.ThymeleafService">
-			<param name="templatesDirectory" value="thymeleaf_templates" />
+		<service class="org.nectarframework.base.service.mysql.MysqlService">
+			<param name="host" value="127.0.0.1" />
+			<param name="port" value="3306" />
+			<param name="database" value="nectar" />
+			<param name="user" value="nectar" />
+			<param name="password" value="lYbeoDQ0fBPGw153" />
 		</service>
-		<service class="org.nectarframework.base.service.template.TemplateService">
-			<param name="templatePackageName" value="org.nectarframework.www.templates" />
-			<param name="rawTemplatesRootDir" value="files/templates" />
-
-			<paramSet name="locale">
-				<param value="en" />
-			</paramSet>
-		</service>
-		<service
-			class="org.nectarframework.base.service.translation.TranslationService" />
 	</node>
 </config>

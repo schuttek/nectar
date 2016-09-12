@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
 
-import org.nectarframework.base.exception.LockedConfigException;
 import org.nectarframework.base.service.log.Log;
 
 //TODO: this needs better security and error handling
@@ -55,7 +54,6 @@ public class ControllerDaemon extends Thread {
 	}
 
 	public void init() throws IOException {
-		this.lock();
 		this.selector = initSelector();
 	}
 
@@ -288,8 +286,7 @@ public class ControllerDaemon extends Thread {
 		}
 	}
 
-	public void setHostAddress(InetAddress hostAddress) throws LockedConfigException {
-		checkLock();
+	public void setHostAddress(InetAddress hostAddress) {
 		this.hostAddress = hostAddress;
 	}
 
@@ -297,22 +294,11 @@ public class ControllerDaemon extends Thread {
 		return hostAddress;
 	}
 
-	public void setPort(int port) throws LockedConfigException {
-		checkLock();
+	public void setPort(int port) {
 		this.port = port;
 	}
 
 	public int getPort() {
 		return port;
-	}
-
-	public void lock() {
-		this.locked = true;
-	}
-
-	protected void checkLock() throws LockedConfigException {
-		if (this.locked) {
-			throw new LockedConfigException();
-		}
 	}
 }

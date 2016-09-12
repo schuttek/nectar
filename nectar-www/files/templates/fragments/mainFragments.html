@@ -1,36 +1,48 @@
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:th="http://www.thymeleaf.org">
+	xmlns:th="http://www.nectarframework.org">
 
 <head th:fragment="head">
 <title th:text="#{common.title}">Nectar Framework</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta charset="utf-8"/>
 <link rel="stylesheet" type="text/css" media="all"
-	href="../fileservice_root/s/style.css" th:href="@{/s/style.css}" />
+	href="../fileservice_root/s/style.css" th:href="@{/s/style.css}"/>
 <script type="text/javascript" src="../fileservice_root/s/script.js"
 	th:src="@{/s/script.js}"></script>
-<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?autoload=true&amp;skin=default&amp;lang=css" defer="defer"></script>
+<script
+	src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?autoload=true&amp;lang=css"
+	defer="defer"></script>
 </head>
-<body onload="main.load()">
-	<div id="header" th:fragment="headerDiv">
-		<div class="title"><img class="title" src="/s/icon_bird_black.png" height="24" width="24" th:src="@{/s/icon_bird_black.png}"/><span th:text="#{common.header.title}">Nectar
-			Framework</span></div>
+<body>
+	<div class="jumbotron text-center" id="header" th:fragment="headerDiv">
+		<div class="title">
+			<img class="title" src="/s/icon_bird_black.png" height="24"
+				width="24" th:src="@{/s/icon_bird_black.png}" /><span
+				th:text="#{common.header.title}">Nectar Framework</span>
+		</div>
 		<div class="slogan" th:text="#{common.header.slogan}">a simple
 			and stupidly fast web application framework for massively scalable
 			applications</div>
 	</div>
 	<div class="navbar" th:fragment="navbar">
-		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{/s/icon_home.png}"/><a class="navbar" href="/" th:text="#{common.leftLinks.home}">Home</a>
-		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{/s/icon_overview.png}"/><a class="navbar" href="/overview"
-			th:text="#{common.leftLinks.overview}">Overview</a>
-		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{/s/icon_documentation.png}"/><a class="navbar" href="/documentation"
-			th:text="#{common.leftLinks.documentation}">Documentation</a>
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24"
+			th:src="@{/s/icon_home.png}" /><a class="navbar" href="/"
+			th:text="#{common.leftLinks.home}">Home</a> <img class="navbar"
+			src="/s/icon_about.png" height="24" width="24"
+			th:src="@{/s/icon_overview.png}" /><a class="navbar" href="/overview"
+			th:text="#{common.leftLinks.overview}">Overview</a> <img
+			class="navbar" src="/s/icon_about.png" height="24" width="24"
+			th:src="@{/s/icon_documentation.png}" /><a class="navbar"
+			href="/documentation" th:text="#{common.leftLinks.documentation}">Documentation</a>
 
-		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{/s/icon_download.png}"/><a class="navbar" href="/download"
-			th:text="#{common.leftLinks.download}">Download</a>
-
-		<img class="navbar" src="/s/icon_about.png" height="24" width="24" th:src="@{/s/icon_about.png}"/> <a class="navbar" href="/about" th:text="#{common.leftLinks.about}">About</a>
+		<img class="navbar" src="/s/icon_about.png" height="24" width="24"
+			th:src="@{/s/icon_download.png}" /><a class="navbar" href="/download"
+			th:text="#{common.leftLinks.download}">Download</a> <img
+			class="navbar" src="/s/icon_about.png" height="24" width="24"
+			th:src="@{/s/icon_about.png}" /> <a class="navbar" href="/about"
+			th:text="#{common.leftLinks.about}">About</a>
 	</div>
 
 	<div class="content"></div>

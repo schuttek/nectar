@@ -43,6 +43,8 @@ import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.security.KeyStore;
@@ -57,16 +59,30 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
+import org.nectarframework.base.service.file.FileInfo;
 import org.nectarframework.base.service.file.FileService;
+import org.nectarframework.base.service.file.ReadFileAccessDeniedException;
+import org.nectarframework.base.service.file.ReadFileNotAFileException;
+import org.nectarframework.base.service.file.ReadFileNotFoundException;
+import org.nectarframework.base.service.http.AccessDeniedException;
 import org.nectarframework.base.service.http.ClientWriteException;
 import org.nectarframework.base.service.http.FormValidationException;
 import org.nectarframework.base.service.http.InternalErrorException;
+import org.nectarframework.base.service.http.NotFoundException;
 import org.nectarframework.base.service.http.RawAction;
 import org.nectarframework.base.service.http.SimpleHttpForm;
 import org.nectarframework.base.service.log.Log;
@@ -180,9 +196,9 @@ public class NanoHttpService extends Service {
 
 	private FileService fileService;
 
-	private ThymeleafService thymeleafService;
-
 	private TemplateService templateService;
+
+	private String staticFileLocalDirectory;
 
 	/**
 	 * Common MIME type for dynamic content: plain text
@@ -207,6 +223,8 @@ public class NanoHttpService extends Service {
 		listeningPort = serviceParameters.getInt("listeningPort", 1, Short.MAX_VALUE, 80);
 		listeningSSLPort = serviceParameters.getInt("listeningSSLPort", 1, Short.MAX_VALUE, 443);
 		keyStoreFilePath = serviceParameters.getString("keyStoreFilePath", "config/keystore.jks");
+
+		staticFileLocalDirectory = serviceParameters.getString("staticFileLocalDirectory", "public_root");
 	}
 
 	@Override
@@ -215,7 +233,6 @@ public class NanoHttpService extends Service {
 		pathFinderService = (PathFinderService) dependancy(PathFinderService.class);
 		xmlService = (XmlService) this.dependancy(XmlService.class);
 		fileService = (FileService) this.dependancy(FileService.class);
-		thymeleafService = (ThymeleafService) this.dependancy(ThymeleafService.class);
 		templateService = (TemplateService) this.dependancy(TemplateService.class);
 		return true;
 	}
@@ -563,12 +580,12 @@ public class NanoHttpService extends Service {
 			}
 			byteBuff = outputByteArrayOutputStream.toByteArray();
 			return newFixedLengthResponse(Status.OK, mimeType, new ByteArrayInputStream(byteBuff), byteBuff.length);
-		case thymeleaf:
+/*		case thymeleaf:
 			mimeType = "text/html";
 			outputByteArrayOutputStream = new FastByteArrayOutputStream();
 			thymeleafService.output(locale, "", actionResolution.getTemplateName(), elm, outputByteArrayOutputStream);
 			byteBuff = outputByteArrayOutputStream.toByteArray();
-			return newFixedLengthResponse(Status.OK, mimeType, new ByteArrayInputStream(byteBuff), byteBuff.length);
+			return newFixedLengthResponse(Status.OK, mimeType, new ByteArrayInputStream(byteBuff), byteBuff.length); */
 		case xml:
 			mimeType = "text/xml";
 			outputByteArrayOutputStream = new FastByteArrayOutputStream();
@@ -610,23 +627,113 @@ public class NanoHttpService extends Service {
 		return serve(uri, method, headers, parms, queryParameterString, files);
 	}
 
+	private String getStaticLocalDirectory() {
+		return staticFileLocalDirectory;
+	}
+
 	private Response serveStatic(StaticResolution uriResolution, String uri, Method method, Map<String, String> headers,
 			Map<String, List<String>> parms, String queryParameterString, Map<String, String> files) {
-		
-		
-		
-		return newFixedLengthResponse(Status.SERVICE_UNAVAILABLE, NanoHttpService.MIME_PLAINTEXT, "Not Implemented: ");
+
+		// TODO: hand off to FileService
+		// remember to filter ../
+		try {
+
+			InputStream is = null;
+			FileInfo fileInfo = fileService.getFileInfo("/" + getStaticLocalDirectory() + uri);
+			is = fileService.getFileAsInputStream("/" + getStaticLocalDirectory() + uri);
+
+			String contentType = Utils.getMimeTypeForFile(uri);
+			if (contentType == null) {
+				contentType = "application/octet-stream";
+			}
+
+			// Log.accessLog(this.request.getPath().getPath(), null, null, null,
+			// stopwatch.sinceStart(),
+			// request.getClientAddress().toString(), null);
+
+			Log.trace(" Static Request processed");
+
+			return newFixedLengthResponse(Status.OK, contentType, is, fileInfo.getLength());
+		} catch (ReadFileNotFoundException e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.NOT_FOUND, NanoHttpService.MIME_PLAINTEXT, "File Not Found.");
+		} catch (ReadFileAccessDeniedException e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.FORBIDDEN, NanoHttpService.MIME_PLAINTEXT, "Access Denied.");
+		} catch (ReadFileNotAFileException e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.NOT_FOUND, NanoHttpService.MIME_PLAINTEXT, "Not a File.");
+		}
+
 	}
 
-	private Response serveProxy(ProxyResolution uriResolution, String uri, Method method, Map<String, String> headers,
+	private Response serveProxy(ProxyResolution proxyResolution, String uri, Method method, Map<String, String> headers,
 			Map<String, List<String>> parms, String queryParameterString, Map<String, String> files) {
-		return newFixedLengthResponse(Status.SERVICE_UNAVAILABLE, NanoHttpService.MIME_PLAINTEXT, "Not Implemented: ");
+
+		String remoteTarget = uri.substring(proxyResolution.getPath().length()+1);
+		if (!remoteTarget.startsWith("/")) {
+			remoteTarget = "/" + remoteTarget;
+		}
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		URIBuilder remoteUri = new URIBuilder();
+		remoteUri.setScheme("http");
+		remoteUri.setHost(proxyResolution.getHost());
+		remoteUri.setPort(proxyResolution.getPort());
+		remoteUri.setPath(proxyResolution.getRequestPath() + remoteTarget);
+		remoteUri.setCharset(Charset.defaultCharset());
+		for (String k : parms.keySet()) {
+			remoteUri.addParameter(k, parms.get(k).get(0));
+		}
+
+		
+		
+		HttpGet httpget;
+		try {
+			httpget = new HttpGet(remoteUri.build());
+		} catch (URISyntaxException e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHttpService.MIME_PLAINTEXT,
+					"SERVER INTERNAL ERROR: URISyntaxException" + e.getMessage());
+		}
+
+		CloseableHttpResponse response = null;
+		Response resp = null;
+		try {
+			response = httpclient.execute(httpget);
+
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				InputStream is = entity.getContent();
+				long isl = entity.getContentLength();
+				resp = new Response(Status.lookup(response.getStatusLine().getStatusCode()), null, is, isl);
+			} else {
+				resp = new Response(Status.lookup(response.getStatusLine().getStatusCode()), null, null, 0);
+			}
+
+			Header[] remoteHeaders = response.getAllHeaders();
+			for (Header h : remoteHeaders) {
+				resp.addHeader(h.getName(), h.getValue());
+			}
+			
+			resp.setProxyResponse(response);
+
+		} catch (IOException e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHttpService.MIME_PLAINTEXT,
+					"SERVER INTERNAL ERROR: IOException" + e.getMessage());
+		}
+
+		return resp;
 	}
 
-	private Response serveRedirect(UriResolution uriResolution, String uri, Method method, Map<String, String> headers,
-			Map<String, List<String>> parms, String queryParameterString, Map<String, String> files) {
-		return newFixedLengthResponse(Status.SERVICE_UNAVAILABLE, NanoHttpService.MIME_PLAINTEXT, "Not Implemented: ");
+	private Response serveRedirect(RedirectResolution redirectResolution, String uri, Method method,
+			Map<String, String> headers, Map<String, List<String>> parms, String queryParameterString,
+			Map<String, String> files) {
 
+		Response response = new Response(Status.REDIRECT, null, null, 0);
+		response.addHeader("Location", redirectResolution.getToUrl());
+		return response;
 	}
 
 }

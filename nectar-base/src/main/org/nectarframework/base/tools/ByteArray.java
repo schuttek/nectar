@@ -170,6 +170,15 @@ public class ByteArray {
 		addToFront(b, 0, b.length);
 	}
 
+	public void addByteArray(byte[] b) {
+		if (b == null || b.length == 0) {
+			add(0);
+		} else {
+			add(b.length);
+			add(b);
+		}
+	}
+	
 	public void add(byte[] b) {
 		add(b, 0, b.length);
 	}
@@ -316,6 +325,12 @@ public class ByteArray {
 		return Double.longBitsToDouble(value);
 	}
 
+	public byte[] getByteArray() {
+		int len = getInt();
+		byte[] sb = remove(len);
+		return sb;
+	}
+	
 	public byte[] getBytes() {
 		return remove(length());
 	}

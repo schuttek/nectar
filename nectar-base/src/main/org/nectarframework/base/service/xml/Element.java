@@ -308,4 +308,23 @@ public class Element {
 		return attributes.containsKey(key);
 	}
 
+	/**
+	 * returns a deep copy of this Element
+	 * @return
+	 */
+	public Element copy() {
+		Element e = new Element(this.name);
+		for (String k : this.attributes.keySet()) {
+			e.add(k, attributes.get(k));
+		}
+		for (Element c : this.children) {
+			e.add(c.copy());
+		}
+		return e;
+	}
+
+	public void removeChild(Element elm) {
+		this.children.removeFirstOccurrence(elm);
+	}
+
 }

@@ -75,46 +75,41 @@ public class PathFinderService extends IPathFinder {
 			uri = uri.substring(1);
 		}
 
-		// root
+		ProjectResolution rootProject = vhr.resolveNamespace("");
+		
+		// root document
 		if (uri.length() == 0) {
-			ProjectResolution pr = vhr.resolveNamespace("");
-			if (pr == null) {
+			if (rootProject == null) {
 				return null;
 			}
-			UriResolution ur = pr.getUriResolution("");
+			UriResolution ur = rootProject.getUriResolution("");
 			return ur;
 		}
 
-		Vector<String> v = StringTools.slice(uri, "/");
-
-		if (v.size() == 1) {
-			ProjectResolution pr = vhr.resolveNamespace("");
-			if (pr == null) {
-				return null;
-			}
-			UriResolution ur = pr.getUriResolution(v.get(0));
-			return ur;
-		}
-
+		Vector<String> pathSlices = StringTools.slice(uri, "/");
+		
+		
+		// find subproject...
 		String path = "";
 		ProjectResolution pr = null;
-		int i = 0;
-		for (; i < v.size() - 1; i++) {
-			path += v.get(i);
+		int i=0;
+		for (i=0; i < pathSlices.size(); i++) {
 			pr = vhr.resolveNamespace(path);
 			if (pr != null) {
 				break;
 			}
-			path += "/";
+			if (i>0) 
+				path += "/";
+			path += pathSlices.get(i);
 			Log.trace("path: " + path);
 		}
 		if (pr == null) {
 			return null;
 		}
 
-		Log.trace("local path: " + v.get(i));
+		Log.trace("local path: " + pathSlices.get(i));
 
-		UriResolution ur = pr.getUriResolution(v.get(i));
+		UriResolution ur = pr.getUriResolution(pathSlices.get(i));
 
 		return ur;
 	}
@@ -125,7 +120,7 @@ public class PathFinderService extends IPathFinder {
 	}
 
 	private boolean loadConfig() {
-// TODO: line by line validation. 
+		// TODO: line by line validation.
 		if (!pathConfigElm.getName().equals("pathConfig")) {
 			loadWarn(" root element should be called 'pathConfig'");
 		}
@@ -224,7 +219,7 @@ public class PathFinderService extends IPathFinder {
 				AliasResolution ali = new AliasResolution();
 				ali.path = alias.get("path");
 				ali.toPath = alias.get("toPath");
-				ali.relative = (alias.isAttribute("relative", "true")?true:false);
+				ali.relative = (alias.isAttribute("relative", "true") ? true : false);
 				ali.variables = new HashMap<String, List<String>>();
 				for (Element rv : alias.getChildren("var")) {
 					if (ali.variables.containsKey(rv.get("name"))) {

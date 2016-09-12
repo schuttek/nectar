@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
-import org.nectarframework.base.exception.LockedConfigException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
@@ -82,7 +81,7 @@ public class InternodeService extends Service {
 	@Override
 	public boolean establishDependancies() throws ServiceUnavailableException {
 
-		threadService = (ThreadService)dependancy(ThreadService.class);
+		threadService = (ThreadService) dependancy(ThreadService.class);
 		return true;
 	}
 
@@ -91,12 +90,8 @@ public class InternodeService extends Service {
 
 		if (this.listeningHost != null && this.listeningPort > 0) {
 			this.serverDaemon = new ControllerDaemon(this);
-			try {
-				serverDaemon.setHostAddress(this.listeningHostAddress);
-				serverDaemon.setPort(this.listeningPort);
-			} catch (LockedConfigException e1) {
-				Log.fatal("errr...", e1);
-			}
+			serverDaemon.setHostAddress(this.listeningHostAddress);
+			serverDaemon.setPort(this.listeningPort);
 			try {
 				this.serverDaemon.init();
 			} catch (IOException e) {
@@ -107,8 +102,8 @@ public class InternodeService extends Service {
 		}
 
 		return connectToController();
-		
-		//TODO: sync time with masterNode.
+
+		// TODO: sync time with masterNode.
 	}
 
 	protected boolean connectToController() {
@@ -195,7 +190,8 @@ public class InternodeService extends Service {
 		List<String> cmdarray = new ArrayList<String>();
 		cmdarray.add(getJreExecutable().toString());
 		cmdarray.add("nectar.base.Main");
-//		cmdarray.add("-c " + ServiceRegister.getInstance().getConfiguration().getConfigFile().getPath());
+		// cmdarray.add("-c " +
+		// ServiceRegister.getInstance().getConfiguration().getConfigFile().getPath());
 		cmdarray.add("-g " + nodeGroup);
 		cmdarray.add("-n " + nodeName);
 

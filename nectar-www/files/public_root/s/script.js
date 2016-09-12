@@ -33,15 +33,6 @@ function getRandInt(n) {
 	return Math.floor(Math.random() * 100 % (n + 1));
 }
 
-var main = {
-	load : function(args) {
-		main.loadPage(args.page);
-	},
-	loadPage : function (page) {
-		ajax.replace(page,'content');
-	}
-}
-
 
 ajax = {
 	init: function() {

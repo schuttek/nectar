@@ -16,14 +16,49 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.nectarframework.base.Main;
+import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.StringTools;
 import org.nectarframework.base.tools.Triple;
-import org.nectarframework.base.tools.Tuple;
 
-public class DataStoreObjectBuilder {
+public class DataStoreObjectBuilder extends Service {
+	
+
+	private String outputDir;
+	private String inputFile;
+
+	@Override
+	public void checkParameters() throws ConfigurationException {
+		inputFile = serviceParameters.getString("inputFile", "config/dataStoreObjects.xml");
+		outputDir = serviceParameters.getString("inputFile", "src/");
+	}
+
+	@Override
+	public boolean establishDependancies() throws ServiceUnavailableException {
+		dependancy(XmlService.class);
+		return true;
+	}
+
+	@Override
+	protected boolean init() {
+		return true;
+	}
+
+	@Override
+	protected boolean run() {
+		new DataStoreObjectBuilder().run(inputFile, outputDir);
+		return true;
+	}
+
+	@Override
+	protected boolean shutdown() {
+		return true;
+	}
+	
 	public static void main(String[] args) {
 
 		try {
@@ -362,5 +397,6 @@ public class DataStoreObjectBuilder {
 		}
 
 	}
+
 
 }

@@ -15,13 +15,16 @@ import org.apache.commons.cli.ParseException;
 import org.jdom2.JDOMException;
 import org.nectarframework.base.Main;
 import org.nectarframework.base.config.Configuration;
+import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceRegister;
+import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.xml.sax.SAXException;
 
-public class TemplateBuilder {
+public class TemplateBuilderService extends Service {
 
 	public static void main(String[] args) {
 
@@ -44,15 +47,15 @@ public class TemplateBuilder {
 				runVersion();
 			} else if (line.hasOption("help")) {
 				runHelp(options);
-			} else if (line.hasOption("configDir") && line.hasOption("output")&& line.hasOption("nodeName")&& line.hasOption("nodeGroup")) {
-				String configDir = line.getOptionValue("configDir");
+			} else if (line.hasOption("configFile") && line.hasOption("output")&& line.hasOption("nodeName")&& line.hasOption("nodeGroup")) {
+				String configFile = line.getOptionValue("configFile");
 				String outputDir = line.getOptionValue("output");
 				String nodeName = line.getOptionValue("nodeName");
 				String nodeGroup = line.getOptionValue("nodeGroup");
 
-				if (init(configDir, nodeName, nodeGroup)) {
+				if (init(configFile, nodeName, nodeGroup)) {
 					try {
-						run(configDir, outputDir);
+						run(configFile, outputDir);
 					} catch (Exception e) {
 						Log.fatal(e);
 					}
@@ -69,7 +72,7 @@ public class TemplateBuilder {
 	}
 
 	private static void run(String pathConfig, String outputDir) throws IOException, TemplateParseException, SAXException, ParserConfigurationException, JDOMException {
-		TemplateService ts = (TemplateService)ServiceRegister.getService(TemplateService.class);
+		CompiledTemplateService ts = (CompiledTemplateService)ServiceRegister.getService(CompiledTemplateService.class);
 		Log.info("TemplateBuilder: building Templates...");
 		ts.buildTemplates(pathConfig, outputDir);
 	}
@@ -82,7 +85,7 @@ public class TemplateBuilder {
 
 		Element configElement;
 		try {
-			configElement = XmlService.fromXml(new File(configDir + "/config.xml"));
+			configElement = XmlService.fromXml(new File(configDir));
 		} catch (SAXException | IOException e) {
 			Log.fatal(e);
 			return false;
@@ -97,7 +100,7 @@ public class TemplateBuilder {
 		Options options = new Options();
 
 		options.addOption("h", "help", false, "print this message");
-		Option opt = new Option("c", "configDir", true, "path to the config directory");
+		Option opt = new Option("c", "configFile", true, "path to the pathConfig.xml file");
 		opt.setArgName("CONFIGDIR");
 		options.addOption(opt);
 		opt = new Option("o", "output", true, "output directory");
@@ -120,5 +123,43 @@ public class TemplateBuilder {
 	private static void runVersion() {
 		System.out.println("Nectar Web Platform DataStoreObject Builder");
 		System.out.println("Version: " + Main.VERSION);
+	}
+
+	private String pathConfig;
+	private String outputDir;
+
+	@Override
+	public void checkParameters() throws ConfigurationException {
+		outputDir = serviceParameters.getString("outputDir", "src");
+		pathConfig = serviceParameters.getString("pathConfig", "config/pathConfig.xml");
+	}
+
+	@Override
+	public boolean establishDependancies() throws ServiceUnavailableException {
+		dependancy(CompiledTemplateService.class);
+		return true;
+	}
+
+	@Override
+	protected boolean init() {
+		return true;
+	}
+
+	@Override
+	protected boolean run() {
+		CompiledTemplateService ts = (CompiledTemplateService)ServiceRegister.getService(CompiledTemplateService.class);
+		try {
+			ts.buildTemplates(pathConfig, outputDir);
+		} catch (Exception e) {
+			Log.fatal(e);
+		}
+		Main.exit();
+		return true;
+	}
+
+	@Override
+	protected boolean shutdown() {
+		// TODO Auto-generated method stub
+		return true;
 	}
 }
