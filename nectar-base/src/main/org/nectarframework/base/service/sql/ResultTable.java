@@ -216,6 +216,15 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		return table[row * colCount + column];
 	}
 
+
+	public boolean isNull(int row, String column) throws SQLException {
+		return isNull(row, lookupColumn(column));
+	}
+	
+	public boolean isNull(int row, int column) {
+		return table[row * colCount + column]==null?true:false;
+	}
+
 	/**
 	 * Returns the first ResultRow of this table.
 	 * 
@@ -357,4 +366,5 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		return ret;
 
 	}
+
 }
