@@ -70,6 +70,10 @@ public class Main {
 				} else {
 					exit();
 				}
+				
+				if (line.hasOption("scriptMode")) {
+					exit();
+				}
 			}
 
 		} catch (Throwable t) {
@@ -85,6 +89,7 @@ public class Main {
 		options.addOption("v", "version", false, "print Version number and exit");
 		options.addOption("h", "help", false, "print this message");
 		options.addOption("cc", "configCheck", false, "run some basic sanity checks on the configuration file");
+		options.addOption("s", "scriptMode", false, "Instead of running as a server, script mode starts and runs all configured Services, then shuts down.");
 		Option opt = new Option("c", "configFile", true, "path to the configuration XML file");
 		opt.setArgName("PATH");
 		options.addOption(opt);
@@ -93,9 +98,6 @@ public class Main {
 		options.addOption(opt);
 		opt = new Option("g", "nodeGroup", true, "the run mode to use, as described in the config file");
 		opt.setArgName("GROUP");
-		options.addOption(opt);
-		opt = new Option("x", "command", true, "execute the specified Java method after startup");
-		opt.setArgName("METHOD");
 		options.addOption(opt);
 
 		return options;
