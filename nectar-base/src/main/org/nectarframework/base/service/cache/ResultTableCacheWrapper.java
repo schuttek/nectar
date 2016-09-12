@@ -1,6 +1,6 @@
 package org.nectarframework.base.service.cache;
 
-import org.nectarframework.base.service.mysql.ResultTable;
+import org.nectarframework.base.service.sql.ResultTable;
 
 public class ResultTableCacheWrapper extends CacheWrapper {
 

@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 import java.sql.SQLException;
 
@@ -7,10 +7,10 @@ import org.nectarframework.base.service.thread.ThreadServiceTask;
 
 public class DelayedInsertTask extends ThreadServiceTask {
 
-	private MysqlPreparedStatement ps;
-	private DatabaseService mysqlService;
+	private SqlPreparedStatement ps;
+	private SqlService mysqlService;
 
-	public DelayedInsertTask(DatabaseService mysqlService, MysqlPreparedStatement ps) {
+	public DelayedInsertTask(SqlService mysqlService, SqlPreparedStatement ps) {
 		this.mysqlService = mysqlService;
 		this.ps = ps;
 	}

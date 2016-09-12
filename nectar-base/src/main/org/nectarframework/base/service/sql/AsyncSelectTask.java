@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 import java.sql.SQLException;
 
@@ -7,33 +7,33 @@ import org.nectarframework.base.service.thread.ThreadServiceTask;
 
 public class AsyncSelectTask extends ThreadServiceTask {
 
-	private MysqlPreparedStatement mps;
+	private SqlPreparedStatement mps;
 	private AsyncTicket at;
 	private long expiry;
-	private DatabaseService mysqlService;
+	private SqlService mysqlService;
 
-	public AsyncSelectTask(DatabaseService mysqlService, String sql, AsyncTicket at) {
+	public AsyncSelectTask(SqlService mysqlService, String sql, AsyncTicket at) {
 		this.mysqlService = mysqlService;
-		this.mps = new MysqlPreparedStatement(sql);
+		this.mps = new SqlPreparedStatement(sql);
 		this.at = at;
 		this.expiry = 0;
 	}
 
-	public AsyncSelectTask(DatabaseService mysqlService, MysqlPreparedStatement mps, AsyncTicket at) {
+	public AsyncSelectTask(SqlService mysqlService, SqlPreparedStatement mps, AsyncTicket at) {
 		this.mysqlService = mysqlService;
 		this.mps = mps;
 		this.at = at;
 		this.expiry = 0;
 	}
 
-	public AsyncSelectTask(DatabaseService mysqlService, String sql, AsyncTicket at, long expiry) {
+	public AsyncSelectTask(SqlService mysqlService, String sql, AsyncTicket at, long expiry) {
 		this.mysqlService = mysqlService;
-		this.mps = new MysqlPreparedStatement(sql);
+		this.mps = new SqlPreparedStatement(sql);
 		this.at = at;
 		this.expiry = expiry;
 	}
 
-	public AsyncSelectTask(DatabaseService mysqlService, MysqlPreparedStatement mps, AsyncTicket at, long expiry) {
+	public AsyncSelectTask(SqlService mysqlService, SqlPreparedStatement mps, AsyncTicket at, long expiry) {
 		this.mysqlService = mysqlService;
 		this.mps = mps;
 		this.at = at;

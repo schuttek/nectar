@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,7 +18,7 @@ import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.tools.StringTools;
 
-public abstract class DatabaseService extends Service {
+public abstract class SqlService extends Service {
 	// TODO: handle some basic connection errors, and attempt reconnection.
 
 	/**
@@ -139,10 +139,10 @@ public abstract class DatabaseService extends Service {
 		}
 	}
 
-	public MysqlTransactionHandle beginTransaction() throws SQLException {
+	public SqlTransactionHandle beginTransaction() throws SQLException {
 		Connection conn = getConnection();
 		conn.setAutoCommit(false);
-		MysqlTransactionHandle mth = new MysqlTransactionHandle(conn, this);
+		SqlTransactionHandle mth = new SqlTransactionHandle(conn, this);
 		return mth;
 	}
 
@@ -159,7 +159,7 @@ public abstract class DatabaseService extends Service {
 		return rows;
 	}
 
-	public int update(MysqlPreparedStatement ps) throws SQLException {
+	public int update(SqlPreparedStatement ps) throws SQLException {
 		if (Log.isWarn()) {
 			this.verifyUpdate(ps.getSql());
 		}
@@ -204,7 +204,7 @@ public abstract class DatabaseService extends Service {
 	 * @return
 	 * @throws SQLException
 	 */
-	public Vector<Long> insert(MysqlPreparedStatement ps) throws SQLException {
+	public Vector<Long> insert(SqlPreparedStatement ps) throws SQLException {
 		if (Log.isWarn()) {
 			this.verifyUpdate(ps.getSql());
 		}
@@ -221,12 +221,12 @@ public abstract class DatabaseService extends Service {
 		return ids;
 	}
 
-	public void delayedInsert(MysqlPreparedStatement ps) {
+	public void delayedInsert(SqlPreparedStatement ps) {
 		DelayedInsertTask dit = new DelayedInsertTask(this, ps);
 		threadService.execute(dit);
 	}
 
-	public AsyncTicket asyncUpdate(MysqlPreparedStatement ps) {
+	public AsyncTicket asyncUpdate(SqlPreparedStatement ps) {
 		AsyncTicket at = new AsyncTicket();
 		at.setReady(false);
 
@@ -239,7 +239,7 @@ public abstract class DatabaseService extends Service {
 		return at;
 	}
 
-	public AsyncTicket asyncInsert(MysqlPreparedStatement ps) {
+	public AsyncTicket asyncInsert(SqlPreparedStatement ps) {
 		AsyncTicket at = new AsyncTicket();
 		at.setReady(false);
 
@@ -286,7 +286,7 @@ public abstract class DatabaseService extends Service {
 	 * @return
 	 * @throws SQLException
 	 */
-	public ResultTable select(MysqlPreparedStatement mps) throws SQLException {
+	public ResultTable select(SqlPreparedStatement mps) throws SQLException {
 		if (Log.isWarn()) {
 			this.verifySelect(mps);
 		}
@@ -337,7 +337,7 @@ public abstract class DatabaseService extends Service {
 	 * @return
 	 * @throws SQLException
 	 */
-	public ResultTable select(MysqlPreparedStatement mps, long cacheExpiry) throws SQLException {
+	public ResultTable select(SqlPreparedStatement mps, long cacheExpiry) throws SQLException {
 		ResultTable rt = cacheService.getResultTable(mps, false);
 		if (rt == null) {
 			rt = select(mps);
@@ -347,7 +347,7 @@ public abstract class DatabaseService extends Service {
 	}
 
 	/**
-	 * Begins an asynchronous query. The SQL query will be perform
+	 * Begins an asynchronous query. The SQL query will be performed in a separate thread. Use AsyncTicket to get the result.
 	 * 
 	 * @param sql
 	 * @return
@@ -366,12 +366,12 @@ public abstract class DatabaseService extends Service {
 	}
 
 	/**
-	 * Begins an asynchronous query. The SQL query will be perform
+	 * Begins an asynchronous query. The SQL query will be performed in a separate thread. Use AsyncTicket to get the result.
 	 * 
 	 * @param sql
 	 * @return
 	 */
-	public AsyncTicket asyncSelect(MysqlPreparedStatement sql) {
+	public AsyncTicket asyncSelect(SqlPreparedStatement sql) {
 		AsyncTicket at = new AsyncTicket();
 		at.setReady(false);
 
@@ -384,6 +384,13 @@ public abstract class DatabaseService extends Service {
 		return at;
 	}
 
+	
+	/** Begins an asynchronous query in a separate thread unless this request has already been cached. Use AsyncTicket to get the results. 
+	 * 
+	 * @param sql the SQL query to perform
+	 * @param cacheExpiry the amount of time to keep this query in cache.
+	 * @return
+	 */
 	public AsyncTicket asyncSelect(String sql, long cacheExpiry) {
 		ResultTable rt = cacheService.getResultTable(sql, false);
 		AsyncTicket at;
@@ -406,6 +413,8 @@ public abstract class DatabaseService extends Service {
 		return at;
 	}
 
+	
+	//TODO move this to utils? what is this even used for?
 	private class SimpleDynamicList {
 		private class Link {
 			Link next;
@@ -591,7 +600,7 @@ public abstract class DatabaseService extends Service {
 		}
 	}
 
-	private void verifySelect(MysqlPreparedStatement preparedStatement) throws SQLException {
+	private void verifySelect(SqlPreparedStatement preparedStatement) throws SQLException {
 		this.verifySelect(preparedStatement.getSql());
 	}
 

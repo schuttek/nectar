@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.simplesql;
+package org.nectarframework.base.service.sql.simplesql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

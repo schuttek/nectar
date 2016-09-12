@@ -3,8 +3,8 @@ package org.nectarframework.base.service.datastore;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import org.nectarframework.base.service.mysql.MysqlPreparedStatement;
-import org.nectarframework.base.service.mysql.ResultRow;
+import org.nectarframework.base.service.sql.SqlPreparedStatement;
+import org.nectarframework.base.service.sql.ResultRow;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 
@@ -284,7 +284,7 @@ public class DataStoreObjectDescriptor {
 			throw new IllegalArgumentException("invalid type:" + this.toString());
 		}
 
-		public void toMps(MysqlPreparedStatement mps, int mpsIndex, Object value) {
+		public void toMps(SqlPreparedStatement mps, int mpsIndex, Object value) {
 			int i;
 			ByteArray ba;
 			switch (this) {

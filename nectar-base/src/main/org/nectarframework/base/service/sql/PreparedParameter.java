@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 public class PreparedParameter {
 	private int index;

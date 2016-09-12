@@ -8,10 +8,10 @@ import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.mysql.MysqlService;
-import org.nectarframework.base.service.mysql.PrSt;
-import org.nectarframework.base.service.mysql.ResultRow;
-import org.nectarframework.base.service.mysql.ResultTable;
+import org.nectarframework.base.service.sql.PrSt;
+import org.nectarframework.base.service.sql.ResultRow;
+import org.nectarframework.base.service.sql.ResultTable;
+import org.nectarframework.base.service.sql.mysql.MysqlService;
 import org.nectarframework.base.tools.ByteArray;
 
 public class TranslationService extends Service {

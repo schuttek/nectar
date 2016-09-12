@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 
 /** Short hand for MysqlPreparedStatement
@@ -6,7 +6,7 @@ package org.nectarframework.base.service.mysql;
  * @author skander
  *
  */
-public class PrSt extends MysqlPreparedStatement {
+public class PrSt extends SqlPreparedStatement {
 	public PrSt() {
 		super();
 	}

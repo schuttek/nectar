@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.mysql;
+package org.nectarframework.base.service.sql;
 
 import java.util.Vector;
 
@@ -6,11 +6,11 @@ import org.nectarframework.base.service.thread.ThreadServiceTask;
 
 public class AsyncInsertTask extends ThreadServiceTask {
 
-	private MysqlPreparedStatement ps;
+	private SqlPreparedStatement ps;
 	private AsyncTicket at;
-	private DatabaseService mysqlService;
+	private SqlService mysqlService;
 
-	public AsyncInsertTask(DatabaseService mysqlService, MysqlPreparedStatement ps, AsyncTicket at) {
+	public AsyncInsertTask(SqlService mysqlService, SqlPreparedStatement ps, AsyncTicket at) {
 		this.mysqlService = mysqlService;
 		this.ps = ps;
 		this.at = at;

@@ -9,8 +9,8 @@ import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.internode.InternodeService;
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.mysql.MysqlPreparedStatement;
-import org.nectarframework.base.service.mysql.ResultTable;
+import org.nectarframework.base.service.sql.SqlPreparedStatement;
+import org.nectarframework.base.service.sql.ResultTable;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
@@ -115,11 +115,11 @@ public class CacheService extends Service {
 		return null;
 	}
 
-	public ResultTable getResultTable(MysqlPreparedStatement key) {
+	public ResultTable getResultTable(SqlPreparedStatement key) {
 		return getResultTable(key, true);
 	}
 	
-	public ResultTable getResultTable(MysqlPreparedStatement key, boolean refreshCache) {
+	public ResultTable getResultTable(SqlPreparedStatement key, boolean refreshCache) {
 		checkFlushTimer();
 		CacheWrapper cw = getWrapper(Integer.toHexString(key.hashCode()), refreshCache);
 		if (cw == null) {
@@ -264,11 +264,11 @@ public class CacheService extends Service {
 		}
 	}
 
-	public void add(MysqlPreparedStatement mps, ResultTable rt) {
+	public void add(SqlPreparedStatement mps, ResultTable rt) {
 		add(mps, rt, defaultExpiry);
 	}
 
-	public void add(MysqlPreparedStatement mps, ResultTable rt, long expiry) {
+	public void add(SqlPreparedStatement mps, ResultTable rt, long expiry) {
 		if (getWrapper(Integer.toHexString(mps.hashCode())) == null) {
 			set(Integer.toHexString(mps.hashCode()), rt, expiry);
 		}

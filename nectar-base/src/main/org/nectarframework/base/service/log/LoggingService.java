@@ -11,9 +11,9 @@ import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.Log.Level;
-import org.nectarframework.base.service.mysql.MysqlPreparedStatement;
-import org.nectarframework.base.service.mysql.MysqlService;
 import org.nectarframework.base.service.session.Session;
+import org.nectarframework.base.service.sql.SqlPreparedStatement;
+import org.nectarframework.base.service.sql.mysql.MysqlService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 
@@ -105,7 +105,7 @@ public class LoggingService extends Service {
 			return;
 		}
 
-		MysqlPreparedStatement ps = new MysqlPreparedStatement();
+		SqlPreparedStatement ps = new SqlPreparedStatement();
 
 		ps.setSql("INSERT INTO nectar_log_logger(date_ms, level, thread_hash, thread_name, message, throwable)" + " VALUES (?, ?, ?, ?, ?, ?)");
 
@@ -131,7 +131,7 @@ public class LoggingService extends Service {
 		String sql = "INSERT INTO nectar_log_access SET dateMs = ?, path = ?, formRaw = ?, formValid = ?, outputElm = ?, duration = ?, remoteIp = ?, session = ?";
 		
 		
-		MysqlPreparedStatement ps = new MysqlPreparedStatement(sql);
+		SqlPreparedStatement ps = new SqlPreparedStatement(sql);
 
 		ps.setLong(1, System.currentTimeMillis());
 		ps.setString(2, path);
