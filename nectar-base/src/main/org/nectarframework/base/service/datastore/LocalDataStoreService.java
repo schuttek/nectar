@@ -7,44 +7,52 @@ import java.util.List;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.file.FileService;
+import org.nectarframework.base.service.xml.XmlService;
 
 
 /**
- * A DataStoreService that saves
+ * A DataStoreService that saves DataStoreObjects to file.
  * @author skander
  *
  */
 public class LocalDataStoreService extends DataStoreService {
 
-	private FileService fs;
+	protected FileService fs;
+	
+	protected String storageRootDir = "dataStore";
+	
+	protected String tableIndex = "table_index.xml";
+	protected String dataTableSuffix = "dat";
 
 	@Override
-	protected boolean _init() {
+	protected boolean secondStageinit() {
+		
+		
 		
 		return true;
 	}
 
 	@Override
 	public void checkParameters() throws ConfigurationException {
-		// TODO Auto-generated method stub
-		
+		storageRootDir = serviceParameters.getString("storageRootDir", "dataStore");
+		tableIndex = serviceParameters.getString("tableIndex", "table_index.xml");
+		dataTableSuffix = serviceParameters.getString("dataTableSuffix",  "dat");
 	}
 
 	@Override
 	public boolean establishDependancies() throws ServiceUnavailableException {
 		this.fs = (FileService)dependancy(FileService.class);
+		dependancy(XmlService.class);
 		return true;
 	}
 
 	@Override
 	protected boolean run() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	protected boolean shutdown() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
@@ -70,14 +78,44 @@ public class LocalDataStoreService extends DataStoreService {
 
 	@Override
 	public DataStoreObject loadDSO(DataStoreObjectDescriptor dsod, Object key) throws Exception {
+		
+		synchronized(this) {
+			String tableName = dsod.getTableName();
+			
+			byte[] tableBA = fs.readAllBytes(getTableFilePath(tableName));
+			
+			Table table = buildTable(tableBA);
+			
+			return table.get(key);
+			
+		}
+		
+		return null;
+	}
+
+	private Table buildTable(byte[] tableBA) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	protected String getTableFilePath(String tableName) {
+		return this.storageRootDir + "/" + tableName + "." + this.dataTableSuffix;
+	}
+
 	@Override
 	public void save(Collection<DataStoreObject> dsoList) throws Exception {
-		// TODO Auto-generated method stub
-		
+		for (DataStoreObject dso : dsoList) {
+			save(dso);
+		}
+	}
+	
+	@Override 
+	public void save(DataStoreObject dso) throws Exception {
+		synchronized(this) {
+			// if key exists, this is an update
+			
+		}
+		dso.
 	}
 
 }

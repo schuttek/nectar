@@ -38,10 +38,10 @@ public abstract class DataStoreService extends Service {
 			Log.fatal(e);
 			return false;
 		}
-		return _init();
+		return secondStageinit();
 	}
 
-	protected abstract boolean _init();
+	protected abstract boolean secondStageinit();
 
 	public abstract List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception;
 

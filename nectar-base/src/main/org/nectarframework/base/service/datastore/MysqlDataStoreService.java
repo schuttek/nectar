@@ -36,7 +36,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	protected boolean _init() {
+	protected boolean secondStageinit() {
 		return true;
 	}
 

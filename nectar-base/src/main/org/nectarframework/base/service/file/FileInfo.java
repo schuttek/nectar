@@ -1,5 +1,7 @@
 package org.nectarframework.base.service.file;
 
+import java.io.File;
+
 public class FileInfo {
 
 	String path;
@@ -7,6 +9,7 @@ public class FileInfo {
 	long lastModified;
 	long length;
 	String extension;
+	byte[] contents;
 
 	public String getPath() {
 		return path;
@@ -22,5 +25,8 @@ public class FileInfo {
 	}
 	public String getFileExtension() {
 		return extension;
+	}
+	public File getFile() {
+		return new File(path);
 	}
 }
