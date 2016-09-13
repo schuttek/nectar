@@ -23,7 +23,8 @@ public class LocalDataStoreService extends DataStoreService {
 	
 	protected String tableIndex = "table_index.xml";
 	protected String dataTableSuffix = "dat";
-
+	protected int cacheExpiry = 3600000; // one hour
+	
 	@Override
 	protected boolean secondStageinit() {
 		
@@ -37,6 +38,7 @@ public class LocalDataStoreService extends DataStoreService {
 		storageRootDir = serviceParameters.getString("storageRootDir", "dataStore");
 		tableIndex = serviceParameters.getString("tableIndex", "table_index.xml");
 		dataTableSuffix = serviceParameters.getString("dataTableSuffix",  "dat");
+		cacheExpiry = serviceParameters.getInt("cacheExpiry", 0, Integer.MAX_VALUE, 3600000);
 	}
 
 	@Override
@@ -82,15 +84,13 @@ public class LocalDataStoreService extends DataStoreService {
 		synchronized(this) {
 			String tableName = dsod.getTableName();
 			
-			byte[] tableBA = fs.readAllBytes(getTableFilePath(tableName));
+			byte[] tableBA = fs.readAllBytes(getTableFilePath(tableName), cacheExpiry);
 			
 			Table table = buildTable(tableBA);
 			
 			return table.get(key);
 			
 		}
-		
-		return null;
 	}
 
 	private Table buildTable(byte[] tableBA) {
@@ -115,7 +115,6 @@ public class LocalDataStoreService extends DataStoreService {
 			// if key exists, this is an update
 			
 		}
-		dso.
 	}
 
 }

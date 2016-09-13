@@ -38,12 +38,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -61,7 +58,6 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -71,20 +67,14 @@ import org.nectarframework.base.action.Action;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.ServiceUnavailableException;
-import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.file.FileInfo;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.file.ReadFileAccessDeniedException;
 import org.nectarframework.base.service.file.ReadFileNotAFileException;
 import org.nectarframework.base.service.file.ReadFileNotFoundException;
-import org.nectarframework.base.service.http.AccessDeniedException;
-import org.nectarframework.base.service.http.ClientWriteException;
-import org.nectarframework.base.service.http.FormValidationException;
-import org.nectarframework.base.service.http.InternalErrorException;
-import org.nectarframework.base.service.http.NotFoundException;
 import org.nectarframework.base.service.http.RawAction;
-import org.nectarframework.base.service.http.SimpleHttpForm;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.pathfinder.ActionResolution;
 import org.nectarframework.base.service.pathfinder.ActionResolution.OutputType;
@@ -101,9 +91,6 @@ import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.FastByteArrayOutputStream;
 import org.nectarframework.base.tools.StringTools;
-import org.thymeleaf.exceptions.TemplateEngineException;
-
-import com.mysql.jdbc.CachedResultSetMetaData;
 
 /**
  * A simple, tiny, nicely embeddable HTTP server in Java
@@ -200,6 +187,8 @@ public class NanoHttpService extends Service {
 
 	private String staticFileLocalDirectory;
 
+	private ThymeleafService thymeleafService;
+
 	/**
 	 * Common MIME type for dynamic content: plain text
 	 */
@@ -239,6 +228,7 @@ public class NanoHttpService extends Service {
 
 	@Override
 	protected boolean init() {
+		thymeleafService = (ThymeleafService)ServiceRegister.getService(ThymeleafService.class);
 		return true;
 	}
 
@@ -580,12 +570,18 @@ public class NanoHttpService extends Service {
 			}
 			byteBuff = outputByteArrayOutputStream.toByteArray();
 			return newFixedLengthResponse(Status.OK, mimeType, new ByteArrayInputStream(byteBuff), byteBuff.length);
-/*		case thymeleaf:
-			mimeType = "text/html";
-			outputByteArrayOutputStream = new FastByteArrayOutputStream();
-			thymeleafService.output(locale, "", actionResolution.getTemplateName(), elm, outputByteArrayOutputStream);
-			byteBuff = outputByteArrayOutputStream.toByteArray();
-			return newFixedLengthResponse(Status.OK, mimeType, new ByteArrayInputStream(byteBuff), byteBuff.length); */
+		case thymeleaf:
+			if (thymeleafService == null) {
+				return newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHttpService.MIME_PLAINTEXT,
+						"SERVER INTERNAL ERROR: Thymeleaf Service not available.");
+			} else {
+				mimeType = "text/html";
+				outputByteArrayOutputStream = new FastByteArrayOutputStream();
+				thymeleafService.output(locale, "", actionResolution.getTemplateName(), elm,
+						outputByteArrayOutputStream);
+				byteBuff = outputByteArrayOutputStream.toByteArray();
+				return newFixedLengthResponse(Status.OK, mimeType, new ByteArrayInputStream(byteBuff), byteBuff.length);
+			}
 		case xml:
 			mimeType = "text/xml";
 			outputByteArrayOutputStream = new FastByteArrayOutputStream();
@@ -604,6 +600,8 @@ public class NanoHttpService extends Service {
 			mimeType = "text/xsl";
 			return newFixedLengthResponse(Status.SERVICE_UNAVAILABLE, NanoHttpService.MIME_PLAINTEXT,
 					"Not Implemented: ");
+		default:
+			break;
 		}
 		return newFixedLengthResponse(Status.SERVICE_UNAVAILABLE, NanoHttpService.MIME_PLAINTEXT, "Not Implemented: ");
 	}
@@ -670,11 +668,11 @@ public class NanoHttpService extends Service {
 	private Response serveProxy(ProxyResolution proxyResolution, String uri, Method method, Map<String, String> headers,
 			Map<String, List<String>> parms, String queryParameterString, Map<String, String> files) {
 
-		String remoteTarget = uri.substring(proxyResolution.getPath().length()+1);
+		String remoteTarget = uri.substring(proxyResolution.getPath().length() + 1);
 		if (!remoteTarget.startsWith("/")) {
 			remoteTarget = "/" + remoteTarget;
 		}
-		
+
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		URIBuilder remoteUri = new URIBuilder();
 		remoteUri.setScheme("http");
@@ -686,8 +684,6 @@ public class NanoHttpService extends Service {
 			remoteUri.addParameter(k, parms.get(k).get(0));
 		}
 
-		
-		
 		HttpGet httpget;
 		try {
 			httpget = new HttpGet(remoteUri.build());
@@ -715,7 +711,7 @@ public class NanoHttpService extends Service {
 			for (Header h : remoteHeaders) {
 				resp.addHeader(h.getName(), h.getValue());
 			}
-			
+
 			resp.setProxyResponse(response);
 
 		} catch (IOException e) {

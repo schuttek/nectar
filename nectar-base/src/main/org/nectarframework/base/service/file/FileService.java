@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
@@ -159,7 +158,14 @@ public class FileService extends Service {
 
 	public byte[] readAllBytes(String path, long cacheExpiry)
 			throws IOException {
-		CacheableObject cachedCO = cacheService.getGeneric(cacheKey(path), true);
+		CacheableObject cachedCO;
+		try {
+			cachedCO = cacheService.getObject(cacheKey(path), true);
+		} catch (Exception e) {
+			Log.warn(e);
+			return null;
+		}
+		
 		FileInfo fi = null;
 		// attempt a cache hit
 		if (cachedCO != null) {

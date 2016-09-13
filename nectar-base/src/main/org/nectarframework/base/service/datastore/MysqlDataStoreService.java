@@ -73,7 +73,7 @@ public class MysqlDataStoreService extends DataStoreService {
 				return null;
 			}
 			newDso.loadFromResultRow(rr);
-			cacheService.add(cacheKey(dsod, newDso.getPrimaryKey()), newDso.toBytes().getBytes());
+			cacheService.add(cacheKey(dsod, newDso.getPrimaryKey()), newDso.toBytes(new ByteArray()).getBytes());
 			dsoList.add(newDso);
 		}
 		return dsoList;
@@ -154,8 +154,9 @@ public class MysqlDataStoreService extends DataStoreService {
 			return null;
 		}
 		dso.loadFromResultRow(rt.iterator().next());
-
-		cacheService.add(cacheKey(dsod, dso.getPrimaryKey()), dso.toBytes().getBytes());
+		
+		
+		cacheService.add(cacheKey(dsod, dso.getPrimaryKey()), dso.toBytes(new ByteArray()).getBytes());
 
 		return dso;
 	}

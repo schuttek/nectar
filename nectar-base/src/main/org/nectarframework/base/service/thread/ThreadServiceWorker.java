@@ -1,7 +1,5 @@
 package org.nectarframework.base.service.thread;
 
-import org.nectarframework.base.service.log.Log;
-
 public class ThreadServiceWorker extends Thread {
 	private ThreadService ts = null;
 	private ThreadServiceTask task = null;

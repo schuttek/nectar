@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.nectarframework.base.form.Form;
-import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.pathfinder.IPathFinder;

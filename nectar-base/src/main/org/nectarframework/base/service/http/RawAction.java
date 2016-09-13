@@ -2,7 +2,6 @@ package org.nectarframework.base.service.http;
 
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.service.xml.Element;
-import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.Tuple;
 
 

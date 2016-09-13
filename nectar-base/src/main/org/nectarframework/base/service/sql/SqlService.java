@@ -317,7 +317,7 @@ public abstract class SqlService extends Service {
 	 * @throws SQLException
 	 */
 	public ResultTable select(String sql, long cacheExpiry) throws SQLException {
-		ResultTable rt = cacheService.getResultTable(sql, false);
+		ResultTable rt = getCachedResultTable(sql, false);
 		if (rt == null) {
 			rt = select(sql);
 			cacheService.add(sql, rt, cacheExpiry);
@@ -338,10 +338,10 @@ public abstract class SqlService extends Service {
 	 * @throws SQLException
 	 */
 	public ResultTable select(SqlPreparedStatement mps, long cacheExpiry) throws SQLException {
-		ResultTable rt = cacheService.getResultTable(mps, false);
+		ResultTable rt = getCachedResultTable(mps, false);
 		if (rt == null) {
 			rt = select(mps);
-			cacheService.add(mps, rt, cacheExpiry);
+			addResultTableToCache(mps, rt, cacheExpiry);
 		}
 		return rt;
 	}
@@ -392,7 +392,7 @@ public abstract class SqlService extends Service {
 	 * @return
 	 */
 	public AsyncTicket asyncSelect(String sql, long cacheExpiry) {
-		ResultTable rt = cacheService.getResultTable(sql, false);
+		ResultTable rt = getCachedResultTable(sql, false);
 		AsyncTicket at;
 		if (rt == null) {
 			at = new AsyncTicket();
@@ -460,12 +460,81 @@ public abstract class SqlService extends Service {
 
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int colCount = rsmd.getColumnCount();
+		JavaTypes[] typesMap = new JavaTypes[colCount];
 		HashMap<String, Integer> keyMap = new HashMap<String, Integer>();
 		for (int i = 0; i < colCount; i++) {
 			keyMap.put(rsmd.getColumnName(i + 1), i);
+			switch(rsmd.getColumnType(i + 1)) {
+			case Types.DECIMAL:
+				typesMap[i] = JavaTypes.BigDecimal;
+				break;
+			case Types.BIT:
+			case Types.BOOLEAN:
+				typesMap[i] = JavaTypes.Boolean;
+				break;
+			case Types.CHAR:
+			case Types.LONGNVARCHAR:
+			case Types.LONGVARCHAR:
+			case Types.VARCHAR:
+			case Types.NCHAR:
+			case Types.NVARCHAR:
+				typesMap[i] = JavaTypes.String;
+				break;
+			case Types.DOUBLE:
+				typesMap[i] = JavaTypes.Double;
+				break;
+			case Types.FLOAT:
+				typesMap[i] = JavaTypes.Float;
+				break;
+			case Types.TINYINT:
+				typesMap[i] = JavaTypes.Byte;
+				break;
+			case Types.SMALLINT:
+				typesMap[i] = JavaTypes.Short;
+				break;
+			case Types.INTEGER:
+				typesMap[i] = JavaTypes.Int;
+				break;
+			case Types.BIGINT:
+				typesMap[i] = JavaTypes.Long;
+				break;
+			case Types.TIME:
+				typesMap[i] = JavaTypes.Time;
+				break;
+			case Types.TIMESTAMP:
+				typesMap[i] = JavaTypes.Timestamp;
+				break;
+			case Types.DATE:
+				typesMap[i] = JavaTypes.Date;
+				break;
+			case Types.BLOB:
+			case Types.CLOB:
+			case Types.VARBINARY:
+				typesMap[i] = JavaTypes.ByteArray;
+				break;
+			case Types.ARRAY:
+			case Types.BINARY:
+			case Types.DATALINK:
+			case Types.DISTINCT:
+			case Types.JAVA_OBJECT:
+			case Types.LONGVARBINARY:
+			case Types.NCLOB:
+			case Types.NULL:
+			case Types.NUMERIC:
+			case Types.OTHER:
+			case Types.REAL:
+			case Types.REF:
+			case Types.ROWID:
+			case Types.SQLXML:
+			case Types.STRUCT:
+				typesMap[i] = JavaTypes.Unknown;
+				break;
+			}
 		}
 		long memorySize = 0;
 
+		
+		
 		String stringPtr = null;
 		byte[] baPtr = null;
 		int rowCount = 0;
@@ -576,7 +645,7 @@ public abstract class SqlService extends Service {
 																// plus the
 																// keyMap.
 
-		return new ResultTable(keyMap, table, colCount, memorySize);
+		return new ResultTable(typesMap, keyMap, table, colCount, memorySize);
 
 	}
 
@@ -627,4 +696,26 @@ public abstract class SqlService extends Service {
 		stat.close();
 		returnConnection(conn);
 	}
+	
+
+	private ResultTable getCachedResultTable(SqlPreparedStatement mps, boolean refresh) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+
+
+	private ResultTable getCachedResultTable(String sql, boolean refresh) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+
+
+	private void addResultTableToCache(SqlPreparedStatement mps, ResultTable rt, long cacheExpiry) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
 }

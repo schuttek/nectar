@@ -9,12 +9,7 @@ import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.internode.InternodeService;
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.sql.SqlPreparedStatement;
-import org.nectarframework.base.service.sql.ResultTable;
 import org.nectarframework.base.service.thread.ThreadService;
-import org.nectarframework.base.service.xml.Element;
-import org.nectarframework.base.service.xml.XmlService;
-import org.xml.sax.SAXException;
 
 //TODO: implement a cluster level cache that backs up the local cache.
 //FIXME: [23:05:50]566 <TRACE> CacheService update: 0 items using estimated 12609 bytes or a recalculated 0 bytes.
@@ -74,66 +69,6 @@ public class CacheService extends Service {
 		return true;
 	}
 
-	public Element getElement(String key) {
-		return 	getElement(key, true);
-	}
-	
-	public Element getElement(String key, boolean refreshCache) {
-		checkFlushTimer();
-		CacheWrapper cw = getWrapper(key, refreshCache);
-		if (cw == null) {
-			return null;
-		}
-		try {
-			Element ret = XmlService.fromXml(((ByteArrayCacheWrapper)cw).getByteArray());
-			return ret;
-		} catch (ClassCastException e) {
-			Log.fatal("CacheService -> ClassCastException. Did we hit a hash key duplicate??", e);
-		} catch (SAXException e) {
-			Log.warn("CacheService couldn't parse a cached Element from it's XML form.", e);
-		}
-		return null;
-
-	}
-
-	public ResultTable getResultTable(String key) {
-		return getResultTable(key, true);
-	}
-	
-	public ResultTable getResultTable(String key, boolean refreshCache) {
-		checkFlushTimer();
-		CacheWrapper cw = getWrapper(key, refreshCache);
-		if (cw == null) {
-			return null;
-		}
-		try {
-			ResultTable ret = ((ResultTableCacheWrapper) cw).getResultTable();
-			return ret;
-		} catch (ClassCastException e) {
-			Log.fatal("CacheService -> ClassCastException. Did we hit a hash key duplicate??", e);
-		}
-		return null;
-	}
-
-	public ResultTable getResultTable(SqlPreparedStatement key) {
-		return getResultTable(key, true);
-	}
-	
-	public ResultTable getResultTable(SqlPreparedStatement key, boolean refreshCache) {
-		checkFlushTimer();
-		CacheWrapper cw = getWrapper(Integer.toHexString(key.hashCode()), refreshCache);
-		if (cw == null) {
-			return null;
-		}
-		try {
-			ResultTable ret = ((ResultTableCacheWrapper) cw).getResultTable();
-			return ret;
-		} catch (ClassCastException e) {
-			Log.fatal("CacheService -> ClassCastException. Did we hit a hash key duplicate??", e);
-		}
-		return null;
-	}
-
 	public byte[] getByteArray(String key) {
 		return getByteArray(key, true);
 	}
@@ -143,7 +78,7 @@ public class CacheService extends Service {
 		CacheWrapper cw = getWrapper(key, refreshCache);
 		if (cw != null) {
 			try {
-				byte[] ret = ((ByteArrayCacheWrapper) cw).getByteArray();
+				byte[] ret = cw.getData();
 				return ret;
 			} catch (ClassCastException e) {
 				Log.fatal("CacheService -> ClassCastException. Did we hit a hash key duplicate??", e);
@@ -152,17 +87,16 @@ public class CacheService extends Service {
 		return null;
 	}
 
-	public CacheableObject getGeneric(String key) {
-		return getGeneric(key, true);
+	public CacheableObject getObject(String key) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+		return getObject(key, true);
 	}
 	
-	public CacheableObject getGeneric(String key, boolean refreshCache) {
+	public CacheableObject getObject(String key, boolean refreshCache) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
 		checkFlushTimer();
 		CacheWrapper cw = getWrapper(key, refreshCache);
 		if (cw != null) {
 			try {
-				CacheableObject o = ((ObjectCacheWrapper) cw).getObject();
-				return o;
+				return cw.getObject();
 			} catch (ClassCastException e) {
 				Log.fatal("CacheService -> ClassCastException. Did we hit a hash key duplicate??", e);
 			}
@@ -180,68 +114,24 @@ public class CacheService extends Service {
 		checkFlushTimer();
 	}
 
-	/**
-	 * Overwrites the current key in the cache.
-	 * 
-	 * @param key
-	 * @param e
-	 * @param expiry
-	 */
-
-	public void set(String key, Element e) {
-		set(key, e, defaultExpiry);
-	}
-
-	public void set(String key, Element e, long expiry) {
-		ByteArrayCacheWrapper cw = new ByteArrayCacheWrapper(InternodeService.getTime() + expiry);
-		cw.setByteArray(XmlService.toXmlBytes(e));
-		replaceCache(key, cw);
-	}
-
-	public void set(String key, ResultTable rt) {
-		set(key, rt, defaultExpiry);
-	}
-
-	public void set(String key, ResultTable rt, long expiry) {
-		ResultTableCacheWrapper cw = new ResultTableCacheWrapper(InternodeService.getTime() + expiry);
-		cw.setResultTable(rt);
-		replaceCache(key, cw);
-	}
-
 	public void set(String key, byte[] ba) {
 		set(key, ba, defaultExpiry);
 	}
 
 	public void set(String key, byte[] ba, long expiry) {
-		ByteArrayCacheWrapper cw = new ByteArrayCacheWrapper(InternodeService.getTime() + expiry);
-		cw.setByteArray(ba);
+		CacheWrapper cw = new CacheWrapper(InternodeService.getTime() + expiry);
+		cw.setData(ba);
 		replaceCache(key, cw);
 	}
 
-	public void setGeneric(String key, CacheableObject o) {
-		setGeneric(key, o, defaultExpiry);
+	public void set(String key, CacheableObject co) {
+		set(key, co, defaultExpiry);
 	}
 
-	public void setGeneric(String key, CacheableObject o, long expiry) {
-		ObjectCacheWrapper cw = new ObjectCacheWrapper(InternodeService.getTime() + expiry);
-		cw.setObject(o);
+	public void set(String key, CacheableObject co, long expiry) {
+		CacheWrapper cw = new CacheWrapper(InternodeService.getTime() + expiry);
+		cw.setObject(co);
 		replaceCache(key, cw);
-	}
-
-	/**
-	 * Adds a key if it doesn't already exist.
-	 * 
-	 * @param key
-	 * @param e
-	 */
-	public void add(String key, Element e) {
-		add(key, e, defaultExpiry);
-	}
-
-	public void add(String key, Element e, long expiry) {
-		if (getWrapper(key) == null) {
-			set(key, e, expiry);
-		}
 	}
 
 	public void add(String key, byte[] ba) {
@@ -254,33 +144,13 @@ public class CacheService extends Service {
 		}
 	}
 
-	public void add(String key, ResultTable rt) {
-		add(key, rt, defaultExpiry);
+	public void add(String key, CacheableObject o) {
+		add(key, o, defaultExpiry);
 	}
 
-	public void add(String key, ResultTable rt, long expiry) {
+	public void add(String key, CacheableObject o, long expiry) {
 		if (getWrapper(key) == null) {
-			set(key, rt, expiry);
-		}
-	}
-
-	public void add(SqlPreparedStatement mps, ResultTable rt) {
-		add(mps, rt, defaultExpiry);
-	}
-
-	public void add(SqlPreparedStatement mps, ResultTable rt, long expiry) {
-		if (getWrapper(Integer.toHexString(mps.hashCode())) == null) {
-			set(Integer.toHexString(mps.hashCode()), rt, expiry);
-		}
-	}
-
-	public void addGeneric(String key, CacheableObject o) {
-		addGeneric(key, o, defaultExpiry);
-	}
-
-	public void addGeneric(String key, CacheableObject o, long expiry) {
-		if (getWrapper(key) == null) {
-			setGeneric(key, o, expiry);
+			set(key, o, expiry);
 		}
 	}
 
@@ -333,7 +203,6 @@ public class CacheService extends Service {
 		ArrayList<String> toRemove = new ArrayList<String>();
 		for (String key : keys) {
 			CacheWrapper cw = cache.get(key);
-			recalcMemoryUsage += cw.estimateMemorySize();
 			if (cw != null && cw.getExpiry() < now) {
 				toRemove.add(key);
 			}

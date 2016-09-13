@@ -1,6 +1,5 @@
 package org.nectarframework.base.service.sql;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,11 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 
-public class ResultTable implements Serializable, Iterable<ResultRow> {
-	private static final long serialVersionUID = -4894318142244242418L;
+public class ResultTable implements CacheableObject, Iterable<ResultRow> {
+	private JavaTypes[] typesByColumn;
 	private HashMap<String, Integer> keyMap;
 	private Object[] table;
 	private int colCount;
@@ -23,7 +24,11 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 	 */
 	private long memorySize = 0;
 
-	protected ResultTable(HashMap<String, Integer> keyMap, Object[] table, int colCount, long memorySize) {
+	public ResultTable() {
+	}
+
+	protected ResultTable(JavaTypes[] typesByColumn, HashMap<String, Integer> keyMap, Object[] table, int colCount, long memorySize) {
+		this.typesByColumn = typesByColumn;
 		this.keyMap = keyMap;
 		this.table = table;
 		this.colCount = colCount;
@@ -142,7 +147,7 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		}
 		throw new SQLException("Type mismatch column " + column + " is a " + obj.getClass().getName());
 	}
-	
+
 	public Long getNumberAsLong(int row, int column) throws SQLException {
 		Object obj = table[row * colCount + column];
 		if (obj == null) {
@@ -216,13 +221,12 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		return table[row * colCount + column];
 	}
 
-
 	public boolean isNull(int row, String column) throws SQLException {
 		return isNull(row, lookupColumn(column));
 	}
-	
+
 	public boolean isNull(int row, int column) {
-		return table[row * colCount + column]==null?true:false;
+		return table[row * colCount + column] == null ? true : false;
 	}
 
 	/**
@@ -252,10 +256,9 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		return keyMap.keySet();
 	}
 
-
 	/**
 	 * Returns a map indexed by the long values in the given column
-	 *  
+	 * 
 	 * @param column
 	 * @return
 	 * @throws SQLException
@@ -264,12 +267,12 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 		HashMap<Long, ResultRow> map = new HashMap<Long, ResultRow>();
 		int colIdx = this.lookupColumn(column);
 		for (int rowIdx = 0; rowIdx < this.rowCount(); rowIdx++) {
-			
+
 			map.put(this.getNumberAsLong(rowIdx, colIdx), new ResultRow(this, rowIdx));
 		}
 		return map;
 	}
-	
+
 	/**
 	 * Returns a list of rows where the given column is equal to the given
 	 * match. The first call will build a HashMap in O(n) time, subsequent calls
@@ -331,7 +334,7 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 	 * @param rt1
 	 * @param rt2
 	 * @return a new ResultTable contains the rows of rt1 and rt2
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	public static ResultTable append(ResultTable rt1, ResultTable rt2) {
 		Set<String> rt2colNames = rt2.getColumNames();
@@ -341,7 +344,6 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 			}
 		}
 
-		HashMap<String, Integer> retKeyMap = rt1.keyMap;
 		int retColCount = rt1.colCount();
 		Object[] retTable = new Object[retColCount * (rt1.rowCount() + rt2.rowCount())];
 
@@ -361,10 +363,85 @@ public class ResultTable implements Serializable, Iterable<ResultRow> {
 			}
 		}
 
-		ResultTable ret = new ResultTable(retKeyMap, retTable, retColCount, rt1.memorySize + rt1.memorySize);
+		ResultTable ret = new ResultTable(rt1.typesByColumn, rt1.keyMap, retTable, retColCount, rt1.memorySize + rt1.memorySize);
 
 		return ret;
 
+	}
+
+	@Override
+	public void fromBytes(ByteArray ba) {
+		colCount = ba.getInt();
+		typesByColumn = new JavaTypes[colCount];
+		for (int t=0; t<colCount; t++) {
+			typesByColumn[t] = JavaTypes.lookup(ba.getInt());
+		}
+		
+		int keyMapSize = ba.getInt();
+		this.keyMap = new HashMap<>();
+		for (int t = 0; t < keyMapSize; t++) {
+			String k = ba.getString();
+			int v = ba.getInt();
+			keyMap.put(k, v);
+		}
+		this.table = new Object[ba.getInt()];
+		for (int t=0; t<table.length;t++) {
+			switch( typesByColumn[t % colCount] ) {
+			case BigDecimal:
+				break;
+			case Boolean:
+				break;
+			case Byte:
+				break;
+			case ByteArray:
+				break;
+			case Date:
+				break;
+			case Double:
+				break;
+			case Float:
+				break;
+			case Int:
+				break;
+			case Long:
+				break;
+			case Short:
+				break;
+			case String:
+				break;
+			case Time:
+				break;
+			case Timestamp:
+				break;
+			case Unknown:
+				break;
+			default:
+				break;
+			
+			}
+		}
+	}
+
+	@Override
+	public ByteArray toBytes(ByteArray ba) {
+		ba.add(this.colCount);
+		for (int t=0; t<colCount; t++) {
+			ba.add(typesByColumn[t].getTypeId());
+		}
+		
+		ba.add(keyMap.size());
+		for (String k : keyMap.keySet()) {
+			ba.add(k);
+			ba.add(keyMap.get(k));
+		}
+		ba.add(table.length);
+		
+		
+		
+		for (Object o : table) {
+			
+		}
+		return ba;
 	}
 
 }

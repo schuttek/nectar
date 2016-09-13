@@ -1,6 +1,5 @@
 package org.nectarframework.base.service.template;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -32,12 +31,9 @@ import org.jdom2.Text;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.located.LocatedElement;
 import org.jdom2.located.LocatedJDOMFactory;
-import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.nectarframework.base.exception.ConfigurationException;
-import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
-import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.pathfinder.IPathFinder;
 import org.nectarframework.base.service.translation.TranslationService;
@@ -234,6 +230,7 @@ public class CompiledTemplateService extends TemplateService {
 			pw.println("import org.nectarframework.base.service.xml.Element;");
 			pw.println("");
 			// class start
+			pw.println("@SuppressWarnings(\"unused\")");
 			pw.println("public class " + className + " implements ITemplate {");
 			pw.println("	@Override");
 			pw.println(

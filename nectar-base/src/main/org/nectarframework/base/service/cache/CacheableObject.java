@@ -6,6 +6,6 @@ public interface CacheableObject {
 
 	public void fromBytes(ByteArray bq);
 	
-	public ByteArray toBytes();
+	public ByteArray toBytes(ByteArray ba);
 	
 }

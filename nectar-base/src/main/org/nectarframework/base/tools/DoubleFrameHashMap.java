@@ -27,7 +27,7 @@ import java.util.Set;
  *
  */
 
-public class DoubleFrameHashMap implements Map<K, V> {
+public class DoubleFrameHashMap<K, V> implements Map<K, V> {
 
 	private Map<K, V> readMap;
 	private Map<K, V> writeMap;
@@ -44,7 +44,8 @@ public class DoubleFrameHashMap implements Map<K, V> {
 
 	@Override
 	public boolean containsKey(Object key) {
-return readMap.isEmpty()	}
+		return readMap.isEmpty();
+	}
 
 	@Override
 	public boolean containsValue(Object value) {

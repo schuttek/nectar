@@ -146,8 +146,7 @@ public abstract class DataStoreObject implements CacheableObject {
 		}
 	}
 
-	public final ByteArray toBytes() {
-		ByteArray bq = new ByteArray();
+	public final ByteArray toBytes(ByteArray bq) {
 		Type[] colType = dsod.getColumnTypes();
 		bq.addByteArray(nullMap);
 		for (int i = 0; i < data.length; i++) {
