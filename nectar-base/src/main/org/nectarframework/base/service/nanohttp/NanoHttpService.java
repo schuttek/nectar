@@ -189,6 +189,8 @@ public class NanoHttpService extends Service {
 
 	private ThymeleafService thymeleafService;
 
+	private long staticFileCacheExpiry;
+
 	/**
 	 * Common MIME type for dynamic content: plain text
 	 */
@@ -214,6 +216,9 @@ public class NanoHttpService extends Service {
 		keyStoreFilePath = serviceParameters.getString("keyStoreFilePath", "config/keystore.jks");
 
 		staticFileLocalDirectory = serviceParameters.getString("staticFileLocalDirectory", "public_root");
+
+		staticFileCacheExpiry = serviceParameters.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE,
+				24 * 60 * 60 * 1000); // 24 hours
 	}
 
 	@Override
@@ -228,7 +233,7 @@ public class NanoHttpService extends Service {
 
 	@Override
 	protected boolean init() {
-		thymeleafService = (ThymeleafService)ServiceRegister.getService(ThymeleafService.class);
+		thymeleafService = (ThymeleafService) ServiceRegister.getService(ThymeleafService.class);
 		return true;
 	}
 
@@ -638,7 +643,7 @@ public class NanoHttpService extends Service {
 
 			InputStream is = null;
 			FileInfo fileInfo = fileService.getFileInfo("/" + getStaticLocalDirectory() + uri);
-			is = fileService.getFileAsInputStream("/" + getStaticLocalDirectory() + uri);
+			is = fileService.getFileAsInputStream("/" + getStaticLocalDirectory() + uri, this.staticFileCacheExpiry);
 
 			String contentType = Utils.getMimeTypeForFile(uri);
 			if (contentType == null) {
@@ -661,6 +666,10 @@ public class NanoHttpService extends Service {
 		} catch (ReadFileNotAFileException e) {
 			Log.warn(e);
 			return newFixedLengthResponse(Status.NOT_FOUND, NanoHttpService.MIME_PLAINTEXT, "Not a File.");
+		} catch (IOException e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHttpService.MIME_PLAINTEXT,
+					"IOException." + e.getMessage());
 		}
 
 	}

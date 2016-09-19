@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.logging.Level;
 
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadServiceTask;

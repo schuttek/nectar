@@ -1,6 +1,7 @@
 package org.nectarframework.base.service.template;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -185,7 +186,7 @@ public class CompiledTemplateService extends TemplateService {
 
 	protected void buildTemplates(String pathConfig, String outputDir)
 			throws IOException, TemplateParseException, SAXException, ParserConfigurationException, JDOMException {
-		Element pathConfigElm = XmlService.fromXml(new File(pathConfig));
+		Element pathConfigElm = XmlService.fromXml(new FileInputStream(new File(pathConfig)));
 
 		Log.trace("pathConfig: " + pathConfigElm.toString());
 

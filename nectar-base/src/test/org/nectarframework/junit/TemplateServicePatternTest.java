@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 import org.nectarframework.base.service.template.CompiledTemplateService;
-import org.nectarframework.base.service.template.TemplateService;
 
 public class TemplateServicePatternTest {
 

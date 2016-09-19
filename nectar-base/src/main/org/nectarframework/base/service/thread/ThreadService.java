@@ -13,7 +13,7 @@ import org.nectarframework.base.service.log.Log;
 
 public class ThreadService extends Service {
 
-	private WaitingThread waitingThread = null;
+	private MasterThread waitingThread = null;
 
 	private boolean keepThreadsRunning = false;
 
@@ -21,7 +21,7 @@ public class ThreadService extends Service {
 	private Stack<ThreadServiceWorker> idleWorkers = new Stack<ThreadServiceWorker>();
 	private HashSet<ThreadServiceWorker> busyWorkers = new HashSet<ThreadServiceWorker>();
 	private PriorityQueue<ThreadServiceTask> taskQueue = new PriorityQueue<ThreadServiceTask>();
-
+	
 	private int maxQueueLength = 1000;
 	
 	private int minWorkerThreads = 2;
@@ -38,7 +38,7 @@ public class ThreadService extends Service {
 	@Override
 	protected boolean init() {
 		keepThreadsRunning = true;
-		waitingThread = new WaitingThread(this);
+		waitingThread = new MasterThread(this);
 
 		for (int i = 0; i < minWorkerThreads; i++) {
 			ThreadServiceWorker tsw = new ThreadServiceWorker(this);

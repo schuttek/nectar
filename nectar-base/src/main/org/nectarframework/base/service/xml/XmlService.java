@@ -3,8 +3,6 @@ package org.nectarframework.base.service.xml;
 // enough imports for ya?
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +24,7 @@ import javax.xml.transform.TransformerFactory;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
@@ -43,6 +42,8 @@ import org.xml.sax.SAXException;
 /**
  * Structured data. docs/Data Transport.txt
  * 
+ * TODO: extract XSLT's from XmlService...
+ * 
  * @author skander
  *
  */
@@ -51,9 +52,12 @@ public class XmlService extends Service {
 	private FileService fileService;
 	private HashMap<String, String> languageMap = null;
 	private MysqlService mysqlService;
+	private int fileCacheExpiry;
 
 	@Override
 	public void checkParameters() throws ConfigurationException {
+		fileCacheExpiry = serviceParameters.getInt("fileCacheExpiry", -1, Integer.MAX_VALUE, 24 * 60 * 60 * 1000); // 24
+																													// hours
 	}
 
 	@Override
@@ -65,7 +69,6 @@ public class XmlService extends Service {
 
 	@Override
 	protected boolean init() {
-
 		return true;
 	}
 
@@ -85,7 +88,7 @@ public class XmlService extends Service {
 			loadLanguageMap();
 		}
 
-		InputStream xslis = fileService.getFileAsInputStream(xsl);
+		InputStream xslis = fileService.getFileAsInputStream(xsl, fileCacheExpiry);
 
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = null;
@@ -159,7 +162,7 @@ public class XmlService extends Service {
 		outputXml(elm, null, xmlbaos, true);
 		ByteArrayInputStream xmlbais = new ByteArrayInputStream(xmlbaos.toByteArray());
 
-		InputStream xslis = fileService.getFileAsInputStream(xsl);
+		InputStream xslis = fileService.getFileAsInputStream(xsl, fileCacheExpiry);
 
 		Transformer transformer;
 		try {
@@ -305,7 +308,7 @@ public class XmlService extends Service {
 			os.write(("</" + elm.getName() + ">").getBytes());
 		}
 	}
-	
+
 	public static void toXml(Element elm, StringBuffer sb) {
 
 		sb.append("<" + elm.getName());
@@ -353,11 +356,16 @@ public class XmlService extends Service {
 		return sb.toString();
 	}
 
-	public static Element fromXml(File file) throws SAXException, IOException {
-		return fromXml(new FileInputStream(file));
+	public static Element fromXmlFile(String filename) throws SAXException, IOException {
+		if (instance.getRunState() == Service.State.running) {
+			FileService fs = (FileService)ServiceRegister.getService(FileService.class);
+			InputStream is = fs.getFileAsInputStream(filename, ((XmlService)instance).fileCacheExpiry);
+			return fromXml(is);
+		}
+		return fromXml(FileService.staticFileInputStream(filename));
 	}
 
-	public static Element fromXml(StringBuffer elementXml) throws SAXException {
+	public static Element fromXmlString(StringBuffer elementXml) throws SAXException {
 		return fromXml(elementXml.toString());
 	}
 

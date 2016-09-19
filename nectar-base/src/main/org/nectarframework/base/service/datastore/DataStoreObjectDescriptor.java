@@ -119,12 +119,10 @@ public class DataStoreObjectDescriptor {
 				bq.add((String) value);
 				return;
 			case BLOB:
-				bq.add(((byte[]) value).length);
-				bq.add((byte[]) value);
+				bq.addByteArray((byte[]) value);
 				return;
 			case BYTE_ARRAY:
-				bq.add(((byte[]) value).length);
-				bq.add((byte[]) value);
+				bq.addByteArray((byte[]) value);
 				return;
 			case SHORT_ARRAY:
 				len = ((short[]) value).length;

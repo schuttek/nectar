@@ -44,7 +44,12 @@ public class SimpleHttpRequestService extends Service implements Container {
 	private String staticRequestDirectory = "s";
 
 	private String staticLocalDirectory = "public_root";
+	private int staticFileCacheExpiry;
 	
+	public int getStaticFileCacheExpiry() {
+		return staticFileCacheExpiry;
+	}
+
 	private SocketAddress address;
 	private ContainerSocketProcessor containerSocketProcessor;
 	private SocketConnection socketConnection;
@@ -124,6 +129,8 @@ public class SimpleHttpRequestService extends Service implements Container {
 				throw new ConfigurationException("SimpleHttpService: Couldn't resolve local host!", e);
 			}
 		}
+		
+		staticFileCacheExpiry = serviceParameters.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE, 24*60*60*1000); // 24 hours
 	}
 	
 

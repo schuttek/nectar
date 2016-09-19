@@ -1,6 +1,7 @@
 package org.nectarframework.base.service.template;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -85,7 +86,7 @@ public class TemplateBuilderService extends Service {
 
 		Element configElement;
 		try {
-			configElement = XmlService.fromXml(new File(configDir));
+			configElement = XmlService.fromXml(new FileInputStream(new File(configDir)));
 		} catch (SAXException | IOException e) {
 			Log.fatal(e);
 			return false;

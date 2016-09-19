@@ -1,14 +1,20 @@
 package org.nectarframework.base.tools;
 
 /**
- * This class essentially works like java.io.ByteBuffer. You can add data to the front and back of the ByteArray, and remove bytes from the front.
+ * This class essentially works like java.io.ByteBuffer. You can add data to the
+ * front and back of the ByteArray, and remove bytes from the front.
  * 
- *  A common use case is to pack a set of mixed raw values (say, an int, a String and a double) into a byte array, then unpack them later. 
+ * A common use case is to pack a set of mixed raw values (say, an int, a String
+ * and a double) into a byte array, then unpack them later.
  * 
- * This class never actually changes the contents of byte arrays passed to it, so there's no need to copy arrays before passing them to these methods.
+ * This class never actually changes the contents of byte arrays passed to it,
+ * so there's no need to copy arrays before passing them to these methods.
  * 
- *  WARNING: DO NOT CONFUSE THIS WITH StringBuffer! Adding Strings to this object in sequence does NOT concatenate Strings, but stores them as separate strings! byteArray.add("hello, "); byteArray.add("World!") will NOT become "hello, World!".
- *  
+ * WARNING: DO NOT CONFUSE THIS WITH StringBuffer! Adding Strings to this object
+ * in sequence does NOT concatenate Strings, but stores them as separate
+ * strings! byteArray.add("hello, "); byteArray.add("World!") will NOT become
+ * "hello, World!".
+ * 
  * @author skander
  *
  */
@@ -27,7 +33,7 @@ public class ByteArray {
 	private Chunk back = null;
 
 	public ByteArray(byte[] b) {
-		add(b);
+		addRawBytes(b);
 	}
 
 	public ByteArray() {
@@ -74,13 +80,15 @@ public class ByteArray {
 	}
 
 	/**
-	 * Compacts the internal storage data structures to it's minimal format. 
+	 * Compacts the internal storage data structures to it's minimal format.
 	 * 
-	 * Every add() operation can increase the numbers of small data buffers and internal pointers. 
+	 * Every add() operation can increase the numbers of small data buffers and
+	 * internal pointers.
 	 * 
-	 * This method realigns the internal data structure into a single byte array.
+	 * This method realigns the internal data structure into a single byte
+	 * array.
 	 * 
-	 * max runtime is O(this.length) 
+	 * max runtime is O(this.length)
 	 * 
 	 */
 	public void coalesce() {
@@ -126,12 +134,11 @@ public class ByteArray {
 		back = front;
 		return ret;
 	}
-	
 
 	public byte getByte() {
 		return remove(1)[0];
 	}
-	
+
 	public short getShort() {
 		return bytesToShort(remove(2), 0);
 	}
@@ -166,85 +173,95 @@ public class ByteArray {
 		return true;
 	}
 
-	public void addToFront(byte[] b) {
-		addToFront(b, 0, b.length);
-	}
 
 	public void addByteArray(byte[] b) {
 		if (b == null || b.length == 0) {
 			add(0);
 		} else {
 			add(b.length);
-			add(b);
+			addRawBytes(b);
 		}
 	}
 	
-	public void add(byte[] b) {
+	public void addByteArrayToFront(byte[] b) {
+		if (b == null || b.length == 0) {
+			addToFront(0);
+		} else {
+			addRawBytesToFront(b);
+			addToFront(b.length);
+		}
+	}
+	
+	public void addRawBytesToFront(byte[] b) {
+		addToFront(b, 0, b.length);
+	}
+
+	public void addRawBytes(byte[] b) {
 		add(b, 0, b.length);
 	}
 
 	public void addToFront(int i) {
 		byte[] b = new byte[4];
 		intToBytes(i, b, 0);
-		addToFront(b);
+		addRawBytesToFront(b);
 	}
 
 	public void add(byte b) {
 		byte[] ba = new byte[1];
 		ba[0] = b;
-		add(ba);
+		addRawBytes(ba);
 	}
 
 	public void add(short s) {
 		byte[] b = new byte[2];
 		shortToBytes(s, b, 0);
-		add(b);
+		addRawBytes(b);
 	}
-	
+
 	public void add(int i) {
 		byte[] b = new byte[4];
 		intToBytes(i, b, 0);
-		add(b);
+		addRawBytes(b);
 	}
 
 	public void addToFront(long l) {
 		byte[] b = new byte[8];
 		longToBytes(l, b, 0);
-		addToFront(b);
+		addRawBytesToFront(b);
 	}
 
 	public void add(long l) {
 		byte[] b = new byte[8];
 		longToBytes(l, b, 0);
-		add(b);
+		addRawBytes(b);
 	}
 
 	public void addToFront(double d) {
 		long l = Double.doubleToRawLongBits(d);
 		byte[] b = new byte[8];
 		longToBytes(l, b, 0);
-		addToFront(b);
+		addRawBytesToFront(b);
 	}
 
 	public void add(double d) {
 		long l = Double.doubleToRawLongBits(d);
 		byte[] b = new byte[8];
 		longToBytes(l, b, 0);
-		add(b);
+		addRawBytes(b);
 	}
 
 	public void addToFront(float f) {
 		int l = Float.floatToRawIntBits(f);
 		byte[] b = new byte[8];
 		intToBytes(l, b, 0);
-		addToFront(b);
+		addRawBytesToFront(b);
 	}
 
 	public void add(float f) {
 		int i = Float.floatToRawIntBits(f);
 		byte[] b = new byte[4];
 		intToBytes(i, b, 0);
-		add(b);
+		addRawBytes(b);
 	}
 
 	public void addToFront(String s) {
@@ -252,7 +269,7 @@ public class ByteArray {
 			addToFront(0);
 		} else {
 			byte[] b = s.getBytes();
-			addToFront(b);
+			addRawBytesToFront(b);
 			addToFront(b.length);
 		}
 	}
@@ -263,26 +280,26 @@ public class ByteArray {
 		} else {
 			byte[] b = s.getBytes();
 			add(b.length);
-			add(b);
+			addRawBytes(b);
 		}
 	}
 
 	public void addToFront(boolean bool) {
 		byte[] b = new byte[1];
 		b[0] = (byte) ((bool) ? 1 : 0);
-		addToFront(b);
+		addRawBytesToFront(b);
 	}
 
 	public void add(boolean bool) {
 		byte[] b = new byte[1];
 		b[0] = (byte) ((bool) ? 1 : 0);
-		add(b);
+		addRawBytes(b);
 	}
-	
+
 	public static short bytesToShort(byte[] array, int offset) {
-		return (short) ( array[offset] & 0xFF << 8 | array[offset+1] & 0xFF );
+		return (short) (array[offset] & 0xFF << 8 | array[offset + 1] & 0xFF);
 	}
-	
+
 	public static long bytesToLong(byte[] array, int offset) {
 		long value = 0;
 		for (int i = offset; i < offset + 8; i++) {
@@ -292,7 +309,8 @@ public class ByteArray {
 	}
 
 	public static int bytesToInt(byte[] array, int offset) {
-		return array[offset] << 24 | (array[offset + 1] & 0xFF) << 16 | (array[offset + 2] & 0xFF) << 8 | (array[offset + 3] & 0xFF);
+		return array[offset] << 24 | (array[offset + 1] & 0xFF) << 16 | (array[offset + 2] & 0xFF) << 8
+				| (array[offset + 3] & 0xFF);
 	}
 
 	public static void shortToBytes(int i, byte[] byteBuff, int offset) {
@@ -300,7 +318,7 @@ public class ByteArray {
 			byteBuff[offset + t] = (byte) (i >> (2 - (t + 1)) * 8);
 		}
 	}
-	
+
 	public static void intToBytes(int i, byte[] byteBuff, int offset) {
 		for (int t = 0; t < 4; t++) {
 			byteBuff[offset + t] = (byte) (i >> (4 - (t + 1)) * 8);
@@ -327,10 +345,12 @@ public class ByteArray {
 
 	public byte[] getByteArray() {
 		int len = getInt();
+		if (len == 0)
+			return null;
 		byte[] sb = remove(len);
 		return sb;
 	}
-	
+
 	public byte[] getBytes() {
 		return remove(length());
 	}
@@ -340,6 +360,5 @@ public class ByteArray {
 		back = null;
 		length = 0;
 	}
-
 
 }

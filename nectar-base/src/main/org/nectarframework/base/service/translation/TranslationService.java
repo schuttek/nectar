@@ -73,7 +73,6 @@ public class TranslationService extends Service {
 	}
 
 	public String get(Locale locale, String namespace, String key, Object[] messageParameters) {
-		// TODO implement cache
 		// TODO implement pluralArgMap
 
 		String keyStr1 = "translate:" + locale.getLanguage() + "-" + namespace + "/" + key;

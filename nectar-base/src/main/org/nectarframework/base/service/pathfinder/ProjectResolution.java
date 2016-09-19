@@ -1,7 +1,6 @@
 package org.nectarframework.base.service.pathfinder;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 public class ProjectResolution extends PathFinderResolution {
 

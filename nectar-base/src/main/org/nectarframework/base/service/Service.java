@@ -13,16 +13,23 @@ import org.nectarframework.base.exception.ConfigurationException;
 public abstract class Service {
 	protected ServiceParameters serviceParameters;
 
-	protected enum STATE {
+	protected static Service instance;
+	
+	protected enum State {
 		none, initialized, running, shutdown
 	}
 
-	STATE state = STATE.none;
+	protected State runState = State.none;
 
 	public void setParameters(ServiceParameters sp) {
+		instance = this;
 		serviceParameters = sp;
 	}
 
+	public State getRunState() {
+		return runState;
+	}
+	
 	public ServiceParameters getParameters() {
 		return this.serviceParameters;
 	}
@@ -40,6 +47,7 @@ public abstract class Service {
 	 * fields in the implementing Service class.
 	 * 
 	 * By validated I mean passing min/max checks or a regex check, but not
+
 	 * something that can send an Exception unexpectedly, like a host name
 	 * lookup. In this phase of the startup, all input/output, and all other
 	 * Services should be considered unavailable.
@@ -92,10 +100,10 @@ public abstract class Service {
 	}
 
 	public final boolean _run() {
-		if (state != STATE.initialized)
-			throw new IllegalStateException("Can't run while in state: " + state.name());
+		if (runState != State.initialized)
+			throw new IllegalStateException("Can't run while in state: " + runState.name());
 		if (run()) {
-			this.state = STATE.running;
+			this.runState = State.running;
 			return true;
 		}
 		return false;
@@ -112,10 +120,10 @@ public abstract class Service {
 	protected abstract boolean run();
 
 	public final boolean _shutdown() {
-		if (state != STATE.running)
+		if (runState != State.running)
 			throw new IllegalStateException();
 		if (ServiceRegister.shutdownDependancies(this) && shutdown()) {
-			this.state = STATE.shutdown;
+			this.runState = State.shutdown;
 			return true;
 		}
 		return false;

@@ -29,7 +29,6 @@ import java.util.regex.Matcher;
 import javax.net.ssl.SSLException;
 
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.tools.Stopwatch;
 
 public class HTTPSession {
 

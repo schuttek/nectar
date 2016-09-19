@@ -5,14 +5,14 @@ import java.util.TreeSet;
 
 import org.nectarframework.base.service.log.Log;
 
-public class WaitingThread extends Thread {
+public class MasterThread extends Thread {
 
 	private ThreadService ts = null;
 
 	private SortedSet<ThreadServiceTask> taskSet = null;
 
-	public WaitingThread(ThreadService ts) {
-		super("ThreadService-WaitingThread");
+	public MasterThread(ThreadService ts) {
+		super("ThreadService-MasterThread");
 		this.ts = ts;
 		taskSet = new TreeSet<ThreadServiceTask>(new ThreadServiceTaskComparator());
 	}

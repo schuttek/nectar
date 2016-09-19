@@ -1,6 +1,7 @@
 package org.nectarframework.base.service.pathfinder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,7 +29,7 @@ public class PathFinderService extends IPathFinder {
 	public void checkParameters() throws ConfigurationException {
 		String pathConfigFile = this.serviceParameters.getString("pathConfigFile", "config/pathConfig.xml");
 		try {
-			pathConfigElm = XmlService.fromXml(new File(pathConfigFile));
+			pathConfigElm = XmlService.fromXml(new FileInputStream(new File(pathConfigFile)));
 		} catch (SAXException | IOException e) {
 			throw new ConfigurationException(e);
 		}

@@ -1,8 +1,8 @@
 package org.nectarframework.base.service.file;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -103,24 +103,42 @@ public class FileService extends Service {
 		}
 	}
 
-	private InputStream getFileAsInputStream(File f)
-			throws ReadFileNotFoundException, ReadFileAccessDeniedException, ReadFileNotAFileException {
-		testFile(f);
-		Log.trace("reading file: " + f.getAbsolutePath());
-
-		FileInputStream fis;
+	public InputStream getFileAsInputStream(String path, long cacheExpiry)
+			throws IOException {
+		// attempt a cache hit
+		CacheableObject cachedCO = null;
 		try {
-			fis = new FileInputStream(f);
-		} catch (FileNotFoundException e) {
-			throw new ReadFileNotFoundException();
+			cachedCO = cacheService.getObject(cacheKey(path), true);
+		} catch (Exception e) {
+			Log.warn(e);
 		}
-		return fis;
-	}
 
-	public InputStream getFileAsInputStream(String filename)
-			throws ReadFileNotFoundException, ReadFileAccessDeniedException, ReadFileNotAFileException {
-		File f = new File(rootDirectory + "/" + filename);
-		return getFileAsInputStream(f);
+		FileInfo fi = null;
+		if (cachedCO != null) {
+			fi = (FileInfo) cachedCO;
+			if (this.recheckLastModified) {
+				// cache is out of date
+				if (fi.lastModified < getFileInfo(path).lastModified) {
+					cacheService.remove(cacheKey(path));
+					fi = null;
+				}
+			}
+		}
+
+		if (fi == null) {
+			fi = getFileInfo(path, cacheExpiry);
+		}
+		if (fi.contents == null) {
+			if (fi.length <= this.maxCachedFileSize) {
+				fi.contents = Files.readAllBytes(fi.getFile().toPath());
+				cacheService.set(cacheKey(fi.getPath()), fi, cacheExpiry);
+				return new ByteArrayInputStream(fi.contents);
+			} else {
+				return new FileInputStream(fi.getFile());
+			}
+		} else {
+			return new ByteArrayInputStream(fi.contents);
+		}
 	}
 
 	public File getFile(String path)
@@ -137,6 +155,7 @@ public class FileService extends Service {
 
 	public FileInfo getFileInfo(String path, long cacheExpiry)
 			throws ReadFileNotFoundException, ReadFileAccessDeniedException, ReadFileNotAFileException {
+
 		FileInfo fi = new FileInfo();
 
 		File f = new File(rootDirectory + "/" + path);
@@ -153,21 +172,22 @@ public class FileService extends Service {
 		fi.lastModified = f.lastModified();
 		fi.length = f.length();
 
+		cacheService.set(cacheKey(path), fi, cacheExpiry);
+		
 		return fi;
 	}
 
-	public byte[] readAllBytes(String path, long cacheExpiry)
-			throws IOException {
-		CacheableObject cachedCO;
+	public byte[] readAllBytes(String path, long cacheExpiry) throws IOException {
+
+		// attempt a cache hit
+		CacheableObject cachedCO = null;
 		try {
 			cachedCO = cacheService.getObject(cacheKey(path), true);
 		} catch (Exception e) {
 			Log.warn(e);
-			return null;
 		}
-		
+
 		FileInfo fi = null;
-		// attempt a cache hit
 		if (cachedCO != null) {
 			fi = (FileInfo) cachedCO;
 			if (this.recheckLastModified) {
@@ -181,13 +201,24 @@ public class FileService extends Service {
 
 		if (fi == null) {
 			fi = getFileInfo(path, cacheExpiry);
+		}
+		if (fi.contents == null) {
+				
 			fi.contents = Files.readAllBytes(fi.getFile().toPath());
+			if (fi.length <= this.maxCachedFileSize) {
+				cacheService.set(cacheKey(fi.getPath()), fi, cacheExpiry);
+			}
 		}
 		return fi.contents;
 	}
 
 	protected String cacheKey(String path) {
 		return "FileService:" + path;
+	}
+
+	public static String staticFileInputStream(String filename) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

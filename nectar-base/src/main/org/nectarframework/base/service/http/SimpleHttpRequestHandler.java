@@ -29,7 +29,6 @@ import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.service.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
-import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.ByteArrayOutputStream;
 import org.nectarframework.base.tools.FastByteArrayOutputStream;
 import org.nectarframework.base.tools.Stopwatch;
@@ -540,7 +539,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			FileInfo fileInfo = fileService.getFileInfo(
 					"/" + this.simpleHttpRequestService.getStaticLocalDirectory() + this.request.getPath().getPath());
 			is = fileService.getFileAsInputStream(
-					"/" + this.simpleHttpRequestService.getStaticLocalDirectory() + this.request.getPath().getPath());
+					"/" + this.simpleHttpRequestService.getStaticLocalDirectory() + this.request.getPath().getPath(), this.simpleHttpRequestService.getStaticFileCacheExpiry());
 
 			response.setValue("Server", serverName);
 			response.setDate("Date", fileInfo.getLastModified());
@@ -560,6 +559,8 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			throw new AccessDeniedException(e);
 		} catch (ReadFileNotAFileException e) {
 			throw new NotFoundException(e);
+		} catch (IOException e) {
+			throw new AccessDeniedException(e);
 		}
 
 		byte[] buffer = new byte[simpleHttpRequestService.getStaticFileBufferSize()];

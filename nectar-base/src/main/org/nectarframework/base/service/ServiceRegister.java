@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.nectarframework.base.config.Configuration;
 import org.nectarframework.base.exception.ConfigurationException;
-import org.nectarframework.base.service.Service.STATE;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 
@@ -123,7 +122,7 @@ public class ServiceRegister {
 			}
 		}
 		for (Service s : serviceList) {
-			if (s.state == STATE.none) {
+			if (s.runState == Service.State.none) {
 				try {
 					if (!initService(s))
 						return false;
@@ -131,9 +130,9 @@ public class ServiceRegister {
 					Log.fatal(e);
 					return false;
 				}
-			} else if (s.state != STATE.initialized) {
+			} else if (s.runState != Service.State.initialized) {
 				Log.fatal("ServiceRegister.init() has Service " + s.getClass().getName() + " in irregular state: "
-						+ s.state);
+						+ s.runState);
 				return false;
 			}
 		}
@@ -152,7 +151,7 @@ public class ServiceRegister {
 		}
 
 		if (s.init()) {
-			s.state = STATE.initialized;
+			s.runState = Service.State.initialized;
 		} else {
 			Log.fatal("Service: " + s.getClass().toString() + " failed to initialize!");
 			return false;
@@ -277,7 +276,7 @@ public class ServiceRegister {
 			return null;
 		}
 
-		if (dependant.state == STATE.none) {
+		if (dependant.runState == Service.State.none) {
 			if (!initService(dependant)) {
 				return null;
 			}
@@ -302,7 +301,7 @@ public class ServiceRegister {
 		List<Service> list = dependancies.get(service);
 
 		for (Service dependant : list) {
-			if (dependant.state == STATE.running) {
+			if (dependant.runState == Service.State.running) {
 				if (!_shutdownDependancies(dependant)) {
 					return false;
 				}

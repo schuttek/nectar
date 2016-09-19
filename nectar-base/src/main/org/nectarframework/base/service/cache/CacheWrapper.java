@@ -2,6 +2,7 @@ package org.nectarframework.base.service.cache;
 
 import java.io.Serializable;
 
+import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.tools.ByteArray;
 
 public class CacheWrapper implements Serializable {
@@ -40,10 +41,22 @@ public class CacheWrapper implements Serializable {
 		return this.data;
 	}
 	
-	protected CacheableObject getObject() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	protected CacheableObject getObject() {
 		ByteArray ba = new ByteArray(this.data);
 		String className = ba.getString();
-		CacheableObject co = (CacheableObject)ClassLoader.getSystemClassLoader().loadClass(className).newInstance();
+		CacheableObject co;
+		try {
+			co = (CacheableObject)ClassLoader.getSystemClassLoader().loadClass(className).newInstance();
+		} catch (InstantiationException e) {
+			Log.warn(e);
+			return null;
+		} catch (IllegalAccessException e) {
+			Log.warn(e);
+			return null;
+		} catch (ClassNotFoundException e) {
+			Log.warn(e);
+			return null;
+		}
 		co.fromBytes(ba);
 		return co;
 	}
