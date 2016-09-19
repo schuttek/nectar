@@ -7,6 +7,8 @@ import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
+import org.nectarframework.base.service.cache.CacheableObject;
+import org.nectarframework.base.service.cache.CacheableString;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.sql.PrSt;
 import org.nectarframework.base.service.sql.ResultRow;
@@ -50,14 +52,11 @@ public class TranslationService extends Service {
 				"SELECT localeLanguage, localeCountry, localeVariant, namespace, messageKey, translatedText FROM w_lang");
 		try {
 			ResultTable rt = my.select(st);
-			ByteArray ba = new ByteArray();
 			for (ResultRow rr : rt) {
 				String keyStr = "translate:" + rr.getString("localeLanguage") + "." + rr.getString("localeCountry")
 						+ "." + rr.getString("localeVariant") + "-" + rr.getString("namespace") + "/"
 						+ rr.getString("messageKey");
-				ba.reset();
-				ba.add(rr.getString("translatedText"));
-				cacheService.set(keyStr, ba.getBytes());
+				cacheService.set(keyStr, new CacheableString(rr.getString("translatedText")));
 			}
 		} catch (SQLException e) {
 			Log.fatal(e);
@@ -80,20 +79,17 @@ public class TranslationService extends Service {
 		String keyStr3 = "translate:" + locale.getLanguage() + "." + locale.getCountry() + "." + locale.getVariant()
 				+ "-" + namespace + "/" + key;
 
-		byte[] barr = cacheService.getByteArray(keyStr3, true);
-		if (barr != null) {
-			ByteArray ba = new ByteArray(barr);
-			return ba.getString();
+		CacheableObject co = cacheService.getObject(keyStr3, true);
+		if (co != null) {
+			return ((CacheableString)co).getString();
 		} else {
-			barr = cacheService.getByteArray(keyStr2, true);
-			if (barr != null) {
-				ByteArray ba = new ByteArray(barr);
-				return ba.getString();
+			co = cacheService.getObject(keyStr2, true);
+			if (co != null) {
+				return ((CacheableString)co).getString();
 			} else {
-				barr = cacheService.getByteArray(keyStr1, true);
-				if (barr != null) {
-					ByteArray ba = new ByteArray(barr);
-					return ba.getString();
+				co = cacheService.getObject(keyStr1, true);
+				if (co != null) {
+					return ((CacheableString)co).getString();
 				}
 			}
 		}
@@ -108,14 +104,11 @@ public class TranslationService extends Service {
 		bestCandidate[0] = bestCandidate[1] = bestCandidate[2] = null;
 		try {
 			ResultTable rt = my.select(st);
-			ByteArray ba = new ByteArray();
 			for (ResultRow rr : rt) {
 				String keyStr = "translate:" + rr.getString("localeLanguage") + "." + rr.getString("localeCountry")
 						+ "." + rr.getString("localeVariant") + "-" + rr.getString("namespace") + "/"
 						+ rr.getString("messageKey");
-				ba.reset();
-				ba.add(rr.getString("translatedText"));
-				cacheService.set(keyStr, ba.getBytes());
+				cacheService.set(keyStr, new CacheableString(rr.getString("translatedText")));
 
 				if (locale.getLanguage().equals(rr.getString("localeLanguage"))) {
 					if (locale.getCountry().equals(rr.getString("localeCountry"))) {

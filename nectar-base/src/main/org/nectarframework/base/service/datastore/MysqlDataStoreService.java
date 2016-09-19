@@ -9,6 +9,7 @@ import java.util.List;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
+import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.sql.SqlPreparedStatement;
 import org.nectarframework.base.service.sql.SqlTransactionHandle;
@@ -73,7 +74,7 @@ public class MysqlDataStoreService extends DataStoreService {
 				return null;
 			}
 			newDso.loadFromResultRow(rr);
-			cacheService.add(cacheKey(dsod, newDso.getPrimaryKey()), newDso.toBytes(new ByteArray()).getBytes());
+			cacheService.add(cacheKey(dsod, newDso.getPrimaryKey()), newDso);
 			dsoList.add(newDso);
 		}
 		return dsoList;
@@ -137,10 +138,9 @@ public class MysqlDataStoreService extends DataStoreService {
 			return null;
 		}
 
-		byte[] cachedObj = cacheService.getByteArray(cacheKey(dsod, key));
-		if (cachedObj != null) {
-			dso.fromBytes(new ByteArray(cachedObj));
-			return dso;
+		CacheableObject cacheObj = cacheService.getObject(cacheKey(dsod, key));
+		if (cacheObj != null) {
+			return (DataStoreObject)cacheObj;
 		}
 
 		String sql = "SELECT " + StringTools.implode(dso.getColumnNames(), ",") + " FROM " + dso.getTableName() + " WHERE " + dso.getColumnNames()[0] + " = ?";
@@ -156,7 +156,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		dso.loadFromResultRow(rt.iterator().next());
 		
 		
-		cacheService.add(cacheKey(dsod, dso.getPrimaryKey()), dso.toBytes(new ByteArray()).getBytes());
+		cacheService.add(cacheKey(dsod, dso.getPrimaryKey()), dso);
 
 		return dso;
 	}

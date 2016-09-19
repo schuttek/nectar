@@ -356,13 +356,10 @@ public class XmlService extends Service {
 		return sb.toString();
 	}
 
-	public static Element fromXmlFile(String filename) throws SAXException, IOException {
-		if (instance.getRunState() == Service.State.running) {
-			FileService fs = (FileService)ServiceRegister.getService(FileService.class);
-			InputStream is = fs.getFileAsInputStream(filename, ((XmlService)instance).fileCacheExpiry);
-			return fromXml(is);
-		}
-		return fromXml(FileService.staticFileInputStream(filename));
+	public Element fromXmlFile(String filename) throws SAXException, IOException {
+		FileService fs = (FileService) ServiceRegister.getService(FileService.class);
+		InputStream is = fs.getFileAsInputStream(filename, fileCacheExpiry);
+		return fromXml(is);
 	}
 
 	public static Element fromXmlString(StringBuffer elementXml) throws SAXException {

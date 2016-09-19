@@ -11,6 +11,7 @@ import org.nectarframework.base.service.internode.InternodeService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
+import org.nectarframework.base.tools.Tuple;
 
 //TODO: implement a cluster level cache that backs up the local cache.
 //FIXME: [23:05:50]566 <TRACE> CacheService update: 0 items using estimated 12609 bytes or a recalculated 0 bytes.
@@ -35,7 +36,7 @@ public class CacheService extends Service {
 	protected long memoryUsage = 0;
 	protected long flushTimer = 0;
 
-	protected ConcurrentHashMap<String, CacheWrapper> cache;
+	protected ConcurrentHashMap<String, Tuple<CacheableObject, Long>> cache;
 	private ThreadService threadService;
 
 	@Override
@@ -54,7 +55,7 @@ public class CacheService extends Service {
 
 	@Override
 	protected boolean init() {
-		cache = new ConcurrentHashMap<String, CacheWrapper>();
+		cache = new ConcurrentHashMap<>();
 		return true;
 	}
 
@@ -70,40 +71,7 @@ public class CacheService extends Service {
 		return true;
 	}
 
-	/**
-	 * Short-hand for getByteArray(key, true);
-	 * 
-	 * @param key
-	 * @return
-	 */
-
-	public byte[] getByteArray(String key) {
-		return getByteArray(key, true);
-	}
-
-	/**
-	 * returns a cached byte[] for key if it exists.
-	 * 
-	 * @param key
-	 * @param refreshCache
-	 *            if true, update the last used time for this cache entry.
-	 * @return
-	 */
-	public byte[] getByteArray(String key, boolean refreshCache) {
-		CacheWrapper cw = getWrapper(key, refreshCache);
-		if (cw != null) {
-			try {
-				byte[] ret = cw.getData();
-				return ret;
-			} catch (ClassCastException e) {
-				Log.fatal("CacheService -> ClassCastException. Did we hit a hash key duplicate??", e);
-			}
-		}
-		return null;
-	}
-
-	public CacheableObject getObject(String key)
-			throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+	public CacheableObject getObject(String key) {
 		return getObject(key, true);
 	}
 
@@ -118,39 +86,20 @@ public class CacheService extends Service {
 
 	public CacheableObject getObject(String key, boolean refreshCache) {
 		checkFlushTimer();
-		CacheWrapper cw = getWrapper(key, refreshCache);
-		if (cw != null) {
-			return cw.getObject();
+		Tuple<CacheableObject, Long> tup = cache.get(key);
+		Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null" : "found"));
+		if (tup == null)
+			return null;
+		long now = InternodeService.getTime();
+		if (tup.getRight() < now && !refreshCache) {
+			cache.remove(key);
+			return null;
 		}
-		return null;
-	}
-
-	/**
-	 * Inserts a new key or overwrites an existing key with the given byte
-	 * array. The entry will expire after defaultExpiry milliseconds. See
-	 * configuration for this Service.
-	 * 
-	 * @param key
-	 * @param ba
-	 */
-
-	public void set(String key, byte[] ba) {
-		set(key, ba, defaultExpiry);
-	}
-
-	/**
-	 * Inserts a new key or overwrites an existing key with the given byte
-	 * array. The entry will expire after the given expiry milliseconds.
-	 * 
-	 * @param key
-	 * @param ba
-	 * @param expiry
-	 */
-
-	public void set(String key, byte[] ba, long expiry) {
-		CacheWrapper cw = new CacheWrapper(InternodeService.getTime() + expiry);
-		cw.setData(ba);
-		replaceCache(key, cw);
+		if (refreshCache) {
+			Tuple<CacheableObject, Long> newTup = new Tuple<>(tup.getLeft(), now);
+			cache.put(key, newTup);
+		}
+		return tup.getLeft();
 	}
 
 	/**
@@ -176,35 +125,8 @@ public class CacheService extends Service {
 	 * @param expiry
 	 */
 	public void set(String key, CacheableObject co, long expiry) {
-		CacheWrapper cw = new CacheWrapper(InternodeService.getTime() + expiry);
-		cw.setObject(co);
-		replaceCache(key, cw);
-	}
-
-	/**
-	 * Inserts a new key for the byte array only if it doesn't already exist.
-	 * The entry will expire after defaultExpiry milliseconds, See configuration
-	 * for this Service.
-	 * 
-	 * @param key
-	 * @param ba
-	 */
-	public void add(String key, byte[] ba) {
-		add(key, ba, defaultExpiry);
-	}
-
-	/**
-	 * Inserts a new key for the byte array only if it doesn't already exist.
-	 * The entry will expire after the given expiry milliseconds.
-	 * 
-	 * @param key
-	 * @param ba
-	 * @param expiry
-	 */
-	public void add(String key, byte[] ba, long expiry) {
-		if (getWrapper(key) == null) {
-			set(key, ba, expiry);
-		}
+		cache.put(key, new Tuple<CacheableObject, Long>(co, expiry));
+		checkFlushTimer();
 	}
 
 	/**
@@ -228,28 +150,9 @@ public class CacheService extends Service {
 	 * @param ba
 	 */
 	public void add(String key, CacheableObject o, long expiry) {
-		if (getWrapper(key) == null) {
+		if (!cache.containsKey(key)) {
 			set(key, o, expiry);
 		}
-	}
-
-	protected CacheWrapper getWrapper(String key) {
-		return getWrapper(key, false);
-	}
-
-	protected CacheWrapper getWrapper(String key, boolean refreshCache) {
-		CacheWrapper cw = cache.get(key);
-		long now = InternodeService.getTime();
-		if (cw != null) {
-			if (cw.getExpiry() < now && !refreshCache) {
-				cache.remove(key);
-				return null;
-			}
-			if (refreshCache) {
-				cw.setExpiry(now + this.defaultExpiry);
-			}
-		}
-		return cw;
 	}
 
 	/**
@@ -271,13 +174,14 @@ public class CacheService extends Service {
 
 	protected void checkFlushTimer() {
 		long now = InternodeService.getTime();
+		CacheService thisCS = this;
 		if (flushTimer + flushDelay < now) {
 			flushTimer = now + flushDelay;
 			try {
 				threadService.execute(new ThreadServiceTask() {
 					@Override
 					public void execute() throws Exception {
-						((CacheService) CacheService.instance).flushCache();
+						thisCS.flushCache();
 					}
 				});
 			} catch (Exception e) {
@@ -296,8 +200,8 @@ public class CacheService extends Service {
 		long now = InternodeService.getTime();
 		ArrayList<String> toRemove = new ArrayList<String>();
 		for (String key : keys) {
-			CacheWrapper cw = cache.get(key);
-			if (cw != null && cw.getExpiry() < now) {
+			Tuple<CacheableObject, Long> tup = cache.get(key);
+			if (tup != null && tup.getRight() < now) {
 				toRemove.add(key);
 			}
 		}
@@ -308,24 +212,15 @@ public class CacheService extends Service {
 	}
 
 	protected void createCheckFlushTimerTask() {
+		CacheService thisCS = this;
 		threadService.executeLater(new ThreadServiceTask() {
 			@Override
 			public void execute() throws Exception {
 				checkFlushTimer();
-				((CacheService) CacheService.instance).createCheckFlushTimerTask();
+				thisCS.createCheckFlushTimerTask();
 			}
 
 		}, this.flushDelay - 1);
-	}
-
-	protected void replaceCache(String key, CacheWrapper cw) {
-		CacheWrapper oldWrapper = cache.get(key);
-		if (oldWrapper != null) {
-			this.memoryUsage -= oldWrapper.estimateMemorySize();
-		}
-		this.memoryUsage += cw.estimateMemorySize();
-		cache.put(key, cw);
-		checkFlushTimer();
 	}
 
 }
