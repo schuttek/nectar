@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nectarframework</groupId>
 	<artifactId>nectar-www</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>Nectar Webpage</name>
 	<url>http://www.nectarframework.org</url>
 	<properties>
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>org.nectarframework</groupId>
 			<artifactId>nectar-base</artifactId>
-			<version>0.0.1</version>
+			<version>0.0.2</version>
 		</dependency>
 	</dependencies>
 	<build>
