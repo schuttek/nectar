@@ -1,8 +1,7 @@
 package org.nectarframework.base.service.sql;
 
 public enum JavaTypes {
-	BigDecimal(1), Boolean(2), String(3), Double(4), Float(5), Byte(6), Short(7), Int(8), Long(9), Time(10), Timestamp(
-			11), Date(12), ByteArray(13), Unknown(14);
+	BigDecimal(1), Boolean(2), String(3), Double(4), Float(5), Byte(6), Short(7), Int(8), Long(9), Blob(10), Unknown(11);
 
 	private int typeId;
 

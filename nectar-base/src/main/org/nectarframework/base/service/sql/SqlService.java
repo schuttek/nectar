@@ -498,20 +498,14 @@ public abstract class SqlService extends Service {
 			case Types.BIGINT:
 				typesMap[i] = JavaTypes.Long;
 				break;
-			case Types.TIME:
-				typesMap[i] = JavaTypes.Time;
-				break;
-			case Types.TIMESTAMP:
-				typesMap[i] = JavaTypes.Timestamp;
-				break;
-			case Types.DATE:
-				typesMap[i] = JavaTypes.Date;
-				break;
 			case Types.BLOB:
 			case Types.CLOB:
 			case Types.VARBINARY:
-				typesMap[i] = JavaTypes.ByteArray;
+				typesMap[i] = JavaTypes.Blob;
 				break;
+			case Types.TIME:
+			case Types.TIMESTAMP:
+			case Types.DATE:
 			case Types.ARRAY:
 			case Types.BINARY:
 			case Types.DATALINK:
