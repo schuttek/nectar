@@ -9,4 +9,8 @@ public class StaticResolution extends UriResolution {
 	protected String path;
 	protected String toPath;
 	
+
+	public String dumpConfig() {
+		return path + " -> " + toPath;
+	}
 }

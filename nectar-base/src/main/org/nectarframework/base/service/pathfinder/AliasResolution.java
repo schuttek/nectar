@@ -3,6 +3,8 @@ package org.nectarframework.base.service.pathfinder;
 import java.util.HashMap;
 import java.util.List;
 
+import org.nectarframework.base.tools.StringTools;
+
 public class AliasResolution extends UriResolution {
 
 	protected AliasResolution() {
@@ -28,5 +30,9 @@ public class AliasResolution extends UriResolution {
 
 	public HashMap<String, List<String>> getVariables() {
 		return variables;
+	}
+	
+	public String dumpConfig() {
+		return path +" -> "+toPath+" "+(relative?"relative":"direct"+" ")+StringTools.mapToString(variables);
 	}
 }

@@ -239,6 +239,7 @@ public class NanoHttpService extends Service {
 
 	@Override
 	protected boolean run() {
+		Log.trace(pathFinderService.dumpConfig());
 		try {
 
 			this.sslServerSocket = makeSSLServerSocket(keyStoreFilePath, ("suckre").toCharArray());

@@ -22,4 +22,8 @@ public class RedirectResolution extends UriResolution {
 	public String getToUrl() {
 		return toUrl;
 	}
+
+	public String dumpConfig() {
+		return path + " -> " + code + ":" + toUrl;
+	}
 }

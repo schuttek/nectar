@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
@@ -42,6 +43,10 @@ public abstract class StringTools {
 			s += "(" + o.toString() + ", ";
 			if (map.get(o) instanceof Map) {
 				s += mapToString((Map) map.get(o));
+			} else if (map.get(o) instanceof List) {
+				for (Object o1 : (List)(map.get(o))) {
+					s += " "+o1.toString();
+				}
 			} else {
 				s += map.get(o).toString() + ")";
 			}

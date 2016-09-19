@@ -17,7 +17,6 @@ public class ProjectResolution extends PathFinderResolution {
 		return urForPathMap.get(path);
 	}
 
-	
 	public void addPath(String path, UriResolution ar) {
 		urForPathMap.put(path, ar);
 	}
@@ -28,5 +27,14 @@ public class ProjectResolution extends PathFinderResolution {
 
 	public String getNamespace() {
 		return namespace;
+	}
+
+	public String dumpConfig() {
+		String s = "";
+		for (String k : urForPathMap.keySet()) {
+			s += "\t" + k + " " + urForPathMap.get(k).getType().toString() + " " + urForPathMap.get(k).dumpConfig()
+					+ "\n";
+		}
+		return s;
 	}
 }
