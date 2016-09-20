@@ -20,4 +20,6 @@ public abstract class UriResolution extends PathFinderResolution {
 		Redirect,
 	    Static;
 	}
+
+	public abstract String dumpConfig();
 }

@@ -161,7 +161,7 @@ public class FileService extends Service {
 		File f = new File(rootDirectory + "/" + path);
 		testFile(f);
 
-		fi.path = path;
+		fi.path = rootDirectory + "/" + path;
 		fi.name = f.getName();
 		fi.extension = "";
 

@@ -68,4 +68,7 @@ public class ActionResolution extends UriResolution {
 		return actionClass;
 	}
 
+	public String dumpConfig() {
+		return className +" "+defaultOutput+" "+formName+" "+templateName;
+	}
 }

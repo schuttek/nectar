@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 
@@ -27,7 +28,8 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 	public ResultTable() {
 	}
 
-	protected ResultTable(JavaTypes[] typesByColumn, HashMap<String, Integer> keyMap, Object[] table, int colCount, long memorySize) {
+	protected ResultTable(JavaTypes[] typesByColumn, HashMap<String, Integer> keyMap, Object[] table, int colCount,
+			long memorySize) {
 		this.typesByColumn = typesByColumn;
 		this.keyMap = keyMap;
 		this.table = table;
@@ -363,7 +365,8 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 			}
 		}
 
-		ResultTable ret = new ResultTable(rt1.typesByColumn, rt1.keyMap, retTable, retColCount, rt1.memorySize + rt1.memorySize);
+		ResultTable ret = new ResultTable(rt1.typesByColumn, rt1.keyMap, retTable, retColCount,
+				rt1.memorySize + rt1.memorySize);
 
 		return ret;
 
@@ -373,10 +376,10 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 	public void fromBytes(ByteArray ba) {
 		colCount = ba.getInt();
 		typesByColumn = new JavaTypes[colCount];
-		for (int t=0; t<colCount; t++) {
+		for (int t = 0; t < colCount; t++) {
 			typesByColumn[t] = JavaTypes.lookup(ba.getInt());
 		}
-		
+
 		int keyMapSize = ba.getInt();
 		this.keyMap = new HashMap<>();
 		for (int t = 0; t < keyMapSize; t++) {
@@ -385,39 +388,46 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 			keyMap.put(k, v);
 		}
 		this.table = new Object[ba.getInt()];
-		for (int t=0; t<table.length;t++) {
-			switch( typesByColumn[t % colCount] ) {
-			case BigDecimal:
-				break;
-			case Boolean:
-				break;
-			case Byte:
-				break;
-			case ByteArray:
-				break;
-			case Date:
-				break;
-			case Double:
-				break;
-			case Float:
-				break;
-			case Int:
-				break;
-			case Long:
-				break;
-			case Short:
-				break;
-			case String:
-				break;
-			case Time:
-				break;
-			case Timestamp:
-				break;
-			case Unknown:
-				break;
-			default:
-				break;
-			
+
+		byte[] nullBitMap = ba.getByteArray();
+
+		for (int t = 0; t < table.length; t++) {
+			if (BitMap.is(nullBitMap, t)) {
+				switch (typesByColumn[t % colCount]) {
+				case BigDecimal:
+					table[t] = new BigDecimal(ba.getString());
+					break;
+				case Blob:
+					table[t] = ba.getByteArray();
+					break;
+				case Boolean:
+					table[t] = new Boolean(ba.getByte() > 0 ? true : false);
+					break;
+				case Byte:
+					table[t] = new Byte(ba.getByte());
+					break;
+				case Double:
+					table[t] = new Double(ba.getDouble());
+					break;
+				case Float:
+					table[t] = new Float(ba.getFloat());
+					break;
+				case Int:
+					table[t] = new Integer(ba.getInt());
+					break;
+				case Long:
+					table[t] = new Long(ba.getLong());
+					break;
+				case Short:
+					table[t] = new Short(ba.getShort());
+					break;
+				case String:
+					table[t] = new String(ba.getString());
+					break;
+				case Unknown:
+					table[t] = null;
+					break;
+				}
 			}
 		}
 	}
@@ -425,21 +435,64 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 	@Override
 	public ByteArray toBytes(ByteArray ba) {
 		ba.add(this.colCount);
-		for (int t=0; t<colCount; t++) {
+		for (int t = 0; t < colCount; t++) {
 			ba.add(typesByColumn[t].getTypeId());
 		}
-		
+
 		ba.add(keyMap.size());
 		for (String k : keyMap.keySet()) {
 			ba.add(k);
 			ba.add(keyMap.get(k));
 		}
+
 		ba.add(table.length);
-		
-		
-		
-		for (Object o : table) {
-			
+
+		// null bitmap
+		byte[] nullBitMap = BitMap.init(table.length);
+		for (int t = 0; t < table.length; t++) {
+			if (table[t] != null) {
+				BitMap.set(nullBitMap, t);
+			}
+		}
+		ba.addByteArray(nullBitMap);
+
+		for (int t = 0; t < table.length; t++) {
+			if (table[t] != null) {
+				switch (typesByColumn[t % colCount]) {
+				case BigDecimal:
+					ba.add(((BigDecimal) table[t]).toString());
+					break;
+				case Blob:
+					ba.addByteArray((byte[]) table[t]);
+					break;
+				case Boolean:
+					ba.add((byte) ((Boolean) table[t] ? 1 : 0));
+					break;
+				case Byte:
+					ba.add(((Byte) table[t]).byteValue());
+					break;
+				case Double:
+					ba.add(((Double) table[t]).doubleValue());
+					break;
+				case Float:
+					ba.add(((Float) table[t]).floatValue());
+					break;
+				case Int:
+					ba.add(((Integer) table[t]).intValue());
+					break;
+				case Long:
+					ba.add(((Long) table[t]).longValue());
+					break;
+				case Short:
+					ba.add(((Short) table[t]).shortValue());
+					break;
+				case String:
+					ba.add((String) table[t]);
+					break;
+				case Unknown:
+					break;
+				}
+			}
 		}
 		return ba;
 	}

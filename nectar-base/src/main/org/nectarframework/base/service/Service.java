@@ -13,8 +13,6 @@ import org.nectarframework.base.exception.ConfigurationException;
 public abstract class Service {
 	protected ServiceParameters serviceParameters;
 
-	protected static Service instance;
-	
 	protected enum State {
 		none, initialized, running, shutdown
 	}
@@ -22,7 +20,6 @@ public abstract class Service {
 	protected State runState = State.none;
 
 	public void setParameters(ServiceParameters sp) {
-		instance = this;
 		serviceParameters = sp;
 	}
 

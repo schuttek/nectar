@@ -76,17 +76,20 @@ public class PathFinderService extends IPathFinder {
 
 		ProjectResolution rootProject = vhr.resolveNamespace("");
 		
-		// root document
-		if (uri.length() == 0) {
-			if (rootProject == null) {
-				return null;
+		UriResolution ur = null;
+		// is there a wild card ?
+		if (rootProject != null) {
+			ur = rootProject.getUriResolution("*");
+			if (ur != null) {
+				return ur;
 			}
-			UriResolution ur = rootProject.getUriResolution("");
-			return ur;
+			// root document
+			if (uri.length() == 0) {
+				return rootProject.getUriResolution("");
+			}
 		}
 
 		Vector<String> pathSlices = StringTools.slice(uri, "/");
-		
 		
 		// find subproject...
 		String path = "";
@@ -108,7 +111,7 @@ public class PathFinderService extends IPathFinder {
 
 		Log.trace("local path: " + pathSlices.get(i));
 
-		UriResolution ur = pr.getUriResolution(pathSlices.get(i));
+		ur = pr.getUriResolution(pathSlices.get(i));
 
 		return ur;
 	}
@@ -286,4 +289,12 @@ public class PathFinderService extends IPathFinder {
 		return !loadWarningsExist;
 	}
 
+	public String dumpConfig() {
+		String s = "";
+		for (String k : this.virtualHostMap.keySet()) {
+			s += k+ " -> "+this.virtualHostMap.get(k).dumpConfig()+"\n\n";
+		}
+		return s;
+	}
+	
 }

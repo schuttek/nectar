@@ -14,7 +14,7 @@
 		<service class="org.nectarframework.base.service.file.FileService">
 			<param name="rootDirectory" value="files" />
 		</service>
-		<service class="org.nectarframework.base.service.mysql.MysqlService">
+		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="127.0.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
@@ -46,7 +46,7 @@
 
 
 	<node group="templateBuilderDev" inherits="templateBuilderDefault">
-		<service class="org.nectarframework.base.service.mysql.MysqlService">
+		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="10.42.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
@@ -55,7 +55,7 @@
 		</service>
 	</node>
 	<node group="templateBuilderMoth" inherits="templateBuilderDefault">
-		<service class="org.nectarframework.base.service.mysql.MysqlService">
+		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="127.0.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
@@ -93,7 +93,7 @@
 		<service class="org.nectarframework.base.service.file.FileService">
 			<param name="rootDirectory" value="files" />
 		</service>
-		<service class="org.nectarframework.base.service.mysql.MysqlService">
+		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="127.0.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
@@ -135,7 +135,7 @@
 			<param name="listeningSSLPort" value="443" />
 			<param name="staticFileLocalDirectory" value="public_root" />
 		</service>
-		<service class="org.nectarframework.base.service.mysql.MysqlService">
+		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="10.42.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />
@@ -151,7 +151,7 @@
 			<param name="listeningSSLPort" value="443" />
 			<param name="staticFileLocalDirectory" value="public_root" />
 		</service>
-		<service class="org.nectarframework.base.service.mysql.MysqlService">
+		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="127.0.0.1" />
 			<param name="port" value="3306" />
 			<param name="database" value="nectar" />

@@ -25,6 +25,9 @@
 	</virtualServer>
 	
 	
+	<virtualServer hostname="nectarframework.org" port="80">
+		<project name="www.nectarframework.redirect" namespace="" />
+	</virtualServer>
 	<virtualServer hostname="www.nectarframework.net" port="80">
 		<project name="www.nectarframework.redirect" namespace="" />
 	</virtualServer>
@@ -36,6 +39,9 @@
 	</virtualServer>
 	<virtualServer hostname="nectarframework.com" port="80">
 		<project name="www.nectarframework.redirect" namespace="" />
+	</virtualServer>
+	<virtualServer hostname="nectarframework.org" port="443">
+		<project name="www.nectarframework.ssl.redirect" namespace="" />
 	</virtualServer>
 	<virtualServer hostname="www.nectarframework.net" port="443">
 		<project name="www.nectarframework.ssl.redirect" namespace="" />
