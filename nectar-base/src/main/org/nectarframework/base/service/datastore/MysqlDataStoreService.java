@@ -74,7 +74,7 @@ public class MysqlDataStoreService extends DataStoreService {
 				return null;
 			}
 			newDso.loadFromResultRow(rr);
-			cacheService.add(cacheKey(dsod, newDso.getPrimaryKey()), newDso);
+			cacheService.add(this, cacheKey(dsod, newDso.getPrimaryKey()), newDso);
 			dsoList.add(newDso);
 		}
 		return dsoList;
@@ -138,7 +138,7 @@ public class MysqlDataStoreService extends DataStoreService {
 			return null;
 		}
 
-		CacheableObject cacheObj = cacheService.getObject(cacheKey(dsod, key));
+		CacheableObject cacheObj = cacheService.getObject(this, cacheKey(dsod, key));
 		if (cacheObj != null) {
 			return (DataStoreObject)cacheObj;
 		}
@@ -156,7 +156,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		dso.loadFromResultRow(rt.iterator().next());
 		
 		
-		cacheService.add(cacheKey(dsod, dso.getPrimaryKey()), dso);
+		cacheService.add(this, cacheKey(dsod, dso.getPrimaryKey()), dso);
 
 		return dso;
 	}
@@ -167,7 +167,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	 * @param dso
 	 */
 	public void forget(DataStoreObject dso) {
-		cacheService.remove(cacheKey(dso.getDataStoreObjectDescriptor(), dso.getPrimaryKey()));
+		cacheService.remove(this, cacheKey(dso.getDataStoreObjectDescriptor(), dso.getPrimaryKey()));
 	}
 
 	@Override

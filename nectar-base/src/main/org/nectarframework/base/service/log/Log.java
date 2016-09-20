@@ -28,18 +28,16 @@ import org.nectarframework.base.service.xml.Element;
  * 
  * Log.warn() - for localized errors, for logical and programmatical errors and
  * sanity checks, that may incur data loss, but only have a small area of
- * effect.
+ * effect, for example causing a specific request to fail, or an non essential
+ * part of a service to fail.
  * 
- * Log.error() - for internal Nectar errors, like the MysqlService can't connect
- * to the mysql server for some reason.
- * 
- * Log.fatal() - These are meant to log ignored Exceptions that could never
- * happen unless the JDK changes, and thereby reveal programming flaws and
- * unhandled exceptions.
+ * Log.fatal() - Something is critically wrong with Nectar, which causes a
+ * Service to be unavailable. It is usually followed by Nectar shutting down
+ * because of it.
  * 
  * This class will print out to System.out and System.err. Once LogService is
- * started, it'll send it's messages onto it, which may then pass it on to
- * whatever
+ * started, it'll send it's messages onto it, which may then pass it on to a
+ * database or whatever...
  * 
  * TODO: try to find /dev/nectar.base.log and print to it.
  * 
@@ -191,27 +189,11 @@ public class Log {
 		log(Level.FATAL, null, t);
 	}
 
-	public static void accessLog(String path, Element rawForm, Element validated, Element output, long duration, String remoteIp, Session session) {
+	public static void accessLog(String path, Element rawForm, Element validated, Element output, long duration,
+			String remoteIp, Session session) {
 		if (ls != null) {
 			ls.accessLog(path, rawForm, validated, output, duration, remoteIp, session);
 		}
-	}
-
-	/**
-	 * Call a fatal lockdown.
-	 * 
-	 * Once this method has been called, Nectar will begin an emergency shutdown
-	 * asap.
-	 * 
-	 * Only use this if you KNOW the System has been compromised.
-	 * 
-	 * Dump all relevant info BEFORE you call this method.
-	 */
-	public static void fatalHack() {
-		// fw = FileWriter("gotHacked.dump");
-		// stackTrace >> fw
-		System.exit(-1);
-		// TODO: implement me
 	}
 
 	public static String getStackTrace() {
@@ -219,23 +201,25 @@ public class Log {
 		StringBuffer sb = new StringBuffer();
 
 		for (int t = 2; t < stes.length; t++) {
-			sb.append("      at " + stes[t].getClassName()+"."+stes[t].getMethodName()+"("+stes[t].getFileName()+":"+stes[t].getLineNumber()+")\n");
+			sb.append("      at " + stes[t].getClassName() + "." + stes[t].getMethodName() + "(" + stes[t].getFileName()
+					+ ":" + stes[t].getLineNumber() + ")\n");
 		}
-		
+
 		return sb.toString();
 	}
-	
+
 	public static String getStackTrace(Throwable te) {
 		StackTraceElement[] stes = te.getStackTrace();
 
 		StringBuffer sb = new StringBuffer();
 
 		for (int t = 0; t < stes.length; t++) {
-			sb.append("      at " + stes[t].getClassName()+"."+stes[t].getMethodName()+"("+stes[t].getFileName()+":"+stes[t].getLineNumber()+")\n");
+			sb.append("      at " + stes[t].getClassName() + "." + stes[t].getMethodName() + "(" + stes[t].getFileName()
+					+ ":" + stes[t].getLineNumber() + ")\n");
 		}
-		
+
 		return sb.toString();
-		
+
 	}
 
 }

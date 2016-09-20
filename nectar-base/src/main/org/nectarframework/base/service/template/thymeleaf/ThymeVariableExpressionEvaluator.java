@@ -17,7 +17,7 @@
  * 
  * =============================================================================
  */
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.exceptions.TemplateProcessingException;
@@ -45,13 +45,13 @@ import org.thymeleaf.standard.expression.StandardExpressionExecutionContext;
  * @since 3.0.0
  *
  */
-public class VariableExpressionEvaluator
+public class ThymeVariableExpressionEvaluator
         implements IStandardVariableExpressionEvaluator {
 
 
-    public static final VariableExpressionEvaluator INSTANCE = new VariableExpressionEvaluator();
+    public static final ThymeVariableExpressionEvaluator INSTANCE = new ThymeVariableExpressionEvaluator();
 
-    protected VariableExpressionEvaluator() {
+    protected ThymeVariableExpressionEvaluator() {
         super();
     }
     

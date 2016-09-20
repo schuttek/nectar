@@ -17,15 +17,15 @@
  * 
  * =============================================================================
  */
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import org.thymeleaf.TemplateEngine;
 
-public class NectarTemplateEngine extends TemplateEngine {
+public class ThymeNectarTemplateEngine extends TemplateEngine {
 
-	private static final NectarStandardDialect NECTARSTANDARD_DIALECT = new NectarStandardDialect();
+	private static final ThymeNectarStandardDialect NECTARSTANDARD_DIALECT = new ThymeNectarStandardDialect();
 
-	public NectarTemplateEngine() {
+	public ThymeNectarTemplateEngine() {
         super.setDialect(NECTARSTANDARD_DIALECT);
     }
 }

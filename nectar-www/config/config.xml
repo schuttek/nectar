@@ -2,7 +2,7 @@
 
 <config version="1.0">
 
-	<node group="templateBuilderDefault">
+	<node group="builderDefault">
 		<service class="org.nectarframework.base.service.thread.ThreadService">
 			<param name="minWorkerThreads" value="10" />
 			<param name="maxWorkerThreads" value="50" />
@@ -51,7 +51,7 @@
 	</node>
 
 
-	<node group="templateBuilderDev" inherits="templateBuilderDefault">
+	<node group="builderDev" inherits="builderDefault">
 		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="10.42.0.1" />
 			<param name="port" value="3306" />
@@ -60,7 +60,7 @@
 			<param name="password" value="lYbeoDQ0fBPGw153" />
 		</service>
 	</node>
-	<node group="templateBuilderMoth" inherits="templateBuilderDefault">
+	<node group="builderMoth" inherits="builderDefault">
 		<service class="org.nectarframework.base.service.sql.mysql.MysqlService">
 			<param name="host" value="127.0.0.1" />
 			<param name="port" value="3306" />
@@ -151,7 +151,7 @@
 
 	<node group="mothServer" inherits="productionServer">
 		<service class="org.nectarframework.base.service.nanohttp.NanoHttpService">
-			<param name="listeningHost" value="10.42.0.1" />
+			<param name="listeningHost" value="127.0.0.1" />
 			<param name="listeningPort" value="8000" />
 			<param name="listeningSSLPort" value="443" />
 			<param name="staticFileLocalDirectory" value="public_root" />

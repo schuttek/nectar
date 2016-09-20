@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class ThymeleafService extends Service {
 
 	@Override
 	protected boolean init() {
-		templateEngine = new NectarTemplateEngine();
+		templateEngine = new ThymeNectarTemplateEngine();
 
 		ThymeTemplateResolver templateResolver = new ThymeTemplateResolver(this, fileService);
 		templateEngine.setTemplateResolver(templateResolver);

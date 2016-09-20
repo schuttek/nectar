@@ -351,7 +351,7 @@ public class ByteArray {
 		return sb;
 	}
 
-	public byte[] getBytes() {
+	public byte[] getAllBytes() {
 		return remove(length());
 	}
 

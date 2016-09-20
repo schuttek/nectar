@@ -28,7 +28,7 @@ import org.nectarframework.base.tools.StringTools;
  */
 public class InternodeService extends Service {
 
-	private static long localTimeDifference;
+	private static long localTimeDifference = 0;
 	private String listeningHost;
 	private InetAddress listeningHostAddress;
 	private int listeningPort;

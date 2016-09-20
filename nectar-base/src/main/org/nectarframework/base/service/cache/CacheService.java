@@ -14,7 +14,6 @@ import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.tools.Tuple;
 
 //TODO: implement a cluster level cache that backs up the local cache.
-//FIXME: [23:05:50]566 <TRACE> CacheService update: 0 items using estimated 12609 bytes or a recalculated 0 bytes.
 
 public class CacheService extends Service {
 
@@ -36,15 +35,18 @@ public class CacheService extends Service {
 	protected long memoryUsage = 0;
 	protected long flushTimer = 0;
 
-	protected ConcurrentHashMap<String, Tuple<CacheableObject, Long>> cache;
+	protected ConcurrentHashMap<String, Tuple<CacheableObject, Long>> generalCache;
+	protected ConcurrentHashMap<Service, ConcurrentHashMap<String, Tuple<CacheableObject, Long>>> realmCache;
 	private ThreadService threadService;
+
+	/*** Service Methods ***/
 
 	@Override
 	public void checkParameters() throws ConfigurationException {
 		maxMemory = this.serviceParameters.getLong("maxMemory", 0, Integer.MAX_VALUE, maxMemory);
 		flushDelay = this.serviceParameters.getLong("flushDelay", 0, Integer.MAX_VALUE, flushDelay);
 		defaultExpiry = this.serviceParameters.getLong("defaultExpiry", 0, Integer.MAX_VALUE, defaultExpiry);
-		expiryFactor = this.serviceParameters.getFloat("expiryFactor", 0.0f, 10000.0f, 1.0f);
+		expiryFactor = this.serviceParameters.getFloat("expiryFactor", -1.0f, 10000.0f, 1.0f);
 	}
 
 	@Override
@@ -55,7 +57,7 @@ public class CacheService extends Service {
 
 	@Override
 	protected boolean init() {
-		cache = new ConcurrentHashMap<>();
+		generalCache = new ConcurrentHashMap<>();
 		return true;
 	}
 
@@ -71,8 +73,15 @@ public class CacheService extends Service {
 		return true;
 	}
 
+	/*** Convenience Methods ***/
+	/**
+	 * returns a cached CacheableObject for string key if it exists.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public CacheableObject getObject(String key) {
-		return getObject(key, true);
+		return getObject(null, key, true);
 	}
 
 	/**
@@ -83,26 +92,14 @@ public class CacheService extends Service {
 	 *            if true, update the last used time for this cache entry.
 	 * @return
 	 */
-
 	public CacheableObject getObject(String key, boolean refreshCache) {
-		checkFlushTimer();
-		Tuple<CacheableObject, Long> tup = cache.get(key);
-		// Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null"
-		// : "found"));
-		if (tup == null)
-			return null;
-		long now = InternodeService.getTime();
-		if (tup.getRight() < now && !refreshCache) {
-			cache.remove(key);
-			return null;
-		}
-		if (refreshCache) {
-			Tuple<CacheableObject, Long> newTup = new Tuple<>(tup.getLeft(), now);
-			cache.put(key, newTup);
-		}
-		return tup.getLeft();
+		return getObject(null, key, refreshCache);
 	}
 
+	public CacheableObject getObject(Service realm, String key) {
+		return getObject(null, key, true);
+	}
+	
 	/**
 	 * Inserts a new key or overwrites an existing key with the given
 	 * CacheableObject. The entry will expire after defaultExpiry milliseconds.
@@ -113,7 +110,7 @@ public class CacheService extends Service {
 	 */
 
 	public void set(String key, CacheableObject co) {
-		set(key, co, defaultExpiry);
+		set(null, key, co, defaultExpiry);
 	}
 
 	/**
@@ -125,9 +122,13 @@ public class CacheService extends Service {
 	 * @param ba
 	 * @param expiry
 	 */
+
 	public void set(String key, CacheableObject co, long expiry) {
-		cache.put(key, new Tuple<CacheableObject, Long>(co, expiry));
-		checkFlushTimer();
+		set(null, key, co, expiry);
+	}
+
+	public void set(Service realm, String key, CacheableObject co) {
+		set(realm, key, co, defaultExpiry);
 	}
 
 	/**
@@ -139,7 +140,67 @@ public class CacheService extends Service {
 	 * @param ba
 	 */
 	public void add(String key, CacheableObject o) {
-		add(key, o, defaultExpiry);
+		add(null, key, o, defaultExpiry);
+	}
+
+	public void add(Service realm, String key, CacheableObject o) {
+		add(realm, key, o, defaultExpiry);
+	}
+
+	public void add(String key, CacheableObject o, long expiry) {
+		add(null, key, o, expiry);
+	}
+
+	/*** Operational Methods ***/
+
+	public CacheableObject getObject(Service realm, String key, boolean refreshCache) {
+		checkFlushTimer();
+		Tuple<CacheableObject, Long> tup = null;
+		if (realm == null) {
+			tup = generalCache.get(key);
+		} else {
+			ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+			if (realmMap != null) {
+				tup = realmMap.get(key);
+			}
+		}
+		// Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null"
+		// : "found"));
+		if (tup == null)
+			return null;
+		long now = InternodeService.getTime();
+		if (tup.getRight() < now && !refreshCache) {
+			generalCache.remove(key);
+			return null;
+		}
+		if (refreshCache) {
+			Tuple<CacheableObject, Long> newTup = new Tuple<>(tup.getLeft(), now);
+			generalCache.put(key, newTup);
+		}
+		return tup.getLeft();
+	}
+
+	/**
+	 * Inserts a new key or overwrites an existing key with the given
+	 * CaheableObject. The entry will expire after the given expiry
+	 * milliseconds.
+	 * 
+	 * @param key
+	 * @param ba
+	 * @param expiry
+	 */
+	public void set(Service realm, String key, CacheableObject co, long expiry) {
+		checkFlushTimer();
+		if (realm == null) {
+			generalCache.put(key, new Tuple<CacheableObject, Long>(co, expiry));
+		} else {
+			ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+			if (realmMap == null) {
+				realmMap = new ConcurrentHashMap<>();
+				realmCache.put(realm, realmMap);
+			}
+			realmMap.put(key, new Tuple<CacheableObject, Long>(co, expiry));
+		}
 	}
 
 	/**
@@ -150,9 +211,16 @@ public class CacheService extends Service {
 	 * @param key
 	 * @param ba
 	 */
-	public void add(String key, CacheableObject o, long expiry) {
-		if (!cache.containsKey(key)) {
-			set(key, o, expiry);
+	public void add(Service realm, String key, CacheableObject co, long expiry) {
+		if (realm == null) {
+			generalCache.putIfAbsent(key, new Tuple<CacheableObject, Long>(co, expiry));
+		} else {
+			ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+			if (realmMap == null) {
+				realmMap = new ConcurrentHashMap<>();
+				realmCache.put(realm, realmMap);
+			}
+			realmMap.putIfAbsent(key, new Tuple<CacheableObject, Long>(co, expiry));
 		}
 	}
 
@@ -162,17 +230,35 @@ public class CacheService extends Service {
 	 * @param key
 	 */
 	public void remove(String key) {
-		cache.remove(key);
+		remove(null, key);
+	}
+
+	/**
+	 * Removes a cache entry by the given key.
+	 * 
+	 * @param key
+	 */
+	public void remove(Service realm, String key) {
+		if (realm == null) {
+			generalCache.remove(key);
+		}
+		ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+		if (realmMap != null) {
+			realmMap.remove(key);
+		}
 	}
 
 	/**
 	 * Removes ALL cache entries.
 	 */
 	public void removeAll() {
-		cache.clear();
+		generalCache.clear();
+		realmCache.clear();
 		flushTimer = InternodeService.getTime();
 	}
-
+	
+	/*** Self Maintenance Methods ***/
+	
 	protected void checkFlushTimer() {
 		long now = InternodeService.getTime();
 		CacheService thisCS = this;
@@ -195,20 +281,27 @@ public class CacheService extends Service {
 	 * Removes out dated or inefficient cache entires.
 	 * 
 	 */
-
 	protected void flushCache() {
-		Set<String> keys = cache.keySet();
+		flushCacheMap(generalCache);
+		for (ConcurrentHashMap<String, Tuple<CacheableObject, Long>> m : realmCache.values()) {
+			flushCacheMap(m);
+		}
+	}
+	
+	
+	protected void flushCacheMap(ConcurrentHashMap<String, Tuple<CacheableObject, Long>> map) {
+		Set<String> keys = map.keySet();
 		long now = InternodeService.getTime();
 		ArrayList<String> toRemove = new ArrayList<String>();
 		for (String key : keys) {
-			Tuple<CacheableObject, Long> tup = cache.get(key);
+			Tuple<CacheableObject, Long> tup = map.get(key);
 			if (tup != null && tup.getRight() < now) {
 				toRemove.add(key);
 			}
 		}
 
 		for (String key : toRemove) {
-			cache.remove(key);
+			map.remove(key);
 		}
 	}
 

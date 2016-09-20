@@ -19,7 +19,6 @@ import org.nectarframework.base.service.log.Log;
 public class FileService extends Service {
 
 	private String rootDirectory;
-	private int readBufferSize;
 	private int totalFileCacheSize;
 	private int maxFilesInCache;
 	private int maxCachedFileSize;
@@ -64,7 +63,6 @@ public class FileService extends Service {
 			this.rootDirectory = rootDirFile.getAbsolutePath();
 		}
 
-		readBufferSize = serviceParameters.getInt("readBufferSize", -1, maxReadBufferSize, defaultReadBufferSize);
 		totalFileCacheSize = serviceParameters.getInt("totalFileCacheSize", -1, maxTotalFileCacheSize,
 				defaultTotalFileCacheSize);
 		maxFilesInCache = serviceParameters.getInt("maxFilesInCache", -1, maxMaxFilesInCache, defaultMaxFilesInCache);
@@ -108,7 +106,7 @@ public class FileService extends Service {
 		// attempt a cache hit
 		CacheableObject cachedCO = null;
 		try {
-			cachedCO = cacheService.getObject(cacheKey(path), true);
+			cachedCO = cacheService.getObject(this, cacheKey(path), true);
 		} catch (Exception e) {
 			Log.warn(e);
 		}
@@ -119,7 +117,7 @@ public class FileService extends Service {
 			if (this.recheckLastModified) {
 				// cache is out of date
 				if (fi.lastModified < getFileInfo(path).lastModified) {
-					cacheService.remove(cacheKey(path));
+					cacheService.remove(this, cacheKey(path));
 					fi = null;
 				}
 			}
@@ -131,7 +129,7 @@ public class FileService extends Service {
 		if (fi.contents == null) {
 			if (fi.length <= this.maxCachedFileSize) {
 				fi.contents = Files.readAllBytes(fi.getFile().toPath());
-				cacheService.set(cacheKey(fi.getPath()), fi, cacheExpiry);
+				cacheService.set(this, cacheKey(fi.getPath()), fi, cacheExpiry);
 				return new ByteArrayInputStream(fi.contents);
 			} else {
 				return new FileInputStream(fi.getFile());
@@ -172,7 +170,7 @@ public class FileService extends Service {
 		fi.lastModified = f.lastModified();
 		fi.length = f.length();
 
-		cacheService.set(cacheKey(path), fi, cacheExpiry);
+		cacheService.set(this, cacheKey(path), fi, cacheExpiry);
 		
 		return fi;
 	}
@@ -182,7 +180,7 @@ public class FileService extends Service {
 		// attempt a cache hit
 		CacheableObject cachedCO = null;
 		try {
-			cachedCO = cacheService.getObject(cacheKey(path), true);
+			cachedCO = cacheService.getObject(this, cacheKey(path), true);
 		} catch (Exception e) {
 			Log.warn(e);
 		}
@@ -193,7 +191,7 @@ public class FileService extends Service {
 			if (this.recheckLastModified) {
 				// cache is out of date
 				if (fi.lastModified < getFileInfo(path).lastModified) {
-					cacheService.remove(cacheKey(path));
+					cacheService.remove(this, cacheKey(path));
 					fi = null;
 				}
 			}
@@ -206,7 +204,7 @@ public class FileService extends Service {
 				
 			fi.contents = Files.readAllBytes(fi.getFile().toPath());
 			if (fi.length <= this.maxCachedFileSize) {
-				cacheService.set(cacheKey(fi.getPath()), fi, cacheExpiry);
+				cacheService.set(this, cacheKey(fi.getPath()), fi, cacheExpiry);
 			}
 		}
 		return fi.contents;

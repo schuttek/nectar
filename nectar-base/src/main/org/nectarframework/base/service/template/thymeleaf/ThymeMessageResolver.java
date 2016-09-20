@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.messageresolver.IMessageResolver;

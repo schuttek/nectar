@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

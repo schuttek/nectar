@@ -257,7 +257,12 @@ public class CompiledTemplateService extends TemplateService {
 	private CompiledTemplate compileTemplate(String templateName, Locale loc) throws FileNotFoundException, IOException,
 			ParserConfigurationException, SAXException, JDOMException, TemplateParseException {
 
+		
+		
 		CompiledTemplate compiledTemplate = new CompiledTemplate();
+		
+		// TODO: make doctype configurable
+		compiledTemplate.addText("<!DOCTYPE html>");
 
 		String filePath = rawTemplatesRootDir + "/" + templateName + ".html";
 		Document jdomDoc = readDocument(filePath);
@@ -284,7 +289,7 @@ public class CompiledTemplateService extends TemplateService {
 				}
 			}
 		}
-
+		
 		// tag start
 		ct.addText("<" + elm.getName());
 		for (Attribute attr : elm.getAttributes()) {
@@ -293,6 +298,7 @@ public class CompiledTemplateService extends TemplateService {
 				ct.addText(" " + attr.getName() + "=\"" + attr.getValue() + "\"");
 			}
 		}
+		
 		ct.addText(">");
 
 		// inside
@@ -337,7 +343,7 @@ public class CompiledTemplateService extends TemplateService {
 
 		// end tag
 		ct.addText("</" + elm.getName() + ">");
-
+		
 		// after
 		for (Attribute attr : elm.getAttributes()) {
 			if (attr.getNamespacePrefix().equals(NS.getPrefix())) {

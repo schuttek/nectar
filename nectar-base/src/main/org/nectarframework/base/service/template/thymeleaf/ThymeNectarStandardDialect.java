@@ -17,26 +17,26 @@
  * 
  * =============================================================================
  */
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import java.util.Map;
 
 import org.thymeleaf.standard.StandardDialect;
 import org.thymeleaf.standard.expression.IStandardVariableExpressionEvaluator;
 
-public class NectarStandardDialect extends StandardDialect {
+public class ThymeNectarStandardDialect extends StandardDialect {
 
 	public static final String NAME = "NectarStandard";
 	public static final String PREFIX = "th";
 	public static final int PROCESSOR_PRECEDENCE = 1000;
 
-	public NectarStandardDialect() {
+	public ThymeNectarStandardDialect() {
 		super(NAME, PREFIX, PROCESSOR_PRECEDENCE);
 	}
 
 	@Override
 	public IStandardVariableExpressionEvaluator getVariableExpressionEvaluator() {
-		return VariableExpressionEvaluator.INSTANCE;
+		return ThymeVariableExpressionEvaluator.INSTANCE;
 	}
 
 	@Override

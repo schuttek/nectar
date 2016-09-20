@@ -347,7 +347,7 @@ public class XmlService extends Service {
 		// TODO: throughly test this with weird UTF-8 characters
 		ByteArray ba = new ByteArray();
 		toXml(elm, ba);
-		return ba.getBytes();
+		return ba.getAllBytes();
 	}
 
 	public static String toXmlString(Element elm) {

@@ -2,6 +2,7 @@ package org.nectarframework.base.service.datastore;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -34,8 +35,8 @@ import org.nectarframework.base.tools.Triple;
  *
  */
 
-// TODO remove the main function and argument handling, this should be run as part of the Nectar build process as a script
-
+// TODO remove the main function and argument handling, this should be run as
+// part of the Nectar build process as a script
 
 public class DataStoreObjectBuilderService extends Service {
 
@@ -51,7 +52,7 @@ public class DataStoreObjectBuilderService extends Service {
 
 	@Override
 	public boolean establishDependancies() throws ServiceUnavailableException {
-		xmlService = (XmlService)dependancy(XmlService.class);
+		xmlService = (XmlService) dependancy(XmlService.class);
 		return true;
 	}
 
@@ -62,7 +63,7 @@ public class DataStoreObjectBuilderService extends Service {
 
 	@Override
 	protected boolean run() {
-		Log.info("[DataStoreObjectBuilderService]: buildDSOClasses()");		
+		Log.info("[DataStoreObjectBuilderService]: buildDSOClasses()");
 		buildDSOClasses(inputFile, outputDir);
 		return true;
 	}
@@ -190,6 +191,45 @@ public class DataStoreObjectBuilderService extends Service {
 		return "UNKNOWN TYPE";
 	}
 
+	private String getpgsqlType(String typeStr) {
+		typeStr = typeStr.toLowerCase();
+		if (typeStr.equals("boolean")) {
+			return "BOOLEAN";
+		} else if (typeStr.equals("byte")) {
+			return "SMALLINT";
+		} else if (typeStr.equals("short")) {
+			return "SMALLINT";
+		} else if (typeStr.equals("int")) {
+			return "INT";
+		} else if (typeStr.equals("long")) {
+			return "BIGINT";
+		} else if (typeStr.equals("float")) {
+			return "FLOAT";
+		} else if (typeStr.equals("double")) {
+			return "DOUBLE";
+		} else if (typeStr.equals("string")) {
+			return "TEXT";
+		} else if (typeStr.equals("blob")) {
+			return "BLOB";
+		} else if (typeStr.equals("byte_array")) {
+			return "BLOB";
+		} else if (typeStr.equals("short_array")) {
+			return "BLOB";
+		} else if (typeStr.equals("int_array")) {
+			return "BLOB";
+		} else if (typeStr.equals("long_array")) {
+			return "BLOB";
+		} else if (typeStr.equals("float_array")) {
+			return "BLOB";
+		} else if (typeStr.equals("double_array")) {
+			return "BLOB";
+		} else if (typeStr.equals("string_array")) {
+			return "BLOB";
+		}
+		Log.warn("DSOBuilder: type: " + typeStr + " is unknown.");
+		return "UNKNOWN TYPE";
+	}
+
 	private void buildDSOClasses(String inputFile, String outputDir) {
 		// TODO: getElement()
 		// TODO: separate MySQL table create and abstract it so it can make any
@@ -201,13 +241,8 @@ public class DataStoreObjectBuilderService extends Service {
 
 			Log.trace("DSOBuilder: read xml: " + elm.toString());
 
-			FileOutputStream mysqlfos = new FileOutputStream(
-					new File(inputFile).getParent() + "/mysql_dso_create_tables.sql", false);
-			PrintWriter mysqlpw = new PrintWriter(mysqlfos);
-
-			mysqlpw.println(
-					"CREATE DATABASE IF NOT EXISTS `nectar` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci */;");
-			mysqlpw.println("USE `nectar`;\n\n");
+			buildMysqlTables(elm, new File(inputFile).getParent() + "/mysql_dso_create_tables.sql");
+			buildPostgreSqlTables(elm, new File(inputFile).getParent() + "/postgresql_dso_create_tables.sql");
 
 			List<Element> dsoElmList = elm.getChildren("dataStoreObject");
 			List<String> classList = new LinkedList<String>();
@@ -331,39 +366,115 @@ public class DataStoreObjectBuilderService extends Service {
 				pw.println("}");
 
 				pw.close();
-				Log.trace("DSOBuilder: "+className + " finished.");
+				Log.trace("DSOBuilder: " + className + " finished.");
 
 				classList.add(className);
 
-				// Mysql Create Table
-				mysqlpw.println("CREATE TABLE IF NOT EXISTS `" + tableName + "` (");
-				LinkedList<String> sqlColLinesList = new LinkedList<String>();
-				for (Triple<String, String, Boolean> tup : colList) {
-					String sqlstr = "	`" + tup.getLeft() + "` " + getmysqlType(tup.getMiddle());
-					if (tup.getLeft().equals(primaryKeyColName)) {
-						String typestr = tup.getMiddle().toLowerCase();
-						if (typestr.equals("byte") || typestr.equals("short") || typestr.equals("int")
-								|| typestr.equals("long")) {
-							sqlstr += " NOT NULL AUTO_INCREMENT";
-						} else {
-							sqlstr += " NOT NULL";
-						}
-					} else if (!tup.getRight()) {
-						sqlstr += " NOT NULL";
-					}
-					sqlColLinesList.add(sqlstr);
-				}
-				sqlColLinesList.add("	PRIMARY KEY (`" + primaryKeyColName + "`)");
-				mysqlpw.println(StringTools.implode(sqlColLinesList, ", \n"));
-				mysqlpw.println(") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
-
 			}
-
-			mysqlpw.close();
 
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+
+	}
+
+	private void buildMysqlTables(Element elm, String filepath) throws FileNotFoundException {
+		PrintWriter pw = new PrintWriter(new FileOutputStream(filepath, false));
+		pw.println(
+				"CREATE DATABASE IF NOT EXISTS `nectar` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci */;");
+		pw.println("USE `nectar`;\n\n");
+
+		List<Element> dsoElmList = elm.getChildren("dataStoreObject");
+		for (Element dsoElm : dsoElmList) {
+			String tableName = dsoElm.get("tableName");
+			String primaryKeyColName = dsoElm.get("primaryKeyColName");
+			List<Element> colElmList = dsoElm.getChildren("column");
+			List<Triple<String, String, Boolean>> colList = new LinkedList<Triple<String, String, Boolean>>();
+			for (Element cel : colElmList) {
+				String name = cel.get("name");
+				String type = cel.get("type");
+				String nullAllowed = cel.get("nullAllowed");
+				boolean nullAb = false;
+				if (nullAllowed != null && (nullAllowed.equalsIgnoreCase("true") || nullAllowed.equals("1"))) {
+					nullAb = true;
+				}
+				colList.add(new Triple<String, String, Boolean>(name, type, nullAb));
+			}
+
+			// Mysql Create Table
+			pw.println("CREATE TABLE IF NOT EXISTS `" + tableName + "` (");
+			LinkedList<String> sqlColLinesList = new LinkedList<String>();
+			for (Triple<String, String, Boolean> tup : colList) {
+				String sqlstr = "	`" + tup.getLeft() + "` " + getmysqlType(tup.getMiddle());
+				if (tup.getLeft().equals(primaryKeyColName)) {
+					String typestr = tup.getMiddle().toLowerCase();
+					if (typestr.equals("byte") || typestr.equals("short") || typestr.equals("int")
+							|| typestr.equals("long")) {
+						sqlstr += " NOT NULL AUTO_INCREMENT";
+					} else {
+						sqlstr += " NOT NULL";
+					}
+				} else if (!tup.getRight()) {
+					sqlstr += " NOT NULL";
+				}
+				sqlColLinesList.add(sqlstr);
+			}
+			sqlColLinesList.add("	PRIMARY KEY (`" + primaryKeyColName + "`)");
+			pw.println(StringTools.implode(sqlColLinesList, ", \n"));
+			pw.println(") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
+		}
+		pw.close();
+	}
+
+	private void buildPostgreSqlTables(Element elm, String filepath) throws FileNotFoundException {
+		PrintWriter pw = new PrintWriter(new FileOutputStream(filepath, false));
+
+		List<Element> dsoElmList = elm.getChildren("dataStoreObject");
+		for (Element dsoElm : dsoElmList) {
+			String tableName = dsoElm.get("tableName");
+			String primaryKeyColName = dsoElm.get("primaryKeyColName");
+			List<Element> colElmList = dsoElm.getChildren("column");
+			List<Triple<String, String, Boolean>> colList = new LinkedList<Triple<String, String, Boolean>>();
+			for (Element cel : colElmList) {
+				String name = cel.get("name");
+				String type = cel.get("type");
+				String nullAllowed = cel.get("nullAllowed");
+				boolean nullAb = false;
+				if (nullAllowed != null && (nullAllowed.equalsIgnoreCase("true") || nullAllowed.equals("1"))) {
+					nullAb = true;
+				}
+				colList.add(new Triple<String, String, Boolean>(name, type, nullAb));
+			}
+			
+			// Mysql Create Table
+			pw.println("CREATE TABLE IF NOT EXISTS " + tableName + " (");
+			LinkedList<String> sqlColLinesList = new LinkedList<String>();
+			for (Triple<String, String, Boolean> tup : colList) {
+				String sqlstr = "	" + tup.getLeft();
+				if (tup.getLeft().equals(primaryKeyColName)) {
+					String typestr = tup.getMiddle().toLowerCase();
+					if (typestr.equals("byte") || typestr.equals("short")) {
+						sqlstr += " SMALLSERIAL";
+					} else if (typestr.equals("int")) {
+						sqlstr += " SERIAL";
+					} else if (typestr.equals("long")) {
+						sqlstr += " BIGSERIAL ";
+					} else {
+						sqlstr += " NOT NULL";
+					}
+				} else {
+					sqlstr += " "+ getpgsqlType(tup.getMiddle());
+					if (!tup.getRight()) {
+					sqlstr += " NOT NULL";
+					}
+				}
+				sqlColLinesList.add(sqlstr);
+			}
+			sqlColLinesList.add("	PRIMARY KEY (" + primaryKeyColName + ")");
+			pw.println(StringTools.implode(sqlColLinesList, ", \n\n"));
+			pw.println(");");
+		}
+		pw.close();
 
 	}
 

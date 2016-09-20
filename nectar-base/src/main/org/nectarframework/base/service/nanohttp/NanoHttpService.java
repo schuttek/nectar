@@ -79,6 +79,7 @@ import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.pathfinder.ActionResolution;
 import org.nectarframework.base.service.pathfinder.ActionResolution.OutputType;
 import org.nectarframework.base.service.template.TemplateService;
+import org.nectarframework.base.service.template.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.pathfinder.AliasResolution;
 import org.nectarframework.base.service.pathfinder.PathFinderService;
 import org.nectarframework.base.service.pathfinder.ProxyResolution;
@@ -86,7 +87,6 @@ import org.nectarframework.base.service.pathfinder.RedirectResolution;
 import org.nectarframework.base.service.pathfinder.StaticResolution;
 import org.nectarframework.base.service.pathfinder.UriResolution;
 import org.nectarframework.base.service.thread.ThreadService;
-import org.nectarframework.base.service.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.FastByteArrayOutputStream;
@@ -242,8 +242,12 @@ public class NanoHttpService extends Service {
 		Log.trace(pathFinderService.dumpConfig());
 		try {
 
-			this.sslServerSocket = makeSSLServerSocket(keyStoreFilePath, ("suckre").toCharArray());
-
+			try {
+				this.sslServerSocket = makeSSLServerSocket(keyStoreFilePath, ("suckre").toCharArray());
+			} catch (IOException e1) {
+				Log.warn("NanoHTTP couldn't start SSL because of missing keyfile.", e1);
+				this.sslServerSocket = null;
+			}
 			this.simpleServerSocket = new ServerSocket();
 
 			this.simpleServerSocket.setReuseAddress(true);

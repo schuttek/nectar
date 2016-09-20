@@ -4,6 +4,9 @@
 	<virtualServer hostname="localhost" port="80">
 		<project name="www.nectarframework.org" namespace="" />
 	</virtualServer>
+	<virtualServer hostname="localhost" port="8000">
+		<project name="www.nectarframework.org" namespace="" />
+	</virtualServer>
 	<virtualServer hostname="10.42.0.1" port="8000">
 		<project name="www.nectarframework.org" namespace="" />
 	</virtualServer>

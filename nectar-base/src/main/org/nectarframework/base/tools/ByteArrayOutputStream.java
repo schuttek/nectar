@@ -37,15 +37,15 @@ public class ByteArrayOutputStream extends OutputStream {
 	}
 	
 	public byte[] toByteArray() {
-		return ba.getBytes();
+		return ba.getAllBytes();
 	}
 	
 	public String toString() {
-		return new String (ba.getBytes());
+		return new String ("ByteArrayOutputStream: " + new String(ba.getAllBytes()));
 	}
 	
 	public void writeTo(OutputStream os) throws IOException {
-		os.write(ba.getBytes());
+		os.write(ba.getAllBytes());
 	}
 	
 	public ByteArray getByteArray() {

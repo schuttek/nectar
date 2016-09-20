@@ -320,42 +320,42 @@ public class DataStoreObjectDescriptor {
 				for (i=0;i<((short[])value).length;i++) {
 					ba.add(((short[])value)[i]);
 				}
-				mps.setBytes(mpsIndex, ba.getBytes());
+				mps.setBytes(mpsIndex, ba.getByteArray());
 			case INT_ARRAY:
 				ba = new ByteArray();
 				ba.add(((int[])value).length);
 				for (i=0;i<((int[])value).length;i++) {
 					ba.add(((int[])value)[i]);
 				}
-				mps.setBytes(mpsIndex, ba.getBytes());
+				mps.setBytes(mpsIndex, ba.getByteArray());
 			case LONG_ARRAY:
 				ba = new ByteArray();
 				ba.add(((long[])value).length);
 				for (i=0;i<((long[])value).length;i++) {
 					ba.add(((long[])value)[i]);
 				}
-				mps.setBytes(mpsIndex, ba.getBytes());
+				mps.setBytes(mpsIndex, ba.getByteArray());
 			case FLOAT_ARRAY:
 				ba = new ByteArray();
 				ba.add(((float[])value).length);
 				for (i=0;i<((float[])value).length;i++) {
 					ba.add(((float[])value)[i]);
 				}
-				mps.setBytes(mpsIndex, ba.getBytes());
+				mps.setBytes(mpsIndex, ba.getByteArray());
 			case DOUBLE_ARRAY:
 				ba = new ByteArray();
 				ba.add(((double[])value).length);
 				for (i=0;i<((double[])value).length;i++) {
 					ba.add(((double[])value)[i]);
 				}
-				mps.setBytes(mpsIndex, ba.getBytes());
+				mps.setBytes(mpsIndex, ba.getByteArray());
 			case STRING_ARRAY:
 				ba = new ByteArray();
 				ba.add(((String[])value).length);
 				for (i=0;i<((String[])value).length;i++) {
 					ba.add(((String[])value)[i]);
 				}
-				mps.setBytes(mpsIndex, ba.getBytes());
+				mps.setBytes(mpsIndex, ba.getByteArray());
 				
 			}
 			throw new IllegalArgumentException("invalid type:" + this.toString());

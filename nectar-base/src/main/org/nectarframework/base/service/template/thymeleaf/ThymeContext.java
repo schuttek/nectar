@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.thymeleaf;
+package org.nectarframework.base.service.template.thymeleaf;
 
 import java.util.HashSet;
 import java.util.Locale;
