@@ -25,8 +25,18 @@ import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.StringTools;
 import org.nectarframework.base.tools.Triple;
 
+/**
+ * This Service reads the dataObjects.xml config file, and outputs a set of Java
+ * classes that implement the functionality of a DataServiceObject.
+ * 
+ * @author schuttek
+ *
+ */
+
+// TODO remove the main function and argument handling, this should be run as part of the Nectar build process as a script
+
+
 public class DataStoreObjectBuilder extends Service {
-	
 
 	private String outputDir;
 	private String inputFile;
@@ -34,7 +44,7 @@ public class DataStoreObjectBuilder extends Service {
 	@Override
 	public void checkParameters() throws ConfigurationException {
 		inputFile = serviceParameters.getString("inputFile", "config/dataStoreObjects.xml");
-		outputDir = serviceParameters.getString("inputFile", "src/");
+		outputDir = serviceParameters.getString("outputDir", "src/");
 	}
 
 	@Override
@@ -58,7 +68,7 @@ public class DataStoreObjectBuilder extends Service {
 	protected boolean shutdown() {
 		return true;
 	}
-	
+
 	public static void main(String[] args) {
 
 		try {
@@ -121,6 +131,7 @@ public class DataStoreObjectBuilder extends Service {
 	}
 
 	private String parseType(String typeStr) {
+		// TODO: these relations should be in a static final array...
 		typeStr = typeStr.toLowerCase();
 		if (typeStr.equals("boolean")) {
 			return "DataStoreObjectDescriptor.Type.BOOLEAN";
@@ -238,17 +249,22 @@ public class DataStoreObjectBuilder extends Service {
 	}
 
 	private void run(String inputFile, String outputDir) {
+		// TODO: getElement()
+		// TODO: separate MySQL table create and abstract it so it can make any
+		// database table.
+		// TODO: better error handling
+
 		try {
-			byte[] ba = Files.readAllBytes(new File(inputFile).toPath());
-			
-			Element elm = XmlService.fromXml(ba);
+			Element elm = XmlService.fromXmlFile(inputFile);
 
 			System.err.println("read xml: " + elm.toString());
 
-			FileOutputStream mysqlfos = new FileOutputStream( new File(inputFile).getParent() + "/mysql_dso_create_tables.sql", false);
+			FileOutputStream mysqlfos = new FileOutputStream(
+					new File(inputFile).getParent() + "/mysql_dso_create_tables.sql", false);
 			PrintWriter mysqlpw = new PrintWriter(mysqlfos);
-			
-			mysqlpw.println("CREATE DATABASE IF NOT EXISTS `nectar` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci */;");
+
+			mysqlpw.println(
+					"CREATE DATABASE IF NOT EXISTS `nectar` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci */;");
 			mysqlpw.println("USE `nectar`;\n\n");
 
 			List<Element> dsoElmList = elm.getChildren("dataStoreObject");
@@ -260,7 +276,8 @@ public class DataStoreObjectBuilder extends Service {
 				String primaryKeyColName = dsoElm.get("primaryKeyColName");
 				String primaryKeyType = dsoElm.get("primaryKeyType");
 				String primaryKeyLength = dsoElm.get("primaryKeyLength");
-				boolean primaryKeyAutoIncrement = (dsoElm.get("primaryKeyAutoIncrement") != null && dsoElm.get("primaryKeyAutoIncrement").equals("true"));
+				boolean primaryKeyAutoIncrement = (dsoElm.get("primaryKeyAutoIncrement") != null
+						&& dsoElm.get("primaryKeyAutoIncrement").equals("true"));
 
 				List<Element> colElmList = dsoElm.getChildren("column");
 				List<Triple<String, String, Boolean>> colList = new LinkedList<Triple<String, String, Boolean>>();
@@ -275,13 +292,15 @@ public class DataStoreObjectBuilder extends Service {
 					colList.add(new Triple<String, String, Boolean>(name, type, nullAb));
 				}
 
-				FileOutputStream fos = new FileOutputStream(new File(outputDir + "/" + packageName.replace('.', '/') + "/" + className + ".java"), false);
+				FileOutputStream fos = new FileOutputStream(
+						new File(outputDir + "/" + packageName.replace('.', '/') + "/" + className + ".java"), false);
 				PrintWriter pw = new PrintWriter(fos);
 
-				// DSOD 
+				// DSOD
 				String initLine = "dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor(";
 				initLine += "\"" + tableName + "\", ";
-				initLine += "new DataStoreKey(\"" + primaryKeyColName + "\", " + parseType(primaryKeyType) + ", " + primaryKeyLength + ", "+(primaryKeyAutoIncrement?"true":"false")+"), ";
+				initLine += "new DataStoreKey(\"" + primaryKeyColName + "\", " + parseType(primaryKeyType) + ", "
+						+ primaryKeyLength + ", " + (primaryKeyAutoIncrement ? "true" : "false") + "), ";
 				Vector<String> sa = new Vector<String>();
 				for (Triple<String, String, Boolean> tup : colList) {
 					sa.add("\"" + tup.getLeft() + "\"");
@@ -294,9 +313,9 @@ public class DataStoreObjectBuilder extends Service {
 				initLine += "new DataStoreObjectDescriptor.Type[] {" + StringTools.implode(sa, ", ") + "}, ";
 				sa.clear();
 				for (Triple<String, String, Boolean> tup : colList) {
-					sa.add((tup.getRight()?"true":"false"));
+					sa.add((tup.getRight() ? "true" : "false"));
 				}
-				initLine += "new boolean[] {" + StringTools.implode(sa, ", ") +"}, ";
+				initLine += "new boolean[] {" + StringTools.implode(sa, ", ") + "}, ";
 				initLine += className + ".class));";
 
 				// the class file...
@@ -308,48 +327,64 @@ public class DataStoreObjectBuilder extends Service {
 				pw.println("import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor;");
 				pw.println("import org.nectarframework.base.service.datastore.DataStoreService;");
 				pw.println("");
-				pw.println("// THIS CLASS IS AUTO GENERATED by nectar.base.service.datastore.dsobuilder.DataStoreObjectBuilder, and configured by config/dataStoreObjects.xml . ");
+				pw.println(
+						"// THIS CLASS IS AUTO GENERATED by nectar.base.service.datastore.dsobuilder.DataStoreObjectBuilder, and configured by config/dataStoreObjects.xml . ");
 				pw.println("// Edits to this file will be overwritten!");
 				pw.println("public class " + className + " extends DataStoreObject {");
 				pw.println("	");
+				// constructor
 				pw.println("	public " + className + "() {");
 				pw.println("	}");
 				pw.println("	");
+
+				// DataStoreObjectDescriptor object builder.
 				pw.println("	@Override");
 				pw.println("	public void initDataStoreObjectDescriptor(DataStoreService dss) {");
 				pw.println("		" + initLine);
 				pw.println("	}");
 				pw.println("	");
 
-				pw.println("	public static " + className + " load(" + parseJavaType(primaryKeyType) + " key) throws Exception {");
-				pw.println("		DataStoreService dss = (DataStoreService) ServiceRegister.getService(DataStoreService.class);");
-				pw.println("		DataStoreObject dso = dss.loadDSO(dss.getDataStoreObjectDescriptor(" + className + ".class), key);");
+				// static load method getArticle(long id);
+				pw.println("	public static " + className + " load(" + parseJavaType(primaryKeyType)
+						+ " key) throws Exception {");
+				pw.println(
+						"		DataStoreService dss = (DataStoreService) ServiceRegister.getService(DataStoreService.class);");
+				pw.println("		DataStoreObject dso = dss.loadDSO(dss.getDataStoreObjectDescriptor(" + className
+						+ ".class), key);");
 				pw.println("		if (dso == null) ");
 				pw.println("			return null;");
-				pw.println("		return ("+className+")dso;");
+				pw.println("		return (" + className + ")dso;");
 				pw.println("	}");
 				pw.println("	");
 
+				// getters and setters
 				for (Triple<String, String, Boolean> tup : colList) {
-					pw.println("	public " + parseJavaType(tup.getMiddle()) + " get" + tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "() {");
+					pw.println("	public " + parseJavaType(tup.getMiddle()) + " get"
+							+ tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "() {");
 					pw.println("		return get" + parseJavaType(tup.getMiddle()) + "(\"" + tup.getLeft() + "\");");
 					pw.println("	}");
 					pw.println("	");
-					
-					pw.println("	public void set" + tup.getLeft().substring(0, 1).toUpperCase() + tup.getLeft().substring(1) + "(" + parseJavaType(tup.getMiddle()) + " "+tup.getLeft()+") {");
-					pw.println("		set(\""+tup.getLeft()+"\", "+tup.getLeft()+");");
+
+					pw.println("	public void set" + tup.getLeft().substring(0, 1).toUpperCase()
+							+ tup.getLeft().substring(1) + "(" + parseJavaType(tup.getMiddle()) + " " + tup.getLeft()
+							+ ") {");
+					pw.println("		set(\"" + tup.getLeft() + "\", " + tup.getLeft() + ");");
 					pw.println("	}");
 					pw.println("	");
-					
+
 				}
-				
-				for (Element relation: dsoElm.getChildren("relation")) {
-					pw.println("	public "+relation.get("targetPackage")+"."+relation.get("targetClass")+" get"+relation.get("methodName").substring(0, 1).toUpperCase() + relation.get("methodName").substring(1)+"() throws Exception {");
-					pw.println("		return "+relation.get("targetPackage")+"."+relation.get("targetClass")+ ".load(get"+this.parseJavaType(relation.get("type"))+"(\""+relation.get("column")+"\"));");
+
+				// getters for relations
+				for (Element relation : dsoElm.getChildren("relation")) {
+					pw.println("	public " + relation.get("targetPackage") + "." + relation.get("targetClass")
+							+ " get" + relation.get("methodName").substring(0, 1).toUpperCase()
+							+ relation.get("methodName").substring(1) + "() throws Exception {");
+					pw.println("		return " + relation.get("targetPackage") + "." + relation.get("targetClass")
+							+ ".load(get" + this.parseJavaType(relation.get("type")) + "(\"" + relation.get("column")
+							+ "\"));");
 					pw.println("	}");
 					pw.println("	");
 				}
-				
 
 				pw.println("}");
 
@@ -357,19 +392,16 @@ public class DataStoreObjectBuilder extends Service {
 				System.err.println(className + " finished.");
 
 				classList.add(className);
-				
+
 				// Mysql Create Table
-				
-				mysqlpw.println("CREATE TABLE IF NOT EXISTS `"+tableName+"` (");
-				
+				mysqlpw.println("CREATE TABLE IF NOT EXISTS `" + tableName + "` (");
 				LinkedList<String> sqlColLinesList = new LinkedList<String>();
-				
-				
-				for (Triple<String, String, Boolean> tup: colList) {
-					String sqlstr = "	`"+tup.getLeft()+"` "+getmysqlType(tup.getMiddle());
+				for (Triple<String, String, Boolean> tup : colList) {
+					String sqlstr = "	`" + tup.getLeft() + "` " + getmysqlType(tup.getMiddle());
 					if (tup.getLeft().equals(primaryKeyColName)) {
 						String typestr = tup.getMiddle().toLowerCase();
-						if (typestr.equals("byte") ||typestr.equals("short") ||typestr.equals("int") ||typestr.equals("long")) {
+						if (typestr.equals("byte") || typestr.equals("short") || typestr.equals("int")
+								|| typestr.equals("long")) {
 							sqlstr += " NOT NULL AUTO_INCREMENT";
 						} else {
 							sqlstr += " NOT NULL";
@@ -379,24 +411,18 @@ public class DataStoreObjectBuilder extends Service {
 					}
 					sqlColLinesList.add(sqlstr);
 				}
-				
-				sqlColLinesList.add("	PRIMARY KEY (`"+primaryKeyColName+"`)");
-				
+				sqlColLinesList.add("	PRIMARY KEY (`" + primaryKeyColName + "`)");
 				mysqlpw.println(StringTools.implode(sqlColLinesList, ", \n"));
-				
 				mysqlpw.println(") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
-				
+
 			}
 
-			
-			
 			mysqlpw.close();
-			
+
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 
 	}
-
 
 }
