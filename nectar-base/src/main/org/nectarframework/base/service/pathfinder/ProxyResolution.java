@@ -1,7 +1,5 @@
 package org.nectarframework.base.service.pathfinder;
 
-import org.nectarframework.base.tools.StringTools;
-
 public class ProxyResolution extends UriResolution {
 
 	public String getPath() {

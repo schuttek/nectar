@@ -36,12 +36,18 @@
 			class="org.nectarframework.base.service.pathfinder.PathFinderService">
 			<param name="pathConfigFile" value="config/pathConfig.xml" />
 		</service>
-		
-		<service class="org.nectarframework.base.service.template.TemplateBuilderService">
-		<param name="outputDir" value="src/org/nectarframework/www/templates"/>
-		<param name="pathConfig" value="config/pathConfig.xml"/>
+
+		<service
+			class="org.nectarframework.base.service.template.TemplateBuilderService">
+			<param name="outputDir" value="src/org/nectarframework/www/templates" />
+			<param name="pathConfig" value="config/pathConfig.xml" />
 		</service>
-		
+		<service
+			class="org.nectarframework.base.service.datastore.DataStoreObjectBuilderService">
+			<param name="inputFile" value="config/dataStoreObjects.xml" />
+			<param name="outputDir" value="src/" />
+		</service>
+
 	</node>
 
 
@@ -71,8 +77,7 @@
 		</service>
 		<service class="org.nectarframework.base.service.xml.XmlService">
 		</service>
-		<service
-			class="org.nectarframework.base.service.nanohttp.NanoHttpService">
+		<service class="org.nectarframework.base.service.nanohttp.NanoHttpService">
 			<param name="listeningHost" value="167.114.240.14" />
 			<param name="listeningPort" value="80" />
 			<param name="listeningSSLPort" value="443" />

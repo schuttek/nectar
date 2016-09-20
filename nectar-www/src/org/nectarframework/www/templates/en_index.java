@@ -23,7 +23,7 @@ public class en_index implements ITemplate {
 		os.write(bp.get("message").getBytes());
 		os.write("</div>\r\n\t\t\t</div>".getBytes());
 		}
-		os.write("\r\n\t\t\t\r\n\t\t</div>\r\n\r\n\t\t<div class=\"sidebar\">\r\n\t\t<p>Nectar Framework uses</p>\r\n\t\t<p>\r\n\t\t\t- <a href=\"http://www.simpleframework.org\">Simple Framework HTTP Server</a><br></br>\r\n\t\t\t- <a href=\"http://hbase.apache.org/\">Apache Hbase database</a><br></br> -\r\n\t\t\t<a href=\"http://www.thymeleaf.org/\">Thymeleaf template engine</a><br></br>\r\n\t\t\t- <a href=\"https://maven.apache.org/\">Maven build system</a><br></br> - <a href=\"https://xerces.apache.org/xerces2-j/\">Apache Xerces2 XML Parser</a>\r\n\t\t</p>\r\n\t</div>\r\n\t\t<div class=\"footer\">\r\n\t\t(c)2003-2016 nectarframework.org (schuttek@gmail.com) - LGPL v3 - <a href=\"/download\">Download</a>\r\n\t\t<a href=\"/about\">About</a>\r\n\t</div>\r\n\r\n\t</div>\r\n</body>\r\n</html>".getBytes());
+		os.write("\r\n\t\t\t\r\n\t\t</div>\r\n\r\n\t\t<div class=\"footer\">\r\n\t\t(c)2003-2016 nectarframework.org (schuttek@gmail.com) - LGPL v3 - <a href=\"/download\">Download</a>\r\n\t\t<a href=\"/about\">About</a>\r\n\t</div>\r\n\r\n\t</div>\r\n</body>\r\n</html>".getBytes());
 
 	}
 }

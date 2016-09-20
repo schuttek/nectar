@@ -87,7 +87,8 @@ public class CacheService extends Service {
 	public CacheableObject getObject(String key, boolean refreshCache) {
 		checkFlushTimer();
 		Tuple<CacheableObject, Long> tup = cache.get(key);
-		Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null" : "found"));
+		// Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null"
+		// : "found"));
 		if (tup == null)
 			return null;
 		long now = InternodeService.getTime();

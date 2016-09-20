@@ -1,6 +1,7 @@
-package org.nectarframework.base.service.datastore.dsobuilder;
+package org.nectarframework.base.service.datastore;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -36,10 +37,11 @@ import org.nectarframework.base.tools.Triple;
 // TODO remove the main function and argument handling, this should be run as part of the Nectar build process as a script
 
 
-public class DataStoreObjectBuilder extends Service {
+public class DataStoreObjectBuilderService extends Service {
 
 	private String outputDir;
 	private String inputFile;
+	private XmlService xmlService;
 
 	@Override
 	public void checkParameters() throws ConfigurationException {
@@ -49,7 +51,7 @@ public class DataStoreObjectBuilder extends Service {
 
 	@Override
 	public boolean establishDependancies() throws ServiceUnavailableException {
-		dependancy(XmlService.class);
+		xmlService = (XmlService)dependancy(XmlService.class);
 		return true;
 	}
 
@@ -60,74 +62,14 @@ public class DataStoreObjectBuilder extends Service {
 
 	@Override
 	protected boolean run() {
-		new DataStoreObjectBuilder().run(inputFile, outputDir);
+		Log.info("[DataStoreObjectBuilderService]: buildDSOClasses()");		
+		buildDSOClasses(inputFile, outputDir);
 		return true;
 	}
 
 	@Override
 	protected boolean shutdown() {
 		return true;
-	}
-
-	public static void main(String[] args) {
-
-		try {
-
-			CommandLineParser parser = new DefaultParser();
-			Options options = buildArgumentOptions();
-
-			// parse the command line arguments
-			CommandLine line;
-			try {
-				line = parser.parse(options, args);
-			} catch (ParseException e) {
-				e.printStackTrace();
-				return;
-			}
-
-			// startup
-			if (line.hasOption("version")) {
-				runVersion();
-			} else if (line.hasOption("help")) {
-				runHelp(options);
-			} else if (line.hasOption("input") && line.hasOption("output")) {
-				String inputFile = line.getOptionValue("input");
-				String outputDir = line.getOptionValue("output");
-
-				new DataStoreObjectBuilder().run(inputFile, outputDir);
-				return;
-
-			}
-			runHelp(options);
-
-		} catch (Throwable t) {
-			Log.fatal("CRASH", t);
-			System.exit(-1);
-		}
-		// main thread ends after startup.
-	}
-
-	private static Options buildArgumentOptions() {
-		Options options = new Options();
-
-		options.addOption("h", "help", false, "print this message");
-		Option opt = new Option("i", "input", true, "path to the dataStoreObjects XML file");
-		opt.setArgName("INPUT");
-		options.addOption(opt);
-		opt = new Option("o", "output", true, "output directory");
-		opt.setArgName("OUTPUT");
-		options.addOption(opt);
-		return options;
-	}
-
-	public static void runHelp(Options opts) {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java nectar.base.service.datastore.dsobuilder.DataStoreObjectBuilder", opts);
-	}
-
-	private static void runVersion() {
-		System.out.println("Nectar Web Platform DataStoreObject Builder");
-		System.out.println("Version: " + Main.VERSION);
 	}
 
 	private String parseType(String typeStr) {
@@ -166,7 +108,7 @@ public class DataStoreObjectBuilder extends Service {
 		} else if (typeStr.equals("string_array")) {
 			return "DataStoreObjectDescriptor.Type.STRING_ARRAY";
 		}
-		System.err.println("type: " + typeStr + " is unknown.");
+		Log.warn("DSOBuilder: type: " + typeStr + " is unknown.");
 		return "UNKNOWN TYPE";
 	}
 
@@ -205,7 +147,7 @@ public class DataStoreObjectBuilder extends Service {
 		} else if (typeStr.equals("string_array")) {
 			return "String[]";
 		}
-		System.err.println("type: " + typeStr + " is unknown.");
+		Log.warn("DSOBuilder: type: " + typeStr + " is unknown.");
 		return "UNKNOWN TYPE";
 	}
 
@@ -244,20 +186,20 @@ public class DataStoreObjectBuilder extends Service {
 		} else if (typeStr.equals("string_array")) {
 			return "BLOB";
 		}
-		System.err.println("type: " + typeStr + " is unknown.");
+		Log.warn("DSOBuilder: type: " + typeStr + " is unknown.");
 		return "UNKNOWN TYPE";
 	}
 
-	private void run(String inputFile, String outputDir) {
+	private void buildDSOClasses(String inputFile, String outputDir) {
 		// TODO: getElement()
 		// TODO: separate MySQL table create and abstract it so it can make any
 		// database table.
 		// TODO: better error handling
 
 		try {
-			Element elm = XmlService.fromXmlFile(inputFile);
+			Element elm = XmlService.fromXml(new FileInputStream(inputFile));
 
-			System.err.println("read xml: " + elm.toString());
+			Log.trace("DSOBuilder: read xml: " + elm.toString());
 
 			FileOutputStream mysqlfos = new FileOutputStream(
 					new File(inputFile).getParent() + "/mysql_dso_create_tables.sql", false);
@@ -389,7 +331,7 @@ public class DataStoreObjectBuilder extends Service {
 				pw.println("}");
 
 				pw.close();
-				System.err.println(className + " finished.");
+				Log.trace("DSOBuilder: "+className + " finished.");
 
 				classList.add(className);
 
