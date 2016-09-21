@@ -1,10 +1,14 @@
 package org.nectarframework.base.service.file;
 
 import java.io.ByteArrayInputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 
 import org.nectarframework.base.exception.ConfigurationException;
@@ -13,6 +17,8 @@ import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.log.Log;
+
+import static java.nio.file.StandardCopyOption.*;
 
 //TODO add cache layer
 
@@ -101,8 +107,7 @@ public class FileService extends Service {
 		}
 	}
 
-	public InputStream getFileAsInputStream(String path, long cacheExpiry)
-			throws IOException {
+	public InputStream getFileAsInputStream(String path, long cacheExpiry) throws IOException {
 		// attempt a cache hit
 		CacheableObject cachedCO = null;
 		try {
@@ -171,7 +176,7 @@ public class FileService extends Service {
 		fi.length = f.length();
 
 		cacheService.set(this, cacheKey(path), fi, cacheExpiry);
-		
+
 		return fi;
 	}
 
@@ -201,7 +206,7 @@ public class FileService extends Service {
 			fi = getFileInfo(path, cacheExpiry);
 		}
 		if (fi.contents == null) {
-				
+
 			fi.contents = Files.readAllBytes(fi.getFile().toPath());
 			if (fi.length <= this.maxCachedFileSize) {
 				cacheService.set(this, cacheKey(fi.getPath()), fi, cacheExpiry);
@@ -214,9 +219,26 @@ public class FileService extends Service {
 		return "FileService:" + path;
 	}
 
-	public static String staticFileInputStream(String filename) {
-		// TODO Auto-generated method stub
-		return null;
+	public void append(String path, byte[] ba) throws IOException {
+		FileOutputStream fos = new FileOutputStream(new File(rootDirectory + "/" + path), true);
+		fos.write(ba);
+		fos.close();
+
+		cacheService.remove(this, cacheKey(path));
+	}
+
+	public void write(String path, byte[] ba) throws IOException {
+		FileOutputStream fos = new FileOutputStream(new File(rootDirectory + "/" + path), false);
+		fos.write(ba);
+		fos.close();
+
+		cacheService.remove(this, cacheKey(path));
+	}
+
+	public void replace(String path, byte[] ba) throws IOException {
+		write(path + ".partial", ba);
+		Files.move(new File(path + ".partial").toPath(), new File(path).toPath(), REPLACE_EXISTING, ATOMIC_MOVE);
+		cacheService.remove(this, cacheKey(path));
 	}
 
 }

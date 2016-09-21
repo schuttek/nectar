@@ -21,6 +21,7 @@ import org.nectarframework.base.service.xml.XmlService;
 public abstract class DataStoreService extends Service {
 
 	private String dataStoreObjectsConfigFile = "config/dataStoreObjects.xml";
+	private HashMap<Class<? extends DataStoreObject>, DataStoreObjectDescriptor> dsodMap = new HashMap<Class<? extends DataStoreObject>, DataStoreObjectDescriptor>();
 
 	public boolean init() {
 		Element dsoConfig;
@@ -68,10 +69,13 @@ public abstract class DataStoreService extends Service {
 
 	public abstract void save(Collection<DataStoreObject> dsoList) throws Exception;
 
-	private HashMap<Class<? extends DataStoreObject>, DataStoreObjectDescriptor> dsodMap = new HashMap<Class<? extends DataStoreObject>, DataStoreObjectDescriptor>();
 
 	public final void initDataStoreObjectDescriptor(DataStoreObjectDescriptor dsod) {
 		dsodMap.put(dsod.getDsoClass(), dsod);
+	}
+	
+	public final Collection<DataStoreObjectDescriptor> getAllDataStoreObjectDescriptors() {
+		return dsodMap.values();
 	}
 
 	public final List<? extends DataStoreObject> loadAll(Class<? extends DataStoreObject> dsoClass) throws Exception {

@@ -30,4 +30,27 @@ public class DataStoreKey {
 	public boolean isAutoIncrement() {
 		return autoIncrement;
 	}
+
+	public int compareTo(Object a, Object b) {
+		switch (type) {
+		case BOOLEAN:
+			return ((Boolean) a).compareTo((Boolean) b);
+		case STRING:
+			return ((String) a).compareTo((String) b);
+		case BYTE:
+			return ((Byte) a).compareTo((Byte) b);
+		case DOUBLE:
+			return ((Double) a).compareTo((Double) b);
+		case FLOAT:
+			return ((Float) a).compareTo((Float) b);
+		case INT:
+			return ((Integer) a).compareTo((Integer) b);
+		case LONG:
+			return ((Long) a).compareTo((Long) b);
+		case SHORT:
+			return ((Short) a).compareTo((Short) b);
+		default:
+			return 0;
+		}
+	}
 }
