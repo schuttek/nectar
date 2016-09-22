@@ -4,9 +4,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.nectarframework.base.service.sql.SqlPreparedStatement;
+import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor.Type;
 import org.nectarframework.base.service.sql.ResultRow;
+import org.nectarframework.base.tools.Base64;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
+import org.nectarframework.base.tools.Tuple;
 
 public class DataStoreObjectDescriptor {
 	private String table;
@@ -277,7 +280,7 @@ public class DataStoreObjectDescriptor {
 			case FLOAT_ARRAY:
 			case DOUBLE_ARRAY:
 			case STRING_ARRAY:
-				throw new IllegalArgumentException(this.toString() +" type cannot be a key");
+				throw new IllegalArgumentException(this.toString() + " type cannot be a key");
 			}
 			throw new IllegalArgumentException("invalid type:" + this.toString());
 		}
@@ -316,55 +319,88 @@ public class DataStoreObjectDescriptor {
 				return;
 			case SHORT_ARRAY:
 				ba = new ByteArray();
-				ba.add(((short[])value).length);
-				for (i=0;i<((short[])value).length;i++) {
-					ba.add(((short[])value)[i]);
+				ba.add(((short[]) value).length);
+				for (i = 0; i < ((short[]) value).length; i++) {
+					ba.add(((short[]) value)[i]);
 				}
 				mps.setBytes(mpsIndex, ba.getByteArray());
 			case INT_ARRAY:
 				ba = new ByteArray();
-				ba.add(((int[])value).length);
-				for (i=0;i<((int[])value).length;i++) {
-					ba.add(((int[])value)[i]);
+				ba.add(((int[]) value).length);
+				for (i = 0; i < ((int[]) value).length; i++) {
+					ba.add(((int[]) value)[i]);
 				}
 				mps.setBytes(mpsIndex, ba.getByteArray());
 			case LONG_ARRAY:
 				ba = new ByteArray();
-				ba.add(((long[])value).length);
-				for (i=0;i<((long[])value).length;i++) {
-					ba.add(((long[])value)[i]);
+				ba.add(((long[]) value).length);
+				for (i = 0; i < ((long[]) value).length; i++) {
+					ba.add(((long[]) value)[i]);
 				}
 				mps.setBytes(mpsIndex, ba.getByteArray());
 			case FLOAT_ARRAY:
 				ba = new ByteArray();
-				ba.add(((float[])value).length);
-				for (i=0;i<((float[])value).length;i++) {
-					ba.add(((float[])value)[i]);
+				ba.add(((float[]) value).length);
+				for (i = 0; i < ((float[]) value).length; i++) {
+					ba.add(((float[]) value)[i]);
 				}
 				mps.setBytes(mpsIndex, ba.getByteArray());
 			case DOUBLE_ARRAY:
 				ba = new ByteArray();
-				ba.add(((double[])value).length);
-				for (i=0;i<((double[])value).length;i++) {
-					ba.add(((double[])value)[i]);
+				ba.add(((double[]) value).length);
+				for (i = 0; i < ((double[]) value).length; i++) {
+					ba.add(((double[]) value)[i]);
 				}
 				mps.setBytes(mpsIndex, ba.getByteArray());
 			case STRING_ARRAY:
 				ba = new ByteArray();
-				ba.add(((String[])value).length);
-				for (i=0;i<((String[])value).length;i++) {
-					ba.add(((String[])value)[i]);
+				ba.add(((String[]) value).length);
+				for (i = 0; i < ((String[]) value).length; i++) {
+					ba.add(((String[]) value)[i]);
 				}
 				mps.setBytes(mpsIndex, ba.getByteArray());
-				
+
 			}
 			throw new IllegalArgumentException("invalid type:" + this.toString());
 
 		}
 
+		public String stringValue(Object value) {
+			switch (this) {
+			case BOOLEAN:
+				return ((Boolean) value).toString();
+			case BYTE:
+				return ((Byte) value).toString();
+			case SHORT:
+				return ((Short) value).toString();
+			case INT:
+				return ((Integer) value).toString();
+			case LONG:
+				return ((Long) value).toString();
+			case FLOAT:
+				return ((Float) value).toString();
+			case DOUBLE:
+				return ((Double) value).toString();
+			case STRING:
+				return (String) value;
+			case BYTE_ARRAY:
+			case BLOB:
+				return Base64.encode((byte[]) value);
+			case SHORT_ARRAY:
+			case INT_ARRAY:
+			case LONG_ARRAY:
+			case FLOAT_ARRAY:
+			case DOUBLE_ARRAY:
+			case STRING_ARRAY:
+				throw new IllegalArgumentException(this.toString() + " type cannot be a key");
+			}
+			throw new IllegalArgumentException("invalid type:" + this.toString());
+		}
+
 	}
 
-	public DataStoreObjectDescriptor(String table, DataStoreKey primaryKey, String[] colNames, Type[] colTypes, boolean[] nullAllowed, Class<? extends DataStoreObject> dsoClass) {
+	public DataStoreObjectDescriptor(String table, DataStoreKey primaryKey, String[] colNames, Type[] colTypes,
+			boolean[] nullAllowed, Class<? extends DataStoreObject> dsoClass) {
 		this.table = table;
 		this.primaryKey = primaryKey;
 		this.colNames = colNames;
@@ -392,6 +428,16 @@ public class DataStoreObjectDescriptor {
 
 	public String[] getColumnNames() {
 		return colNames;
+	}
+
+	protected final Tuple<String, Type>[] getColumnNamesAndTypes() {
+		@SuppressWarnings("unchecked")
+		Tuple<String, Type>[] tup = new Tuple[colNames.length];
+
+		for (int t = 0; t < colNames.length; t++) {
+			tup[t] = new Tuple<String, Type>(colNames[t], colTypes[t]);
+		}
+		return tup;
 	}
 
 	public Type[] getColumnTypes() {

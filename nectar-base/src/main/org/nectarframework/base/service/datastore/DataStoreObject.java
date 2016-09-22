@@ -7,8 +7,10 @@ import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor.Type;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.sql.ResultRow;
+import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
+import org.nectarframework.base.tools.Tuple;
 
 public abstract class DataStoreObject implements CacheableObject {
 	private DataStoreObjectDescriptor dsod = null;
@@ -171,7 +173,7 @@ public abstract class DataStoreObject implements CacheableObject {
 			}
 		}
 	}
-
+	
 	protected final String getKeyColumnName() {
 		return dsod.getColumnNames()[0];
 	}
@@ -385,5 +387,13 @@ public abstract class DataStoreObject implements CacheableObject {
 
 	public Object getPrimaryKey() {
 		return data[dsod.getColumnIndex(dsod.getPrimaryKey().getColumnName())];
+	}
+	
+	public Element getElement() {
+		Element e = new Element(getClass().getSimpleName().toLowerCase());
+		for (Tuple<String, Type> t : dsod.getColumnNamesAndTypes()) {
+			e.add(t.getLeft(), t.getRight().stringValue(getObject(t.getLeft())));
+		}
+		return e;
 	}
 }
