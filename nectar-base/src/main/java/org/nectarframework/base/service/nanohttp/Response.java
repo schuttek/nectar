@@ -19,6 +19,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.tools.IoTools;
 
 /**
  * HTTP response. Return one of these from serve().
@@ -200,7 +201,7 @@ public class Response implements Closeable {
 			pw.flush();
 			sendBodyWithCorrectTransferAndEncoding(outputStream, pending);
 			outputStream.flush();
-			Utils.safeClose(this.data);
+			IoTools.safeClose(this.data);
 			if (this.proxyResponse != null) {
 				this.proxyResponse.close();
 				this.proxyResponse = null;

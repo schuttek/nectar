@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,10 +26,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.SSLException;
 
+import org.nectarframework.base.service.ServiceRegister;
+import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.tools.IoTools;
+import org.nectarframework.base.tools.StringTools;
 
 public class HTTPSession {
 
@@ -40,7 +46,7 @@ public class HTTPSession {
 
 	public static final int MAX_HEADER_SIZE = 1024;
 
-	private final TempFileManager tempFileManager;
+	private final FileService fileService;
 
 	private final OutputStream outputStream;
 
@@ -70,17 +76,17 @@ public class HTTPSession {
 
 	private NanoHttpService nanoService;
 
-	public HTTPSession(TempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream,
+	public HTTPSession(FileService fileService, InputStream inputStream, OutputStream outputStream,
 			NanoHttpService nanoService) {
-		this.tempFileManager = tempFileManager;
+		this.fileService = fileService;
 		this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
 		this.outputStream = outputStream;
 		this.nanoService = nanoService;
 	}
 
-	public HTTPSession(TempFileManager tempFileManager, InputStream inputStream, OutputStream outputStream,
+	public HTTPSession(FileService fileService, InputStream inputStream, OutputStream outputStream,
 			InetAddress inetAddress, NanoHttpService nanoService) {
-		this.tempFileManager = tempFileManager;
+		this.fileService = fileService;
 		this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
 		this.outputStream = outputStream;
 		this.remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1"
@@ -122,9 +128,9 @@ public class HTTPSession {
 			int qmi = uri.indexOf('?');
 			if (qmi >= 0) {
 				decodeParms(uri.substring(qmi + 1), parms);
-				uri = Utils.decodePercent(uri.substring(0, qmi));
+				uri = StringTools.decodePercent(uri.substring(0, qmi));
 			} else {
-				uri = Utils.decodePercent(uri);
+				uri = StringTools.decodePercent(uri);
 			}
 
 			// If there's another token, its protocol version,
@@ -153,6 +159,15 @@ public class HTTPSession {
 		}
 	}
 
+
+    public static final Pattern CONTENT_DISPOSITION_PATTERN = Pattern.compile("([ |\t]*Content-Disposition[ |\t]*:)(.*)", Pattern.CASE_INSENSITIVE);
+
+    public static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("([ |\t]*content-type[ |\t]*:)(.*)", Pattern.CASE_INSENSITIVE);
+
+    public static final Pattern CONTENT_DISPOSITION_ATTRIBUTE_PATTERN = Pattern.compile("[ |\t]*([a-zA-Z]*)[ |\t]*=[ |\t]*['|\"]([^\"^']*)['|\"]");
+
+
+	
 	/**
 	 * Decodes the Multipart Body data and put it into Key/Value pairs.
 	 */
@@ -190,10 +205,10 @@ public class HTTPSession {
 				mpline = in.readLine();
 				headerLines++;
 				while (mpline != null && mpline.trim().length() > 0) {
-					Matcher matcher = Utils.CONTENT_DISPOSITION_PATTERN.matcher(mpline);
+					Matcher matcher = CONTENT_DISPOSITION_PATTERN.matcher(mpline);
 					if (matcher.matches()) {
 						String attributeString = matcher.group(2);
-						matcher = Utils.CONTENT_DISPOSITION_ATTRIBUTE_PATTERN.matcher(attributeString);
+						matcher = CONTENT_DISPOSITION_ATTRIBUTE_PATTERN.matcher(attributeString);
 						while (matcher.find()) {
 							String key = matcher.group(1);
 							if ("name".equalsIgnoreCase(key)) {
@@ -211,7 +226,7 @@ public class HTTPSession {
 							}
 						}
 					}
-					matcher = Utils.CONTENT_TYPE_PATTERN.matcher(mpline);
+					matcher = CONTENT_TYPE_PATTERN.matcher(mpline);
 					if (matcher.matches()) {
 						partContentType = matcher.group(2).trim();
 					}
@@ -292,10 +307,10 @@ public class HTTPSession {
 			String value = null;
 
 			if (sep >= 0) {
-				key = Utils.decodePercent(e.substring(0, sep)).trim();
-				value = Utils.decodePercent(e.substring(sep + 1));
+				key = StringTools.decodePercent(e.substring(0, sep)).trim();
+				value = StringTools.decodePercent(e.substring(sep + 1));
 			} else {
-				key = Utils.decodePercent(e).trim();
+				key = StringTools.decodePercent(e).trim();
 				value = "";
 			}
 
@@ -328,14 +343,14 @@ public class HTTPSession {
 			} catch (SSLException e) {
 				throw e;
 			} catch (IOException e) {
-				Utils.safeClose(this.inputStream);
-				Utils.safeClose(this.outputStream);
+				IoTools.safeClose(this.inputStream);
+				IoTools.safeClose(this.outputStream);
 				throw new SocketException("NanoHttpd Shutdown");
 			}
 			if (read == -1) {
 				// socket was been closed
-				Utils.safeClose(this.inputStream);
-				Utils.safeClose(this.outputStream);
+				IoTools.safeClose(this.inputStream);
+				IoTools.safeClose(this.outputStream);
 				throw new SocketException("NanoHttpd Shutdown");
 			}
 			while (read > 0) {
@@ -420,20 +435,19 @@ public class HTTPSession {
 			Response resp = NanoHttpService.newFixedLengthResponse(Status.INTERNAL_ERROR,
 					NanoHttpService.MIME_PLAINTEXT, "SSL PROTOCOL FAILURE: " + ssle.getMessage());
 			resp.send(this.outputStream);
-			Utils.safeClose(this.outputStream);
+			IoTools.safeClose(this.outputStream);
 		} catch (IOException ioe) {
 			Response resp = NanoHttpService.newFixedLengthResponse(Status.INTERNAL_ERROR,
 					NanoHttpService.MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
 			resp.send(this.outputStream);
-			Utils.safeClose(this.outputStream);
+			IoTools.safeClose(this.outputStream);
 		} catch (ResponseException re) {
 			Response resp = NanoHttpService.newFixedLengthResponse(re.getStatus(), NanoHttpService.MIME_PLAINTEXT,
 					re.getMessage());
 			resp.send(this.outputStream);
-			Utils.safeClose(this.outputStream);
+			IoTools.safeClose(this.outputStream);
 		} finally {
-			Utils.safeClose(r);
-			this.tempFileManager.clear();
+			IoTools.safeClose(r);
 		}
 	}
 
@@ -541,7 +555,7 @@ public class HTTPSession {
 
 	private RandomAccessFile getTmpBucket() {
 		try {
-			TempFile tempFile = this.tempFileManager.createTempFile(null);
+			File tempFile = fileService.createTempFile(null);
 			return new RandomAccessFile(tempFile.getName(), "rw");
 		} catch (Exception e) {
 			throw new Error(e); // we won't recover, so throw an error
@@ -628,7 +642,7 @@ public class HTTPSession {
 				files.put("content", saveTmpFile(fbuf, 0, fbuf.limit(), null));
 			}
 		} finally {
-			Utils.safeClose(randomAccessFile);
+			IoTools.safeClose(randomAccessFile);
 		}
 	}
 
@@ -641,7 +655,7 @@ public class HTTPSession {
 		if (len > 0) {
 			FileOutputStream fileOutputStream = null;
 			try {
-				TempFile tempFile = this.tempFileManager.createTempFile(filename_hint);
+				File tempFile = fileService.createTempFile(filename_hint);
 				ByteBuffer src = b.duplicate();
 				fileOutputStream = new FileOutputStream(tempFile.getName());
 				FileChannel dest = fileOutputStream.getChannel();
@@ -651,7 +665,7 @@ public class HTTPSession {
 			} catch (Exception e) { // Catch exception if any
 				throw new Error(e); // we won't recover, so throw an error
 			} finally {
-				Utils.safeClose(fileOutputStream);
+				IoTools.safeClose(fileOutputStream);
 			}
 		}
 		return path;

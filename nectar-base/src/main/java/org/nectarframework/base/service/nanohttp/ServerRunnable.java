@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
 
@@ -29,13 +30,16 @@ public class ServerRunnable implements Runnable {
 	private ThreadService threadService;
 	private NanoHttpService nanoService;
 
-    public ServerRunnable(int timeout, ServerSocket serverSocket, String hostname, int port, ThreadService threadService, NanoHttpService nanoService) {
+	private FileService fileService;
+
+    public ServerRunnable(int timeout, ServerSocket serverSocket, String hostname, int port, ThreadService threadService, NanoHttpService nanoService, FileService fileService) {
         this.timeout = timeout;
         this.serverSocket = serverSocket;
         this.hostname = hostname;
         this.port = port;
         this.threadService = threadService;
         this.nanoService = nanoService;
+        this.fileService = fileService;
     }
     
     public boolean isBinded() {
@@ -63,7 +67,7 @@ public class ServerRunnable implements Runnable {
                 }
                 final InputStream inputStream = finalAccept.getInputStream();
                 Log.trace("[NanoHttpService/ServerRunnable] new connection: "+finalAccept.toString());
-                threadService.execute(new ClientHandler(inputStream, finalAccept, nanoService));
+                threadService.execute(new ClientHandler(inputStream, finalAccept, nanoService, fileService));
             } catch (IOException e) {
                 Log.info("Communication with the client broken", e);
             }

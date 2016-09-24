@@ -29,7 +29,6 @@ public class ToolsTest {
 		assertTrue(privBitMapTest(9));
 		assertTrue(privBitMapTest(11));
 		assertTrue(privBitMapTest(13));
-
 	}
 
 	private boolean privBitMapTest(int len) {

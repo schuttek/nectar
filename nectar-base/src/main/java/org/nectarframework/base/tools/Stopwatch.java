@@ -4,6 +4,14 @@ import java.util.LinkedList;
 
 public class Stopwatch {
 
+	public static long currentTimeMillis() {
+		return System.currentTimeMillis();
+	}
+	
+	public static long now() {
+		return System.currentTimeMillis();
+	}
+	
 	private class Mark {
 		public String tag;
 		public long time;

@@ -1,15 +1,72 @@
 package org.nectarframework.base.tools;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.nanohttp.NanoHttpService;
+
 public abstract class StringTools {
+
+	/**
+	 * Decode parameters from a URL, handing the case where a single parameter
+	 * name might have been supplied several times, by return lists of values.
+	 * In general these lists will contain a single element.
+	 * 
+	 * @param queryString
+	 *            a query string pulled from the URL.
+	 * @return a MIME_TYPES of <code>String</code> (parameter name) to
+	 *         <code>List&lt;String&gt;</code> (a list of the values supplied).
+	 */
+	public static HashMap<String, List<String>> decodeParameters(String queryString) {
+		HashMap<String, List<String>> parms = new HashMap<String, List<String>>();
+		if (queryString != null) {
+			StringTokenizer st = new StringTokenizer(queryString, "&");
+			while (st.hasMoreTokens()) {
+				String e = st.nextToken();
+				int sep = e.indexOf('=');
+				String propertyName = sep >= 0 ? decodePercent(e.substring(0, sep)).trim() : decodePercent(e).trim();
+				if (!parms.containsKey(propertyName)) {
+					parms.put(propertyName, new ArrayList<String>());
+				}
+				String propertyValue = sep >= 0 ? decodePercent(e.substring(sep + 1)) : null;
+				if (propertyValue != null) {
+					parms.get(propertyName).add(propertyValue);
+				}
+			}
+		}
+		return parms;
+	}
+
+	/**
+	 * Decode percent encoded <code>String</code> values.
+	 * 
+	 * @param str
+	 *            the percent encoded <code>String</code>
+	 * @return expanded form of the input, for example "foo%20bar" becomes "foo
+	 *         bar"
+	 */
+	public static String decodePercent(String str) {
+		String decoded = null;
+		try {
+			decoded = URLDecoder.decode(str, "UTF8");
+		} catch (UnsupportedEncodingException ignored) {
+			Log.warn("Encoding not supported, ignored", ignored);
+		}
+		return decoded;
+	}
+
 	/**
 	 * Parse the integer value in a String, make sure it's between the min and
 	 * max values. If anything fails, return the def.
@@ -33,7 +90,8 @@ public abstract class StringTools {
 
 	@SuppressWarnings("rawtypes")
 	public static String mapToString(Map map) {
-		if (map == null) return "null";
+		if (map == null)
+			return "null";
 		String s = "map(";
 		boolean trip = false;
 		for (Object o : map.keySet()) {
@@ -44,8 +102,8 @@ public abstract class StringTools {
 			if (map.get(o) instanceof Map) {
 				s += mapToString((Map) map.get(o));
 			} else if (map.get(o) instanceof List) {
-				for (Object o1 : (List)(map.get(o))) {
-					s += " "+o1.toString();
+				for (Object o1 : (List) (map.get(o))) {
+					s += " " + o1.toString();
 				}
 			} else {
 				s += map.get(o).toString() + ")";
@@ -131,7 +189,8 @@ public abstract class StringTools {
 				break;
 			default:
 				// Reference: http://www.unicode.org/versions/Unicode5.1.0/
-				if ((ch >= '\u0000' && ch <= '\u001F') || (ch >= '\u007F' && ch <= '\u009F') || (ch >= '\u2000' && ch <= '\u20FF')) {
+				if ((ch >= '\u0000' && ch <= '\u001F') || (ch >= '\u007F' && ch <= '\u009F')
+						|| (ch >= '\u2000' && ch <= '\u20FF')) {
 					String ss = Integer.toHexString(ch);
 					sb.append("\\u");
 					for (int k = 0; k < 4 - ss.length(); k++) {
@@ -177,7 +236,8 @@ public abstract class StringTools {
 				break;
 			default:
 				// Reference: http://www.unicode.org/versions/Unicode5.1.0/
-				if ((ch >= '\u0000' && ch <= '\u001F') || (ch >= '\u007F' && ch <= '\u009F') || (ch >= '\u2000' && ch <= '\u20FF')) {
+				if ((ch >= '\u0000' && ch <= '\u001F') || (ch >= '\u007F' && ch <= '\u009F')
+						|| (ch >= '\u2000' && ch <= '\u20FF')) {
 					String ss = Integer.toHexString(ch);
 					sb.append("\\u");
 					for (int k = 0; k < 4 - ss.length(); k++) {
@@ -315,11 +375,11 @@ public abstract class StringTools {
 		return ret;
 	}
 
-	
 	/**
 	 * @author maybeWeCouldStealAVan on stackoverflow.com
 	 */
 	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
 	public static String toHexString(byte[] bytes) {
 		char[] hexChars = new char[bytes.length * 2];
 		for (int j = 0; j < bytes.length; j++) {
@@ -329,9 +389,9 @@ public abstract class StringTools {
 		}
 		return new String(hexChars);
 	}
-	
+
 	public static String msTimeToDatetime(long timestamp) {
 		return (new SimpleDateFormat("d MMM yyyy HH:mm")).format(new Date(timestamp));
 	}
-	
+
 }

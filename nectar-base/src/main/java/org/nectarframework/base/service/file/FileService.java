@@ -4,12 +4,11 @@ import java.io.ByteArrayInputStream;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
@@ -32,6 +31,8 @@ public class FileService extends Service {
 	private boolean recheckLastModified = true;
 
 	private CacheService cacheService;
+	private File tempDirectory;
+	private ArrayList<File> tempFilesList;
 
 	private static final int maxReadBufferSize = 10485760; // 10MB
 	private static final int maxTotalFileCacheSize = Integer.MAX_VALUE; // 2GB
@@ -45,7 +46,9 @@ public class FileService extends Service {
 
 	@Override
 	protected boolean init() {
-		return true;
+		boolean b = true;
+		b &= initTempFiles();
+		return b;
 	}
 
 	@Override
@@ -55,8 +58,11 @@ public class FileService extends Service {
 
 	@Override
 	protected boolean shutdown() {
-		return true;
+		boolean b = true;
+		b &= shutdownTempFiles();
+		return b;
 	}
+
 
 	@Override
 	public void checkParameters() throws ConfigurationException {
@@ -241,4 +247,34 @@ public class FileService extends Service {
 		cacheService.remove(this, cacheKey(path));
 	}
 
+
+
+	private boolean initTempFiles() {
+		this.tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+		if (!tempDirectory.exists()) {
+			tempDirectory.mkdirs();
+		}
+		this.tempFilesList = new ArrayList<File>();
+		return true;
+	}
+
+	private boolean shutdownTempFiles() {
+		for (File file : this.tempFilesList) {
+			try {
+				file.delete();
+			} catch (Exception e) {
+				Log.warn("could not delete file ", e);
+			}
+		}
+		this.tempFilesList.clear();
+		return false;
+	}
+
+
+	public File createTempFile(String filename_hint) throws Exception {
+		File f = File.createTempFile("Nectar-", "", this.tempDirectory);
+		this.tempFilesList.add(f);
+		return f;
+	}
+	
 }

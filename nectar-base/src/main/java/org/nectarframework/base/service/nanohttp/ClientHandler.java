@@ -6,8 +6,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
+import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
+import org.nectarframework.base.tools.IoTools;
 
 /**
  * The runnable that will be used for every new client connection.
@@ -20,15 +22,18 @@ public class ClientHandler extends ThreadServiceTask {
 	
 	private NanoHttpService nanoService;
 
-	public ClientHandler(InputStream inputStream, Socket acceptSocket, NanoHttpService nanoService) {
+	private FileService fileService;
+
+	public ClientHandler(InputStream inputStream, Socket acceptSocket, NanoHttpService nanoService, FileService fileService) {
 		this.inputStream = inputStream;
 		this.acceptSocket = acceptSocket;
 		this.nanoService = nanoService;
+		this.fileService = fileService;
 	}
 
 	public void close() {
-		Utils.safeClose(this.inputStream);
-		Utils.safeClose(this.acceptSocket);
+		IoTools.safeClose(this.inputStream);
+		IoTools.safeClose(this.acceptSocket);
 	}
 
 	@Override
@@ -36,8 +41,7 @@ public class ClientHandler extends ThreadServiceTask {
 		OutputStream outputStream = null;
 		try {
 			outputStream = this.acceptSocket.getOutputStream();
-			TempFileManager tempFileManager = new TempFileManager();
-			HTTPSession session = new HTTPSession(tempFileManager, this.inputStream, outputStream,
+			HTTPSession session = new HTTPSession(fileService, this.inputStream, outputStream,
 					this.acceptSocket.getInetAddress(), nanoService);
 			while (!this.acceptSocket.isClosed()) {
 				session.execute();
@@ -55,9 +59,9 @@ public class ClientHandler extends ThreadServiceTask {
 				Log.fatal("Communication with the client broken, or an bug in the handler code", e);
 			}
 		} finally {
-			Utils.safeClose(outputStream);
-			Utils.safeClose(this.inputStream);
-			Utils.safeClose(this.acceptSocket);
+			IoTools.safeClose(outputStream);
+			IoTools.safeClose(this.inputStream);
+			IoTools.safeClose(this.acceptSocket);
 		}
 	}
 }

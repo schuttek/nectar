@@ -90,6 +90,7 @@ import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.FastByteArrayOutputStream;
+import org.nectarframework.base.tools.IoTools;
 import org.nectarframework.base.tools.StringTools;
 
 /**
@@ -253,7 +254,7 @@ public class NanoHttpService extends Service {
 			this.simpleServerSocket.setReuseAddress(true);
 
 			ServerRunnable serverRunnable = new ServerRunnable(socketReadTimeout, simpleServerSocket,
-					this.listeningHost, this.listeningPort, threadService, this);
+					this.listeningHost, this.listeningPort, threadService, this, fileService);
 			this.myThread = new Thread(serverRunnable);
 			this.myThread.setDaemon(true);
 			this.myThread.setName("NanoHttpService Main Listener");
@@ -282,8 +283,8 @@ public class NanoHttpService extends Service {
 	@Override
 	protected boolean shutdown() {
 		try {
-			Utils.safeClose(this.simpleServerSocket);
-			Utils.safeClose(this.sslServerSocket);
+			IoTools.safeClose(this.simpleServerSocket);
+			IoTools.safeClose(this.sslServerSocket);
 			if (this.myThread != null) {
 				this.myThread.join();
 			}
@@ -347,7 +348,7 @@ public class NanoHttpService extends Service {
 	 * @return the client handler
 	 */
 	protected ClientHandler createClientHandler(final Socket finalAccept, final InputStream inputStream) {
-		return new ClientHandler(inputStream, finalAccept, this);
+		return new ClientHandler(inputStream, finalAccept, this, fileService);
 	}
 
 	public ServerSocketFactory getServersSocketFactory() {
@@ -650,7 +651,7 @@ public class NanoHttpService extends Service {
 			FileInfo fileInfo = fileService.getFileInfo("/" + getStaticLocalDirectory() + uri);
 			is = fileService.getFileAsInputStream("/" + getStaticLocalDirectory() + uri, this.staticFileCacheExpiry);
 
-			String contentType = Utils.getMimeTypeForFile(uri);
+			String contentType = IoTools.getMimeTypeForFile(uri);
 			if (contentType == null) {
 				contentType = "application/octet-stream";
 			}
