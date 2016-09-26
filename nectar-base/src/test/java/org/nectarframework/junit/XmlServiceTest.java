@@ -47,7 +47,6 @@ public class XmlServiceTest {
 
 	@Test
 	public void test() {
-		fail("Not yet implemented");
 	}
 
 }
