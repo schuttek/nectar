@@ -166,8 +166,6 @@ public class NanoHttpService extends Service {
 
 	private PathFinderService pathFinderService;
 
-	private ServerSocketFactory serverSocketFactory = new DefaultServerSocketFactory();
-
 	private Thread myThread;
 
 	private String keyStoreFilePath;
@@ -349,25 +347,6 @@ public class NanoHttpService extends Service {
 	 */
 	protected ClientHandler createClientHandler(final Socket finalAccept, final InputStream inputStream) {
 		return new ClientHandler(inputStream, finalAccept, this, fileService);
-	}
-
-	public ServerSocketFactory getServersSocketFactory() {
-		return serverSocketFactory;
-	}
-
-	public void setServerSocketFactory(ServerSocketFactory serverSocketFactory) {
-		this.serverSocketFactory = serverSocketFactory;
-	}
-
-	public String getHostname() {
-		return this.listeningHost;
-	}
-
-	/**
-	 * Call before start() to serve over HTTPS instead of HTTP
-	 */
-	public void makeSecure(SSLServerSocketFactory sslServerSocketFactory, String[] sslProtocols) {
-		this.serverSocketFactory = new SecureServerSocketFactory(sslServerSocketFactory, sslProtocols);
 	}
 
 	/**

@@ -10,10 +10,11 @@ import java.util.Stack;
 
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.tools.Stopwatch;
 
 public class ThreadService extends Service {
 
-	private MasterThread waitingThread = null;
+	private MasterThread masterThread = null;
 
 	private boolean keepThreadsRunning = false;
 
@@ -21,9 +22,9 @@ public class ThreadService extends Service {
 	private Stack<ThreadServiceWorker> idleWorkers = new Stack<ThreadServiceWorker>();
 	private HashSet<ThreadServiceWorker> busyWorkers = new HashSet<ThreadServiceWorker>();
 	private PriorityQueue<ThreadServiceTask> taskQueue = new PriorityQueue<ThreadServiceTask>();
-	
+
 	private int maxQueueLength = 1000;
-	
+
 	private int minWorkerThreads = 2;
 	private int maxWorkerThreads = 50;
 
@@ -38,13 +39,13 @@ public class ThreadService extends Service {
 	@Override
 	protected boolean init() {
 		keepThreadsRunning = true;
-		waitingThread = new MasterThread(this);
+		masterThread = new MasterThread(this);
 
 		for (int i = 0; i < minWorkerThreads; i++) {
 			ThreadServiceWorker tsw = new ThreadServiceWorker(this);
 			threads.add(tsw);
 		}
-		waitingThread.start();
+		masterThread.start();
 		for (ThreadServiceWorker tsw : threads) {
 			tsw.start();
 			idleWorkers.add(tsw);
@@ -96,14 +97,13 @@ public class ThreadService extends Service {
 				busyWorkers.add(tsw);
 			} else {
 				while (taskQueue.size() >= this.maxQueueLength) {
-					// taskQueue is full. 
+					// taskQueue is full.
 					// let's just wait a while
-					// Log.trace("ThreadService task queue is full. waiting a bit.");
-					try {
-						this.wait(100);
-					} catch (InterruptedException e) {
-						Log.trace(e);
-					}
+					// Log.trace("ThreadService task queue is full. waiting a
+					// bit.");
+					
+					// TODO: Benchmark difference between Thread.wait(1); and Thread.yield();
+						Thread.yield();
 				}
 				taskQueue.add(task);
 			}
@@ -120,9 +120,9 @@ public class ThreadService extends Service {
 	@Override
 	protected synchronized boolean shutdown() {
 		keepThreadsRunning = false;
-		this.waitingThread.wakeUp();
+		this.masterThread.notify();
 		try {
-			this.waitingThread.join(1000);
+			this.masterThread.join(1000);
 		} catch (InterruptedException e1) {
 			Log.warn(e1);
 		}
@@ -164,7 +164,8 @@ public class ThreadService extends Service {
 	}
 
 	/**
-	 * Execute the given task after delay milliseconds at the earliest. The task will NOT be executed before delay milliseconds.
+	 * Execute the given task after delay milliseconds at the earliest. The task
+	 * will NOT be executed before delay milliseconds.
 	 * 
 	 * @param task
 	 * @param delay
@@ -174,15 +175,30 @@ public class ThreadService extends Service {
 		this.executeAtTime(task, System.currentTimeMillis() + delay);
 	}
 
-	
 	/**
-	 * Execute the given task at the given time (milliseconds since Epoch). Any positive number will queue the task behind any tasks added by execute().
+	 * Execute the given task at the given time (milliseconds since Epoch). Any
+	 * positive number will queue the task behind any tasks added by execute().
+	 * 
 	 * @param task
 	 * @param time
 	 */
-	
+
 	public void executeAtTime(ThreadServiceTask task, long time) {
 		task.setExecuteTime(time);
-		this.waitingThread.addTask(task);
+		this.masterThread.addTask(task);
+	}
+
+	/**
+	 * Executes the given task immediately, then at least every delay
+	 * milliseconds afterwards. It will not execute task again unless the
+	 * previous call to task has finished.
+	 * 
+	 * @param task
+	 * @param delay
+	 */
+	public synchronized void executeRepeat(ThreadServiceTask task, long delay) {
+		long now = Stopwatch.now();
+		execute(task);
+		
 	}
 }

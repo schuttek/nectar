@@ -39,13 +39,13 @@
 
 		<service
 			class="org.nectarframework.base.service.template.TemplateBuilderService">
-			<param name="outputDir" value="src/org/nectarframework/www/templates" />
+			<param name="outputDir" value="src/main/java/org/nectarframework/www/templates" />
 			<param name="pathConfig" value="config/pathConfig.xml" />
 		</service>
 		<service
 			class="org.nectarframework.base.service.datastore.DataStoreObjectBuilderService">
 			<param name="inputFile" value="config/dataStoreObjects.xml" />
-			<param name="outputDir" value="src/" />
+			<param name="outputDir" value="src/main/java/" />
 		</service>
 
 	</node>

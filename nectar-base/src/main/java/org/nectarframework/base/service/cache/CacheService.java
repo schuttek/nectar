@@ -58,6 +58,9 @@ public class CacheService extends Service {
 	@Override
 	protected boolean init() {
 		generalCache = new ConcurrentHashMap<>();
+		realmCache = new ConcurrentHashMap<>();
+		memoryUsage = 0;
+		flushTimer = 0;
 		return true;
 	}
 

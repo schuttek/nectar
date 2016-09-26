@@ -262,6 +262,7 @@ public class CompiledTemplateService extends TemplateService {
 		CompiledTemplate compiledTemplate = new CompiledTemplate();
 		
 		// TODO: make doctype configurable
+		
 		compiledTemplate.addText("<!DOCTYPE html>");
 
 		String filePath = rawTemplatesRootDir + "/" + templateName + ".html";
@@ -272,9 +273,13 @@ public class CompiledTemplateService extends TemplateService {
 
 		// 2. process the tags
 		processTags(jdomDoc.getRootElement(), loc, filePath);
+		
 
 		// 3. push to compiledTemplate
-		processCompiledTemplate(jdomDoc.getRootElement(), compiledTemplate);
+		// TODO: make configurable and locale sensitive
+		compiledTemplate.addText("<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\">");
+		jdomDoc.getRootElement().getChildren().forEach(e -> processCompiledTemplate(e, compiledTemplate));
+		compiledTemplate.addText("</html>");
 
 		return compiledTemplate;
 	}

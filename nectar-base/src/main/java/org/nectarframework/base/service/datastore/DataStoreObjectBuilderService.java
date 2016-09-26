@@ -38,7 +38,7 @@ public class DataStoreObjectBuilderService extends Service {
 	@Override
 	public void checkParameters() throws ConfigurationException {
 		inputFile = serviceParameters.getString("inputFile", "config/dataStoreObjects.xml");
-		outputDir = serviceParameters.getString("outputDir", "src/");
+		outputDir = serviceParameters.getString("outputDir", "src/main/java");
 	}
 
 	@Override

@@ -11,7 +11,7 @@ import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 
-public class ServiceRegister {
+public final class ServiceRegister {
 	private Configuration config = null;
 	private Element configElement = null;
 	/** only one instance of this class allowed!! */
