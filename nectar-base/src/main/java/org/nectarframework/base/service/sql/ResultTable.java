@@ -13,7 +13,7 @@ import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 
-public class ResultTable implements CacheableObject, Iterable<ResultRow> {
+public class ResultTable implements CacheableObject<ResultTable>, Iterable<ResultRow> {
 	private JavaTypes[] typesByColumn;
 	private HashMap<String, Integer> keyMap;
 	private Object[] table;
@@ -373,7 +373,7 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 	}
 
 	@Override
-	public void fromBytes(ByteArray ba) {
+	public ResultTable fromBytes(ByteArray ba) {
 		colCount = ba.getInt();
 		typesByColumn = new JavaTypes[colCount];
 		for (int t = 0; t < colCount; t++) {
@@ -389,10 +389,11 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 		}
 		this.table = new Object[ba.getInt()];
 
-		byte[] nullBitMap = ba.getByteArray();
+		
+		BitMap nullBitMap = new BitMap().fromBytes(ba);
 
 		for (int t = 0; t < table.length; t++) {
-			if (BitMap.is(nullBitMap, t)) {
+			if (nullBitMap.is(t)) {
 				switch (typesByColumn[t % colCount]) {
 				case BigDecimal:
 					table[t] = new BigDecimal(ba.getString());
@@ -430,6 +431,7 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 				}
 			}
 		}
+		return this;
 	}
 
 	@Override
@@ -448,13 +450,13 @@ public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 		ba.add(table.length);
 
 		// null bitmap
-		byte[] nullBitMap = BitMap.init(table.length);
+		BitMap nullBitMap = new BitMap(table.length);
 		for (int t = 0; t < table.length; t++) {
-			if (table[t] != null) {
-				BitMap.set(nullBitMap, t);
+			if (table[t] == null) {
+				nullBitMap.set(t);
 			}
 		}
-		ba.addByteArray(nullBitMap);
+		nullBitMap.toBytes(ba);
 
 		for (int t = 0; t < table.length; t++) {
 			if (table[t] != null) {

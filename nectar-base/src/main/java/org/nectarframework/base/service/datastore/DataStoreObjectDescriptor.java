@@ -2,454 +2,70 @@ package org.nectarframework.base.service.datastore;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.nectarframework.base.service.sql.SqlPreparedStatement;
-import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor.Type;
+import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
 import org.nectarframework.base.service.sql.ResultRow;
 import org.nectarframework.base.tools.Base64;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 import org.nectarframework.base.tools.Tuple;
 
-public class DataStoreObjectDescriptor {
+public final class DataStoreObjectDescriptor {
 	private String table;
-	private DataStoreKey primaryKey;
-	private String[] colNames;
-	private Type[] colTypes;
-	private boolean[] nullAllowed;
-	private HashMap<String, Integer> colMap;
+	private DataStoreObjectDescriptorKey primaryKey;
+
+	private LinkedList<DataStoreObjectDescriptorColumn> colDescriptors;
+	private HashMap<String, DataStoreObjectDescriptorColumn> columnNameLookupMap;
 	private Class<? extends DataStoreObject> dsoClass;
 
-	public enum Type {
-		BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, BLOB, BYTE_ARRAY, SHORT_ARRAY, INT_ARRAY, LONG_ARRAY, FLOAT_ARRAY, DOUBLE_ARRAY, STRING_ARRAY;
-
-		public Object fromBytes(ByteArray bq) {
-			int len, i;
-			switch (this) {
-			case BOOLEAN:
-				return new Boolean(bq.getByte() != 0);
-			case BYTE:
-				return new Byte(bq.getByte());
-			case SHORT:
-				return new Short(bq.getShort());
-			case INT:
-				return new Integer(bq.getInt());
-			case LONG:
-				return new Long(bq.getLong());
-			case FLOAT:
-				return new Float(bq.getFloat());
-			case DOUBLE:
-				return new Double(bq.getDouble());
-			case STRING:
-				return bq.getString();
-			case BLOB:
-				len = bq.getInt();
-				return bq.remove(len);
-			case BYTE_ARRAY:
-				len = bq.getInt();
-				return bq.remove(len);
-			case SHORT_ARRAY:
-				len = bq.getInt();
-				short[] shortArray = new short[len];
-				for (i = 0; i < len; i++) {
-					shortArray[i] = bq.getShort();
-				}
-				return shortArray;
-			case INT_ARRAY:
-				len = bq.getInt();
-				int[] intArray = new int[len];
-				for (i = 0; i < len; i++) {
-					intArray[i] = bq.getInt();
-				}
-				return intArray;
-			case LONG_ARRAY:
-				len = bq.getInt();
-				long[] longArray = new long[len];
-				for (i = 0; i < len; i++) {
-					longArray[i] = bq.getLong();
-				}
-				return longArray;
-			case FLOAT_ARRAY:
-				len = bq.getInt();
-				float[] floatArray = new float[len];
-				for (i = 0; i < len; i++) {
-					floatArray[i] = bq.getFloat();
-				}
-				return floatArray;
-			case DOUBLE_ARRAY:
-				len = bq.getInt();
-				double[] doubleArray = new double[len];
-				for (i = 0; i < len; i++) {
-					doubleArray[i] = bq.getDouble();
-				}
-				return doubleArray;
-			case STRING_ARRAY:
-				len = bq.getInt();
-				String[] stringArray = new String[len];
-				for (i = 0; i < len; i++) {
-					stringArray[i] = bq.getString();
-				}
-				return stringArray;
-			}
-			throw new IllegalArgumentException("invalid type:" + this.toString());
-		}
-
-		public void toBytes(Object value, ByteArray bq) {
-			int len, i;
-			switch (this) {
-			case BOOLEAN:
-				bq.add((Boolean) value);
-				return;
-			case BYTE:
-				bq.add((Byte) value);
-				return;
-			case SHORT:
-				bq.add((Short) value);
-				return;
-			case INT:
-				bq.add((Integer) value);
-				return;
-			case LONG:
-				bq.add((Long) value);
-				return;
-			case FLOAT:
-				bq.add((Float) value);
-				return;
-			case DOUBLE:
-				bq.add((Double) value);
-				return;
-			case STRING:
-				bq.add((String) value);
-				return;
-			case BLOB:
-				bq.addByteArray((byte[]) value);
-				return;
-			case BYTE_ARRAY:
-				bq.addByteArray((byte[]) value);
-				return;
-			case SHORT_ARRAY:
-				len = ((short[]) value).length;
-				bq.add(len);
-				for (i = 0; i < len; i++) {
-					bq.add(((short[]) value)[i]);
-				}
-				return;
-			case INT_ARRAY:
-				len = ((int[]) value).length;
-				bq.add(len);
-				for (i = 0; i < len; i++) {
-					bq.add(((int[]) value)[i]);
-				}
-				return;
-			case LONG_ARRAY:
-				len = ((long[]) value).length;
-				bq.add(len);
-				for (i = 0; i < len; i++) {
-					bq.add(((long[]) value)[i]);
-				}
-				return;
-			case FLOAT_ARRAY:
-				len = ((float[]) value).length;
-				bq.add(len);
-				for (i = 0; i < len; i++) {
-					bq.add(((float[]) value)[i]);
-				}
-				return;
-			case DOUBLE_ARRAY:
-				len = ((double[]) value).length;
-				bq.add(len);
-				for (i = 0; i < len; i++) {
-					bq.add(((double[]) value)[i]);
-				}
-				return;
-			case STRING_ARRAY:
-				len = ((String[]) value).length;
-				bq.add(len);
-				for (i = 0; i < len; i++) {
-					bq.add(((String[]) value)[i]);
-				}
-				return;
-			}
-			throw new IllegalArgumentException("invalid type:" + this.toString());
-		}
-
-		public Object fromResultRow(ResultRow rr, String colName) throws SQLException {
-			int len, i;
-			ByteArray ba = null;
-			if (rr.isNull(colName)) {
-				return null;
-			}
-			switch (this) {
-			case BOOLEAN:
-				return rr.getBoolean(colName);
-			case BYTE:
-				return rr.getByte(colName);
-			case SHORT:
-				return rr.getShort(colName);
-			case INT:
-				return rr.getInt(colName);
-			case LONG:
-				return rr.getLong(colName);
-			case FLOAT:
-				return rr.getFloat(colName);
-			case DOUBLE:
-				return rr.getDouble(colName);
-			case STRING:
-				return rr.getString(colName);
-			case BLOB:
-				return rr.getBlob(colName);
-			case BYTE_ARRAY:
-				return rr.getBlob(colName);
-			case SHORT_ARRAY:
-				ba = new ByteArray(rr.getBlob(colName));
-				len = ba.getInt();
-				short[] shortArray = new short[len];
-				for (i = 0; i < len; i++) {
-					shortArray[i] = ba.getShort();
-				}
-				return shortArray;
-			case INT_ARRAY:
-				ba = new ByteArray(rr.getBlob(colName));
-				len = ba.getInt();
-				int[] intArray = new int[len];
-				for (i = 0; i < len; i++) {
-					intArray[i] = ba.getInt();
-				}
-				return intArray;
-			case LONG_ARRAY:
-				ba = new ByteArray(rr.getBlob(colName));
-				len = ba.getInt();
-				long[] longArray = new long[len];
-				for (i = 0; i < len; i++) {
-					longArray[i] = ba.getLong();
-				}
-				return longArray;
-
-			case FLOAT_ARRAY:
-				ba = new ByteArray(rr.getBlob(colName));
-				len = ba.getInt();
-				float[] floatArray = new float[len];
-				for (i = 0; i < len; i++) {
-					floatArray[i] = ba.getFloat();
-				}
-				return floatArray;
-			case DOUBLE_ARRAY:
-				ba = new ByteArray(rr.getBlob(colName));
-				len = ba.getInt();
-				double[] doubleArray = new double[len];
-				for (i = 0; i < len; i++) {
-					doubleArray[i] = ba.getDouble();
-				}
-				return doubleArray;
-			case STRING_ARRAY:
-				ba = new ByteArray(rr.getBlob(colName));
-				len = ba.getInt();
-				String[] stringArray = new String[len];
-				for (i = 0; i < len; i++) {
-					stringArray[i] = ba.getString();
-				}
-				return stringArray;
-			}
-			throw new IllegalArgumentException("invalid type:" + this.toString());
-		}
-
-		public String toCacheKeyString(Object value) {
-			switch (this) {
-			case BOOLEAN:
-				return ((Boolean) value).toString();
-			case BYTE:
-				return ((Byte) value).toString();
-			case SHORT:
-				return ((Short) value).toString();
-			case INT:
-				return ((Integer) value).toString();
-			case LONG:
-				return ((Long) value).toString();
-			case FLOAT:
-				return ((Float) value).toString();
-			case DOUBLE:
-				return ((Double) value).toString();
-			case STRING:
-				return (String) value;
-			case BYTE_ARRAY:
-			case BLOB:
-				return StringTools.toHexString((byte[]) value);
-			case SHORT_ARRAY:
-			case INT_ARRAY:
-			case LONG_ARRAY:
-			case FLOAT_ARRAY:
-			case DOUBLE_ARRAY:
-			case STRING_ARRAY:
-				throw new IllegalArgumentException(this.toString() + " type cannot be a key");
-			}
-			throw new IllegalArgumentException("invalid type:" + this.toString());
-		}
-
-		public void toMps(SqlPreparedStatement mps, int mpsIndex, Object value) {
-			int i;
-			ByteArray ba;
-			switch (this) {
-			case BOOLEAN:
-				mps.setBoolean(mpsIndex, (Boolean) value);
-				return;
-			case BYTE:
-				mps.setByte(mpsIndex, (Byte) value);
-				return;
-			case SHORT:
-				mps.setShort(mpsIndex, (Short) value);
-				return;
-			case INT:
-				mps.setInt(mpsIndex, (Integer) value);
-				return;
-			case LONG:
-				mps.setLong(mpsIndex, (Long) value);
-				return;
-			case FLOAT:
-				mps.setFloat(mpsIndex, (Float) value);
-				return;
-			case DOUBLE:
-				mps.setDouble(mpsIndex, (Double) value);
-				return;
-			case STRING:
-				mps.setString(mpsIndex, value.toString());
-				return;
-			case BLOB:
-			case BYTE_ARRAY:
-				mps.setBytes(mpsIndex, (byte[]) value);
-				return;
-			case SHORT_ARRAY:
-				ba = new ByteArray();
-				ba.add(((short[]) value).length);
-				for (i = 0; i < ((short[]) value).length; i++) {
-					ba.add(((short[]) value)[i]);
-				}
-				mps.setBytes(mpsIndex, ba.getByteArray());
-			case INT_ARRAY:
-				ba = new ByteArray();
-				ba.add(((int[]) value).length);
-				for (i = 0; i < ((int[]) value).length; i++) {
-					ba.add(((int[]) value)[i]);
-				}
-				mps.setBytes(mpsIndex, ba.getByteArray());
-			case LONG_ARRAY:
-				ba = new ByteArray();
-				ba.add(((long[]) value).length);
-				for (i = 0; i < ((long[]) value).length; i++) {
-					ba.add(((long[]) value)[i]);
-				}
-				mps.setBytes(mpsIndex, ba.getByteArray());
-			case FLOAT_ARRAY:
-				ba = new ByteArray();
-				ba.add(((float[]) value).length);
-				for (i = 0; i < ((float[]) value).length; i++) {
-					ba.add(((float[]) value)[i]);
-				}
-				mps.setBytes(mpsIndex, ba.getByteArray());
-			case DOUBLE_ARRAY:
-				ba = new ByteArray();
-				ba.add(((double[]) value).length);
-				for (i = 0; i < ((double[]) value).length; i++) {
-					ba.add(((double[]) value)[i]);
-				}
-				mps.setBytes(mpsIndex, ba.getByteArray());
-			case STRING_ARRAY:
-				ba = new ByteArray();
-				ba.add(((String[]) value).length);
-				for (i = 0; i < ((String[]) value).length; i++) {
-					ba.add(((String[]) value)[i]);
-				}
-				mps.setBytes(mpsIndex, ba.getByteArray());
-
-			}
-			throw new IllegalArgumentException("invalid type:" + this.toString());
-
-		}
-
-		public String stringValue(Object value) {
-			switch (this) {
-			case BOOLEAN:
-				return ((Boolean) value).toString();
-			case BYTE:
-				return ((Byte) value).toString();
-			case SHORT:
-				return ((Short) value).toString();
-			case INT:
-				return ((Integer) value).toString();
-			case LONG:
-				return ((Long) value).toString();
-			case FLOAT:
-				return ((Float) value).toString();
-			case DOUBLE:
-				return ((Double) value).toString();
-			case STRING:
-				return (String) value;
-			case BYTE_ARRAY:
-			case BLOB:
-				return Base64.encode((byte[]) value);
-			case SHORT_ARRAY:
-			case INT_ARRAY:
-			case LONG_ARRAY:
-			case FLOAT_ARRAY:
-			case DOUBLE_ARRAY:
-			case STRING_ARRAY:
-				throw new IllegalArgumentException(this.toString() + " type cannot be a key");
-			}
-			throw new IllegalArgumentException("invalid type:" + this.toString());
-		}
-
-	}
-
-	public DataStoreObjectDescriptor(String table, DataStoreKey primaryKey, String[] colNames, Type[] colTypes,
-			boolean[] nullAllowed, Class<? extends DataStoreObject> dsoClass) {
+	public DataStoreObjectDescriptor(String table, DataStoreObjectDescriptorKey primaryKey,
+			DataStoreObjectDescriptorColumn[] colDescriptorsArray, Class<? extends DataStoreObject> dsoClass) {
 		this.table = table;
 		this.primaryKey = primaryKey;
-		this.colNames = colNames;
-		this.colTypes = colTypes;
-		this.nullAllowed = nullAllowed;
-
-		if (colNames.length != colTypes.length) {
-			throw new IllegalArgumentException(" colNames.length != colTypes.length ");
-		}
-		if (nullAllowed.length != colTypes.length) {
-			throw new IllegalArgumentException(" nullAllowed.length != colTypes.length ");
-		}
-
-		this.colMap = new HashMap<String, Integer>();
-		for (int i = 0; i < colNames.length; i++) {
-			colMap.put(colNames[i], i);
-		}
-
 		this.dsoClass = dsoClass;
+
+		colDescriptors = new LinkedList<>();
+		colDescriptors.addAll(colDescriptors);
+
+		columnNameLookupMap = new HashMap<>();
+		colDescriptors.forEach(c -> columnNameLookupMap.put(c.getName(), c));
 	}
 
 	public int getColumnCount() {
-		return colNames.length;
+		return colDescriptors.size();
 	}
 
-	public String[] getColumnNames() {
-		return colNames;
+	public List<String> getColumnNames() {
+		LinkedList<String> l = new LinkedList<>();
+		colDescriptors.forEach(c -> l.add(c.getName()));
+		return l;
 	}
 
-	protected final Tuple<String, Type>[] getColumnNamesAndTypes() {
-		@SuppressWarnings("unchecked")
-		Tuple<String, Type>[] tup = new Tuple[colNames.length];
-
-		for (int t = 0; t < colNames.length; t++) {
-			tup[t] = new Tuple<String, Type>(colNames[t], colTypes[t]);
-		}
-		return tup;
+	protected List<Tuple<String, Type>> getColumnNamesAndTypes() {
+		LinkedList<Tuple<String, Type>> l = new LinkedList<>();
+		colDescriptors.forEach(c -> l.add(new Tuple<String, Type>(c.getName(), c.getType())));
+		return l;
 	}
 
-	public Type[] getColumnTypes() {
-		return colTypes;
+	public List<Type> getColumnTypes() {
+		LinkedList<Type> l = new LinkedList<>();
+		colDescriptors.forEach(c -> l.add(c.getType()));
+		return l;
+	}
+	
+	public List<DataStoreObjectDescriptorColumn> getColumnDescriptors() {
+		return colDescriptors;
 	}
 
 	public int getColumnIndex(String colName) {
-		Integer i = colMap.get(colName);
-		if (i != null) {
-			return i;
+		DataStoreObjectDescriptorColumn c = columnNameLookupMap.get(colName);
+		if (c == null) {
+			throw new IndexOutOfBoundsException();
 		}
-		throw new ArrayIndexOutOfBoundsException();
+		return c.getIndex();
 	}
 
 	public String getTableName() {
@@ -460,7 +76,7 @@ public class DataStoreObjectDescriptor {
 		return dsoClass;
 	}
 
-	public DataStoreKey getPrimaryKey() {
+	public DataStoreObjectDescriptorKey getPrimaryKey() {
 		return this.primaryKey;
 	}
 
@@ -475,10 +91,14 @@ public class DataStoreObjectDescriptor {
 	}
 
 	public int getNullAllowedCount() {
-		return nullAllowed.length;
+		int n = 0;
+		for (DataStoreObjectDescriptorColumn c : colDescriptors) {
+			if (c.isNullAllowed()) n++;
+		}
+		return n;
 	}
-
+	
 	public boolean isNullAllowed(int columnIndex) {
-		return nullAllowed[columnIndex];
+		return colDescriptors.get(columnIndex).isNullAllowed();
 	}
 }

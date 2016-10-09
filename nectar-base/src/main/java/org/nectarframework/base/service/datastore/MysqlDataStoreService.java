@@ -100,7 +100,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	@Override
 	public List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws SQLException {
 		StringBuffer sql = new StringBuffer();
-		sql.append("SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName() + " WHERE " + dsod.getColumnNames()[0] + " IN (");
+		sql.append("SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName() + " WHERE " + dsod.getPrimaryKey().getColumnName() + " IN (");
 		int idsLen = keys.size();
 		for (int t = 0; t < idsLen; t++) {
 			if (t + 1 < idsLen)
@@ -143,7 +143,7 @@ public class MysqlDataStoreService extends DataStoreService {
 			return (DataStoreObject)cacheObj;
 		}
 
-		String sql = "SELECT " + StringTools.implode(dso.getColumnNames(), ",") + " FROM " + dso.getTableName() + " WHERE " + dso.getColumnNames()[0] + " = ?";
+		String sql = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName() + " WHERE " + dsod.getPrimaryKey().getColumnName() + " = ?";
 		Log.trace(sql);
 		SqlPreparedStatement mps = new SqlPreparedStatement(sql);
 		dsod.getPrimaryKey().getType().toMps(mps, 1, key);
@@ -206,13 +206,13 @@ public class MysqlDataStoreService extends DataStoreService {
 			
 			LinkedList<String> colList = new LinkedList<String>();
 			for (int i=0;i<dsod.getColumnCount();i++) {
-				colList.add(dsod.getColumnNames()[i] + "=?");  
+				colList.add(dsod.getColumnNames().get(i) + "=?");  
 			}
 			
 			LinkedList<String> colNoKeyList = new LinkedList<String>();
 			for (int i=0;i<dsod.getColumnCount();i++) {
-				if (!dsod.getPrimaryKey().getColumnName().equals(dsod.getColumnNames()[i])) {
-					colNoKeyList.add(dsod.getColumnNames()[i] + "=?");
+				if (!dsod.getPrimaryKey().getColumnName().equals(dsod.getColumnNames().get(i))) {
+					colNoKeyList.add(dsod.getColumnNames().get(i) + "=?");
 				}
 			}
 			
@@ -221,11 +221,11 @@ public class MysqlDataStoreService extends DataStoreService {
  			SqlPreparedStatement mps = new SqlPreparedStatement(sql);
 			
  			for (DataStoreObject dso : dsodMap.get(dsod)) {
- 				for (int i=0;i<dsod.getColumnCount();i++) {
- 					dsod.getColumnTypes()[i].toMps(mps, i+1, dso.getObject(i));
+ 				for (int i=0;i<dsod.getColumnCount();i++) { 					
+ 					dsod.getColumnTypes().get(i).toMps(mps, i+1, dso.getObject(i));
  				}
  				for (int i=0;i<dsod.getColumnCount();i++) {
- 					dsod.getColumnTypes()[i+1].toMps(mps, i+dsod.getColumnCount(), dso.getObject(i+1));
+ 					dsod.getColumnTypes().get(i+1).toMps(mps, i+dsod.getColumnCount(), dso.getObject(i+1));
  				}
  				mps.addBatch();
  			}

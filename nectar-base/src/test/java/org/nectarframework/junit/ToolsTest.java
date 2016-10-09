@@ -41,10 +41,10 @@ public class ToolsTest {
 			}
 		}
 
-		byte[] seqbitmap = BitMap.init(len);
+		BitMap seqbitmap = new BitMap(len);
 		for (int i = 0; i < len; i++) {
 			if (boolArray[i]) {
-				BitMap.set(seqbitmap, i);
+				seqbitmap.set(i);
 			}
 		}
 
@@ -54,21 +54,21 @@ public class ToolsTest {
 		}
 		Collections.shuffle(vb);
 
-		byte[] randbitmap = BitMap.init(len);
+		BitMap randbitmap = new BitMap(len);
 		for (Tuple<Integer, Boolean> tp : vb) {
 			if (tp.getRight()) {
-				BitMap.set(randbitmap, tp.getLeft());
+				randbitmap.set(tp.getLeft());
 			}
 		}
 
 		for (int i = 0; i < len; i++) {
-			if (boolArray[i] && !BitMap.is(seqbitmap, i))
+			if (boolArray[i] && !seqbitmap.is(i))
 				return false;
-			if (!boolArray[i] && BitMap.is(seqbitmap, i))
+			if (!boolArray[i] && seqbitmap.is(i))
 				return false;
-			if (boolArray[i] && !BitMap.is(randbitmap, i))
+			if (boolArray[i] && !seqbitmap.is(i))
 				return false;
-			if (!boolArray[i] && BitMap.is(randbitmap, i))
+			if (!boolArray[i] && seqbitmap.is(i))
 				return false;
 		}
 

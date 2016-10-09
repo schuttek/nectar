@@ -1,6 +1,7 @@
 package org.nectarframework.base.service.datastore;
 
 import java.io.IOException;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,7 +12,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.ServiceUnavailableException;
-import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor.Type;
+import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.file.ReadFileNotFoundException;
 import org.nectarframework.base.service.log.Log;
@@ -198,7 +199,7 @@ public class LocalDataStoreService extends DataStoreService {
 				return table;
 			}
 			for (int col = 0; col < dsod.getColumnCount(); col++) {
-				Type type = dsod.getColumnTypes()[col];
+				Type type = dsod.getColumnTypes().get(col);
 				dso.set(col, type.fromBytes(ba));
 			}
 			if (table.containsKey(dso.getPrimaryKey())) {

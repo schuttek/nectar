@@ -5,7 +5,7 @@ import java.io.File;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.tools.ByteArray;
 
-public class FileInfo implements CacheableObject {
+public class FileInfo implements CacheableObject<FileInfo> {
 
 	String path;
 	String name;
@@ -39,13 +39,14 @@ public class FileInfo implements CacheableObject {
 	}
 
 	@Override
-	public void fromBytes(ByteArray ba) {
+	public FileInfo fromBytes(ByteArray ba) {
 		path = ba.getString();
 		name = ba.getString();
 		lastModified = ba.getLong();
 		length = ba.getLong();
 		extension = ba.getString();
 		contents = ba.getByteArray();
+		return this;
 	}
 
 	@Override

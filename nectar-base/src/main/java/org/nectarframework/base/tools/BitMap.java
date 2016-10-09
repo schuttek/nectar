@@ -1,22 +1,31 @@
 package org.nectarframework.base.tools;
 
+public class BitMap implements ByteArrayBuildable<BitMap> {
 
+	private byte[] map;
+	private int size;
 
-public class BitMap {
-
-	public static byte[] init(int size) {
-		byte[] map = new byte[size / 8 + (size % 8 == 0 ? 0 : 1)];
+	public BitMap() {
+	}
+	
+	public BitMap(int size) {
+		this.size = size;
+		map = new byte[size / 8 + (size % 8 == 0 ? 0 : 1)];
 		for (int n = 0; n < map.length; n++) {
 			map[n] = 0;
 		}
-		return map;
 	}
 
-	public static boolean is(byte[] map, int index) {
+	public BitMap(byte[] map, int size) {
+		this.map = map;
+		this.size = size;
+	}
+
+	public boolean is(int index) {
 		return (map[index / 8] & (1 << (index % 8))) != 0;
 	}
 
-	public static void set(byte[] map, int index, boolean value) {
+	public void set(int index, boolean value) {
 		byte b = map[index / 8];
 		byte posBit = (byte) (1 << (index % 8));
 		if (value) {
@@ -27,12 +36,30 @@ public class BitMap {
 		map[index / 8] = b;
 	}
 
-	public static void set(byte[] map, int index) {
-		set(map, index, true);
+	public void set(int index) {
+		set(index, true);
 	}
 
-	public static void clear(byte[] map, int index) {
-		set(map, index, false);
+	public void clear(int index) {
+		set(index, false);
+	}
+
+	public int size() {
+		return size;
+	}
+	
+	@Override
+	public BitMap fromBytes(ByteArray ba) {
+		size = ba.getInt();
+		map = ba.getByteArray();
+		return this;
+	}
+
+	@Override
+	public ByteArray toBytes(ByteArray ba) {
+		ba.add(size);
+		ba.addByteArray(map);
+		return ba;
 	}
 
 }

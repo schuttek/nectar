@@ -1,6 +1,6 @@
 package org.nectarframework.base.service.cache;
 
-import org.nectarframework.base.tools.ByteArray;
+import org.nectarframework.base.tools.ByteArrayBuildable;
 
 /**
  * CacheableObject have to be able to write and read themselves from a
@@ -10,10 +10,7 @@ import org.nectarframework.base.tools.ByteArray;
  *
  */
 
-public interface CacheableObject {
+public interface CacheableObject<T> extends ByteArrayBuildable<T> {
 
-	public void fromBytes(ByteArray ba);
-
-	public ByteArray toBytes(ByteArray ba);
 
 }

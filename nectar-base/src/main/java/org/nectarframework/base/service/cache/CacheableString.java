@@ -2,7 +2,7 @@ package org.nectarframework.base.service.cache;
 
 import org.nectarframework.base.tools.ByteArray;
 
-public class CacheableString implements CacheableObject {
+public class CacheableString implements CacheableObject<CacheableString> {
 	private String str;
 
 	public CacheableString(String s) {
@@ -10,8 +10,9 @@ public class CacheableString implements CacheableObject {
 	}
 
 	@Override
-	public void fromBytes(ByteArray ba) {
+	public CacheableString fromBytes(ByteArray ba) {
 		str = ba.getString();
+		return this;
 	}
 
 	@Override
