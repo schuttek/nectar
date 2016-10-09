@@ -46,7 +46,7 @@ public class FileInfo implements CacheableObject<FileInfo> {
 		length = ba.getLong();
 		extension = ba.getString();
 		contents = ba.getByteArray();
-		return this;
+		return this; 
 	}
 
 	@Override
