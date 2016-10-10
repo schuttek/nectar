@@ -10,7 +10,7 @@ import org.nectarframework.base.tools.ByteArrayBuildable;
  *
  */
 
-public interface CacheableObject<T> extends ByteArrayBuildable<T> {
+public interface CacheableObject extends ByteArrayBuildable<Object> {
 
 
 }

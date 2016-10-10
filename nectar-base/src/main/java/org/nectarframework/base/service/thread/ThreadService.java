@@ -189,17 +189,16 @@ public class ThreadService extends Service {
 	}
 
 	/**
+	 * PLACEHOLDER METHOD / NOT IMPLEMENTED! 
+	 * 
 	 * Executes the given task immediately, then at least every delay
 	 * milliseconds afterwards. It will not execute task again unless the
 	 * previous call to task has finished.
 	 * 
 	 * @param task
 	 * @param delay
-	 */
+	 */	
 	public synchronized void executeRepeat(ThreadServiceTask task, long delay) {
-		long now = Stopwatch.now();
-		execute(task);
-		
 		//TODO: implement me!!
 	}
 }

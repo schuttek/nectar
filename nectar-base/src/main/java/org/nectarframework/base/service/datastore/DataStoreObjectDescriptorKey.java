@@ -5,9 +5,11 @@ import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColum
 public class DataStoreObjectDescriptorKey {
 	private DataStoreObjectDescriptorColumn colDescriptor;
 	private boolean autoIncrement;
+	private int keyLength;
 
-	public DataStoreObjectDescriptorKey(DataStoreObjectDescriptorColumn colDescriptor, boolean autoIncrement) {
+	public DataStoreObjectDescriptorKey(DataStoreObjectDescriptorColumn colDescriptor, int keyLength, boolean autoIncrement) {
 		this.colDescriptor = colDescriptor;
+		this.keyLength = keyLength;
 		this.autoIncrement = autoIncrement;
 	}
 
@@ -30,7 +32,8 @@ public class DataStoreObjectDescriptorKey {
 	public String getColumnName() {
 		return colDescriptor.getName();
 	}
-	
-	
 
+	public int getKeyLength() {
+		return keyLength;
+	}
 }

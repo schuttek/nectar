@@ -5,7 +5,7 @@ import java.io.File;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.tools.ByteArray;
 
-public class FileInfo implements CacheableObject<FileInfo> {
+public class FileInfo implements CacheableObject {
 
 	String path;
 	String name;

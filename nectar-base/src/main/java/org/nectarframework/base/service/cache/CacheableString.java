@@ -2,7 +2,7 @@ package org.nectarframework.base.service.cache;
 
 import org.nectarframework.base.tools.ByteArray;
 
-public class CacheableString implements CacheableObject<CacheableString> {
+public class CacheableString implements CacheableObject {
 	private String str;
 
 	public CacheableString(String s) {

@@ -13,7 +13,7 @@ import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 
-public class ResultTable implements CacheableObject<ResultTable>, Iterable<ResultRow> {
+public class ResultTable implements CacheableObject, Iterable<ResultRow> {
 	private JavaTypes[] typesByColumn;
 	private HashMap<String, Integer> keyMap;
 	private Object[] table;

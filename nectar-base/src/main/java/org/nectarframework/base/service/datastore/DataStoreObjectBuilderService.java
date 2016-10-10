@@ -68,37 +68,37 @@ public class DataStoreObjectBuilderService extends Service {
 		// TODO: these relations should be in a static final array...
 		typeStr = typeStr.toLowerCase();
 		if (typeStr.equals("boolean")) {
-			return "DataStoreObjectDescriptor.Type.BOOLEAN";
+			return "DataStoreObjectDescriptorColumn.Type.BOOLEAN";
 		} else if (typeStr.equals("byte")) {
-			return "DataStoreObjectDescriptor.Type.BYTE";
+			return "DataStoreObjectDescriptorColumn.Type.BYTE";
 		} else if (typeStr.equals("short")) {
-			return "DataStoreObjectDescriptor.Type.SHORT";
+			return "DataStoreObjectDescriptorColumn.Type.SHORT";
 		} else if (typeStr.equals("int")) {
-			return "DataStoreObjectDescriptor.Type.INT";
+			return "DataStoreObjectDescriptorColumn.Type.INT";
 		} else if (typeStr.equals("long")) {
-			return "DataStoreObjectDescriptor.Type.LONG";
+			return "DataStoreObjectDescriptorColumn.Type.LONG";
 		} else if (typeStr.equals("float")) {
-			return "DataStoreObjectDescriptor.Type.FLOAT";
+			return "DataStoreObjectDescriptorColumn.Type.FLOAT";
 		} else if (typeStr.equals("double")) {
-			return "DataStoreObjectDescriptor.Type.DOUBLE";
+			return "DataStoreObjectDescriptorColumn.Type.DOUBLE";
 		} else if (typeStr.equals("string")) {
-			return "DataStoreObjectDescriptor.Type.STRING";
+			return "DataStoreObjectDescriptorColumn.Type.STRING";
 		} else if (typeStr.equals("blob")) {
-			return "DataStoreObjectDescriptor.Type.BLOB";
+			return "DataStoreObjectDescriptorColumn.Type.BLOB";
 		} else if (typeStr.equals("byte_array")) {
-			return "DataStoreObjectDescriptor.Type.BYTE_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.BYTE_ARRAY";
 		} else if (typeStr.equals("short_array")) {
-			return "DataStoreObjectDescriptor.Type.SHORT_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.SHORT_ARRAY";
 		} else if (typeStr.equals("int_array")) {
-			return "DataStoreObjectDescriptor.Type.INT_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.INT_ARRAY";
 		} else if (typeStr.equals("long_array")) {
-			return "DataStoreObjectDescriptor.Type.LONG_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.LONG_ARRAY";
 		} else if (typeStr.equals("float_array")) {
-			return "DataStoreObjectDescriptor.Type.FLOAT_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.FLOAT_ARRAY";
 		} else if (typeStr.equals("double_array")) {
-			return "DataStoreObjectDescriptor.Type.DOUBLE_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.DOUBLE_ARRAY";
 		} else if (typeStr.equals("string_array")) {
-			return "DataStoreObjectDescriptor.Type.STRING_ARRAY";
+			return "DataStoreObjectDescriptorColumn.Type.STRING_ARRAY";
 		}
 		Log.warn("DSOBuilder: type: " + typeStr + " is unknown.");
 		return "UNKNOWN TYPE";
@@ -267,32 +267,25 @@ public class DataStoreObjectBuilderService extends Service {
 				// DSOD
 				String initLine = "dss.initDataStoreObjectDescriptor(new DataStoreObjectDescriptor(";
 				initLine += "\"" + tableName + "\", ";
-				initLine += "new DataStoreKey(\"" + primaryKeyColName + "\", " + parseType(primaryKeyType) + ", "
-						+ primaryKeyLength + ", " + (primaryKeyAutoIncrement ? "true" : "false") + "), ";
+				initLine += "new DataStoreObjectDescriptorKey(new DataStoreObjectDescriptorColumn(\"" + primaryKeyColName + "\", " + parseType(primaryKeyType) + ", false), "+
+						 primaryKeyLength + ", " + (primaryKeyAutoIncrement ? "true" : "false") + "), ";
+				
 				Vector<String> sa = new Vector<String>();
 				for (Triple<String, String, Boolean> tup : colList) {
-					sa.add("\"" + tup.getLeft() + "\"");
+					sa.add("new DataStoreObjectDescriptorColumn(\""+tup.getRight()+"\", "+parseType(primaryKeyType)+","+(tup.getRight() ? "true" : "false")+")");
 				}
-				initLine += "new String[] { " + StringTools.implode(sa, ", ") + " }, ";
-				sa.clear();
-				for (Triple<String, String, Boolean> tup : colList) {
-					sa.add(parseType(tup.getMiddle()));
-				}
-				initLine += "new DataStoreObjectDescriptor.Type[] {" + StringTools.implode(sa, ", ") + "}, ";
-				sa.clear();
-				for (Triple<String, String, Boolean> tup : colList) {
-					sa.add((tup.getRight() ? "true" : "false"));
-				}
-				initLine += "new boolean[] {" + StringTools.implode(sa, ", ") + "}, ";
+				
+				initLine += "new DataStoreObjectDescriptorColumn[] {" + StringTools.implode(sa, ", ") + "}, ";
 				initLine += className + ".class));";
 
 				// the class file...
 				pw.println("package " + packageName + ";");
 				pw.println();
 				pw.println("import org.nectarframework.base.service.ServiceRegister;");
-				pw.println("import org.nectarframework.base.service.datastore.DataStoreKey;");
 				pw.println("import org.nectarframework.base.service.datastore.DataStoreObject;");
 				pw.println("import org.nectarframework.base.service.datastore.DataStoreObjectDescriptor;");
+				pw.println("import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn;");
+				pw.println("import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorKey;");
 				pw.println("import org.nectarframework.base.service.datastore.DataStoreService;");
 				pw.println("");
 				pw.println(

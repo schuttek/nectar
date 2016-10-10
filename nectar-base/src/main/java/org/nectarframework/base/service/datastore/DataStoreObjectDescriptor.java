@@ -1,16 +1,10 @@
 package org.nectarframework.base.service.datastore;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.nectarframework.base.service.sql.SqlPreparedStatement;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
-import org.nectarframework.base.service.sql.ResultRow;
-import org.nectarframework.base.tools.Base64;
-import org.nectarframework.base.tools.ByteArray;
-import org.nectarframework.base.tools.StringTools;
 import org.nectarframework.base.tools.Tuple;
 
 public final class DataStoreObjectDescriptor {

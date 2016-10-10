@@ -14,7 +14,7 @@ import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.Tuple;
 
-public abstract class DataStoreObject implements CacheableObject<DataStoreObject> {
+public abstract class DataStoreObject implements CacheableObject {
 	private DataStoreObjectDescriptor dsod = null;
 	protected List<Object> data;
 

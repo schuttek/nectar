@@ -7,11 +7,21 @@ public class Stopwatch {
 	public static long currentTimeMillis() {
 		return System.currentTimeMillis();
 	}
-	
+
+	/**
+	 * Returns the approximate current time in milliseconds shared by the Nectar
+	 * cluster. Please use this method instead of System.currentTimeMillis()
+	 * when writing code to minimize clock skew.
+	 * 
+	 * In single instance Nectar's, it will return System.currentTimeMillis().
+	 * 
+	 * @return
+	 */
 	public static long now() {
+		// TODO: implement ClusterService
 		return System.currentTimeMillis();
 	}
-	
+
 	private class Mark {
 		public String tag;
 		public long time;
@@ -58,7 +68,7 @@ public class Stopwatch {
 			return endTime - startTime;
 		}
 	}
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer("Stopwatch: ");
 		long et = (endTime == 0) ? System.nanoTime() : endTime;
@@ -153,11 +163,11 @@ public class Stopwatch {
 
 				sw.wait(185);
 				sw.stop();
-				
+
 				System.out.println(sw.toString());
-				
+
 				sw.start();
-				
+
 				System.out.println(sw.toString());
 			} catch (InterruptedException e) {
 				e.printStackTrace();

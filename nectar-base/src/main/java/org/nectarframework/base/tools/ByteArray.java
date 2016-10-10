@@ -152,11 +152,11 @@ public class ByteArray {
 	}
 
 	public double getDouble() {
-		return Double.longBitsToDouble(getLong());
+		return bytesToDouble(remove(8), 0);
 	}
 
 	public float getFloat() {
-		return Float.intBitsToFloat(getInt());
+		return bytesToFloat(remove(4), 0);
 	}
 
 	public String getString() {
@@ -173,7 +173,6 @@ public class ByteArray {
 		return true;
 	}
 
-
 	public void addByteArray(byte[] b) {
 		if (b == null || b.length == 0) {
 			add(0);
@@ -182,7 +181,7 @@ public class ByteArray {
 			addRawBytes(b);
 		}
 	}
-	
+
 	public void addByteArrayToFront(byte[] b) {
 		if (b == null || b.length == 0) {
 			addToFront(0);
@@ -191,7 +190,7 @@ public class ByteArray {
 			addToFront(b.length);
 		}
 	}
-	
+
 	public void addRawBytesToFront(byte[] b) {
 		addToFront(b, 0, b.length);
 	}
@@ -244,23 +243,20 @@ public class ByteArray {
 	}
 
 	public void add(double d) {
-		long l = Double.doubleToRawLongBits(d);
 		byte[] b = new byte[8];
-		longToBytes(l, b, 0);
+		doubleToBytes(d, b, 0);
 		addRawBytes(b);
 	}
 
 	public void addToFront(float f) {
-		int l = Float.floatToRawIntBits(f);
 		byte[] b = new byte[8];
-		intToBytes(l, b, 0);
+		floatToBytes(f, b, 0);
 		addRawBytesToFront(b);
 	}
 
 	public void add(float f) {
-		int i = Float.floatToRawIntBits(f);
 		byte[] b = new byte[4];
-		intToBytes(i, b, 0);
+		floatToBytes(f, b, 0);
 		addRawBytes(b);
 	}
 
@@ -300,23 +296,32 @@ public class ByteArray {
 		return (short) (array[offset] & 0xFF << 8 | array[offset + 1] & 0xFF);
 	}
 
-	public static long bytesToLong(byte[] array, int offset) {
-		long value = 0;
-		for (int i = offset; i < offset + 8; i++) {
-			value += ((long) array[i] & 0xffL) << (8 * i);
+	public static void shortToBytes(int i, byte[] byteBuff, int offset) {
+		for (int t = 0; t < 2; t++) {
+			byteBuff[offset + t] = (byte) (i >> (2 - (t + 1)) * 8);
 		}
-		return value;
+	}
+
+	public static long bytesToLong(byte[] array, int offset) {
+		long l = 0;
+		for (int i = offset; i < offset + 8; i++) {
+			l <<= 8;
+			l ^= array[i] & 0xFF;
+		}
+		return l;
+	}
+
+	public static void longToBytes(long l, byte[] bb, int offset) {
+		for (int i = 7; i > 0; i--) {
+			bb[i] = (byte) l;
+			l >>>= 8;
+		}
+		bb[0] = (byte) l;
 	}
 
 	public static int bytesToInt(byte[] array, int offset) {
 		return array[offset] << 24 | (array[offset + 1] & 0xFF) << 16 | (array[offset + 2] & 0xFF) << 8
 				| (array[offset + 3] & 0xFF);
-	}
-
-	public static void shortToBytes(int i, byte[] byteBuff, int offset) {
-		for (int t = 0; t < 2; t++) {
-			byteBuff[offset + t] = (byte) (i >> (2 - (t + 1)) * 8);
-		}
 	}
 
 	public static void intToBytes(int i, byte[] byteBuff, int offset) {
@@ -325,22 +330,32 @@ public class ByteArray {
 		}
 	}
 
-	public static void longToBytes(long i, byte[] bb, int offset) {
-		for (int t = 0; t < 8; t++) {
-			bb[offset + t] = (byte) (i >> (8 - (t + 1)) * 8);
-		}
-	}
-
+	/**
+	 * This implementation uses Double.doubleToLongBits instead of
+	 * Double.doubleToRawLongBits, which translates the 0x7ff8000000000100L NaN
+	 * value to the 0x7ff8000000000000L NaN Value.
+	 * 
+	 * Honestly, I have no idea what that might imply... but Hadoop uses this
+	 * version, and that's good enough for me.
+	 * 
+	 * @param d
+	 * @param bb
+	 * @param offset
+	 */
 	public static void doubleToBytes(double d, byte[] bb, int offset) {
-		longToBytes(Double.doubleToRawLongBits(d), bb, offset);
+		longToBytes(Double.doubleToLongBits(d), bb, offset);
 	}
 
 	public static double bytesToDouble(byte[] array, int offset) {
-		long value = 0;
-		for (int i = offset; i < offset + 8; i++) {
-			value += ((long) array[i] & 0xffL) << (8 * i);
-		}
-		return Double.longBitsToDouble(value);
+		return Double.longBitsToDouble(bytesToLong(array, offset));
+	}
+
+	public static void floatToBytes(float f, byte[] bb, int offset) {
+		intToBytes(Float.floatToIntBits(f), bb, offset);
+	}
+
+	public static float bytesToFloat(byte[] array, int offset) {
+		return Float.intBitsToFloat(bytesToInt(array, offset));
 	}
 
 	public byte[] getByteArray() {
