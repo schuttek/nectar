@@ -417,23 +417,6 @@ public class XmlService extends Service {
 		return e;
 	}
 
-	public static Element generateTestElement(int childCount, int attrCount, int depth) {
-		Element e = new Element(StringTools.randomStringLowerCase(4, 8));
-		Random rand = new Random();
-		int n = rand.nextInt(attrCount - 1) + 1;
-		for (int t = 0; t < n; t++) {
-			e.add(StringTools.randomStringLowerCase(4, 8), StringTools.randomStringLowerCase(4, 8));
-		}
-		if (depth > 0) {
-			n = rand.nextInt(childCount - 1) + 1;
-			for (int t = 0; t < n; t++) {
-				e.add(generateTestElement(childCount, attrCount, depth - 1));
-			}
-		}
-
-		return e;
-	}
-
 	public static Element fromXml(InputStream is) throws SAXException, IOException {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = null;

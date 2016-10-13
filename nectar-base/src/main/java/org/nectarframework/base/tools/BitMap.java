@@ -1,13 +1,13 @@
 package org.nectarframework.base.tools;
 
+import java.util.Arrays;
+
 public class BitMap implements ByteArrayBuildable<BitMap> {
 
 	private byte[] map;
 	private int size;
 
-	public BitMap() {
-	}
-	
+
 	public BitMap(int size) {
 		this.size = size;
 		map = new byte[size / 8 + (size % 8 == 0 ? 0 : 1)];
@@ -17,8 +17,12 @@ public class BitMap implements ByteArrayBuildable<BitMap> {
 	}
 
 	public BitMap(byte[] map, int size) {
-		this.map = map;
+		this.map = new byte[size / 8 + (size % 8 == 0 ? 0 : 1)];
+		System.arraycopy(map, 0, this.map, 0, map.length);
 		this.size = size;
+	}
+
+	public BitMap() {
 	}
 
 	public boolean is(int index) {
@@ -48,6 +52,10 @@ public class BitMap implements ByteArrayBuildable<BitMap> {
 		return size;
 	}
 	
+	public byte[] map() {
+		return map;
+	}
+	
 	@Override
 	public BitMap fromBytes(ByteArray ba) {
 		size = ba.getInt();
@@ -60,6 +68,31 @@ public class BitMap implements ByteArrayBuildable<BitMap> {
 		ba.add(size);
 		ba.addByteArray(map);
 		return ba;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(map);
+		result = prime * result + size;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BitMap other = (BitMap) obj;
+		if (!Arrays.equals(map, other.map))
+			return false;
+		if (size != other.size)
+			return false;
+		return true;
 	}
 
 }

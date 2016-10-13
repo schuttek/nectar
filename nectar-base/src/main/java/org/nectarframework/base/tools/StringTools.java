@@ -2,6 +2,8 @@ package org.nectarframework.base.tools;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,14 +12,22 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.nanohttp.NanoHttpService;
 
 public abstract class StringTools {
+	private static SecureRandom rand = new SecureRandom();
+	
+	/**
+	 * Get this Nectar instance's charset encoding. 
+	 * 
+	 * @return
+	 */
+	public static Charset getCharset() {
+		return Charset.defaultCharset();
+	}
 
 	/**
 	 * Decode parameters from a URL, handing the case where a single parameter
@@ -88,6 +98,13 @@ public abstract class StringTools {
 		return def;
 	}
 
+	/**
+	 * Attempts to give a string representation of the contents of a map for
+	 * debug logging purposes.
+	 * 
+	 * @param map
+	 * @return
+	 */
 	@SuppressWarnings("rawtypes")
 	public static String mapToString(Map map) {
 		if (map == null)
@@ -116,6 +133,13 @@ public abstract class StringTools {
 	private static char[] xmlEntities = { '"', '&', '\'', '<', '>' };
 	private static String[] xmlEntitiesEncoded = { "&quot;", "&amp;", "&apos;", "&lt;", "&gt;" };
 
+	/**
+	 * Replaces those five characters that XML considers special into their XML
+	 * entities.
+	 * 
+	 * @param s
+	 * @return
+	 */
 	public static String xmlEncode(String s) {
 		StringBuffer out = new StringBuffer();
 
@@ -137,6 +161,14 @@ public abstract class StringTools {
 		return out.toString();
 	}
 
+	/**
+	 * This is the charset-neutral version. If you have to use this instead of
+	 * xmlEncode(String s), you're probably doing something wrong with your
+	 * Character sets... In Nectar, everything should be UTF-8.
+	 * 
+	 * @param byteArr
+	 * @return
+	 */
 	public static String xmlEncode(byte[] byteArr) {
 		StringBuffer out = new StringBuffer();
 
@@ -252,11 +284,6 @@ public abstract class StringTools {
 		return sb.toString();
 	}
 
-	public static String filterClassName(String s) {
-		// TODO: implement me (check the argument against a regex that would be
-		// considered a class name.
-		return s;
-	}
 
 	/**
 	 * equivalent to PHP's implode or join functions, returns a String in which
@@ -279,7 +306,15 @@ public abstract class StringTools {
 		}
 		return out.toString();
 	}
-
+	
+	/**
+	 * equivalent to PHP's implode or join functions, returns a String in which
+	 * the pieces are seperated by glue.
+	 * 
+	 * @param pieces
+	 * @param glue
+	 * @return
+	 */
 	public static String implode(String[] pieces, String glue) {
 		int k = pieces.length;
 		if (k == 0) {
@@ -319,60 +354,6 @@ public abstract class StringTools {
 		}
 
 		return v;
-	}
-
-	/**
-	 * Create a random String visible, typeable characters in ASCII byte for, of
-	 * given length
-	 */
-	public static String randomPassword(int length) {
-		return randomString(length, length);
-	}
-
-	/**
-	 * Create a String of between i and j in length, of random characters A
-	 * through Z.
-	 * 
-	 * @param i
-	 * @param j
-	 * @return
-	 */
-
-	public static String randomString(int i, int j) {
-		Random rand = new Random();
-		int len = rand.nextInt(Math.abs((j + 1) - i)) + i;
-		byte[] sa = new byte[len];
-		for (int t = 0; t < len; t++) {
-			sa[t] = (byte) (65 + rand.nextInt(26));
-		}
-		return new String(sa);
-	}
-
-	/**
-	 * Create a String of between i and j in length, of random characters a
-	 * through z.
-	 * 
-	 * @param i
-	 * @param j
-	 * @return
-	 */
-
-	public static String randomStringLowerCase(int i, int j) {
-		Random rand = new Random();
-		int len = rand.nextInt(Math.abs((j + 1) - i)) + i;
-		byte[] sa = new byte[len];
-		for (int t = 0; t < len; t++) {
-			sa[t] = (byte) (97 + rand.nextInt(26));
-		}
-		return new String(sa);
-	}
-
-	public static String[] appendTo(String[] dataColums, String string) {
-		String[] ret = new String[dataColums.length];
-		for (int i = 0; i < dataColums.length; i++) {
-			ret[i] = dataColums[i] + string;
-		}
-		return ret;
 	}
 
 	/**

@@ -108,7 +108,7 @@ public class Connection extends Thread {
 			// SO_TIMEOUT
 			//Log.trace(this.getName() + ".tryToRead() numRead == 0");
 		} else {
-			readQueue.add(buffer, 0, numRead);
+			readQueue.addRawBytes(buffer, 0, numRead);
 		}
 	}
 

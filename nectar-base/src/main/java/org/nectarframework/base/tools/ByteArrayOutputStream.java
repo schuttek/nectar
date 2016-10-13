@@ -25,7 +25,7 @@ public class ByteArrayOutputStream extends OutputStream {
 	}
 	
 	public void write(byte[] b, int off, int len) {
-		ba.add(b, off, len);
+		ba.addRawBytes(b, off, len);
 	}
 
 	public void reset() {
@@ -36,7 +36,11 @@ public class ByteArrayOutputStream extends OutputStream {
 		return ba.length();
 	}
 	
-	public byte[] toByteArray() {
+	public ByteArray toByteArray() {
+		return new ByteArray(ba);
+	}
+	
+	public byte[] toBytes() {
 		return ba.getAllBytes();
 	}
 	

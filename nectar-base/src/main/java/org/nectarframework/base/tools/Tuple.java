@@ -25,18 +25,4 @@ public class Tuple<L, R> {
 	public R getRight() {
 		return right;
 	}
-
-	@Override
-	public int hashCode() {
-		return left.hashCode() ^ right.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof Tuple))
-			return false;
-		Tuple<?, ?> pairo = (Tuple<?, ?>) o;
-		return this.left.equals(pairo.getLeft()) && this.right.equals(pairo.getRight());
-	}
-
 }

@@ -1,5 +1,13 @@
 package org.nectarframework.base.tools;
 
+/**
+ * A very simple combination of 3 variables. 
+ * @author skander
+ *
+ * @param <L>
+ * @param <M>
+ * @param <R>
+ */
 public class Triple<L, M, R> {
 
 	private final L left;
@@ -23,19 +31,4 @@ public class Triple<L, M, R> {
 	public R getRight() {
 		return right;
 	}
-
-	@Override
-	public int hashCode() {
-		return left.hashCode() ^ middle.hashCode() ^ right.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof Triple))
-			return false;
-		
-		Triple<?, ?, ?> pairo = (Triple<?, ?, ?>) o;
-		return this.left.equals(pairo.getLeft()) && this.middle.equals(pairo.getClass()) && this.right.equals(pairo.getRight());
-	}
-
 }

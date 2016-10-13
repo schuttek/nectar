@@ -89,7 +89,7 @@ public class XmlClientService extends ConnectionService {
 			final XmlClientService thisService = this;
 			threadService.executeLater(new ThreadServiceTask() {
 				public void execute() throws Exception {
-					thisService.runTests();
+					thisService.runSanityCheck();
 				}
 			}, 1000);
 		}
@@ -97,44 +97,10 @@ public class XmlClientService extends ConnectionService {
 		return connectRet;
 	}
 
-	private class EchoCheck implements XmlResponseHandler {
-		public void handleResponse(XmlResponse xmlResponse) {
-			if (xmlResponse.getRequest().getChildren().getFirst().equals(xmlResponse.getResponse().getChildren().getFirst())) {
-				//Log.trace("Request " + xmlResponse.getId() + " VALID!");
-			} else {
-				//Log.warn("Request " + xmlResponse.getId() + " FAIL!!!!");
-			}
-
-//			Element e = XmlService.generateTestElement(5, 5, 5);
-
-//			try {
-//				((XmlClientService) ServiceRegister.getServiceByClassName(XmlClientService.class.getName())).sendRequest("echo", e, new EchoCheck());
-//			} catch (IOException e1) {
-//				Log.warn(e1);
-//			}
-		}
+	protected void runSanityCheck() {
+		// FIXME Sanity not found...		
 	}
 
-	private void runTests() throws IOException {
-		Element e = XmlService.generateTestElement(5, 5, 5);
-		byte[] crazyArray = new byte[256];
-		int t = 0;
-		for (byte b = Byte.MIN_VALUE; b < Byte.MAX_VALUE; b++, t++) {
-			crazyArray[t] = b;
-		}
-
-		e.addBinary("crazyArray", crazyArray);
-		//Log.trace("XmlClientService Test#1 ready");
-		sendRequest("echo", e, new EchoCheck());
-		//Log.trace("XmlClientService Test#1 sent");
-
-		for (int i = 0; i < 0; i++) {
-			e = XmlService.generateTestElement(5, 5, 5);
-			sendRequest("echo", e, new EchoCheck());
-			//Log.trace("XmlClientService Test #" + (i + 2) + " sent");
-
-		}
-	}
 
 	@Override
 	protected boolean shutdown() {

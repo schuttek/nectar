@@ -442,7 +442,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			Log.trace("compression: time " + ((compressEnd - compressStart) / 1000) + "us ratio: " + baos.size() + "/"
 					+ uncompressedSize + ":" + ((baos.size() * 100) / uncompressedSize));
 
-			return baos.toByteArray();
+			return baos.toBytes();
 		}
 	}
 

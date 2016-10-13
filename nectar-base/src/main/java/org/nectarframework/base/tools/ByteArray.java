@@ -1,14 +1,37 @@
 package org.nectarframework.base.tools;
 
+import static org.junit.Assert.assertEquals;
+
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
+
+import org.nectarframework.base.service.log.Log;
+
 /**
  * This class essentially works like java.io.ByteBuffer. You can add data to the
- * front and back of the ByteArray, and remove bytes from the front.
+ * front and back of the ByteArray, and remove bytes from the front. The main
+ * difference is that it's a bit faster on many successive add() operations than
+ * ByteBuffer's putType() methods, since new chunks are added as a list, and
+ * therefore always O(1).
  * 
  * A common use case is to pack a set of mixed raw values (say, an int, a String
  * and a double) into a byte array, then unpack them later.
  * 
  * This class never actually changes the contents of byte arrays passed to it,
  * so there's no need to copy arrays before passing them to these methods.
+ * 
+ * You can only ever remove bytes from the front of a ByteArray, by using the
+ * get{Type}() methods. ByteArray cannot be rewound. the coalesce method may
+ * free memory at the beginning of the ByteArray as it's being read from, so
+ * it's safe to use this as a backing to a messaging queue between two threads
+ * for example.
+ * 
+ * This class is NOT threadsafe, so make sure you use external synchronization.
  * 
  * WARNING: DO NOT CONFUSE THIS WITH StringBuffer! Adding Strings to this object
  * in sequence does NOT concatenate Strings, but stores them as separate
@@ -20,11 +43,12 @@ package org.nectarframework.base.tools;
  */
 
 public class ByteArray {
+
 	private class Chunk {
-		public byte[] array = null;
-		int startIdx;
-		int length;
-		public Chunk next = null;
+		protected byte[] array = null;
+		protected int startIdx;
+		protected int length;
+		protected Chunk next = null;
 	}
 
 	private int length = 0;
@@ -37,6 +61,10 @@ public class ByteArray {
 	}
 
 	public ByteArray() {
+	}
+
+	public ByteArray(ByteArray ba) {
+
 	}
 
 	private Chunk makeChunk(byte[] b, int fromIdx, int length) {
@@ -65,7 +93,7 @@ public class ByteArray {
 		this.length += chunk.length;
 	}
 
-	public void add(byte[] b, int fromIdx, int length) {
+	public void addRawBytes(byte[] b, int fromIdx, int length) {
 		if (length == 0)
 			return;
 		Chunk chunk = makeChunk(b, fromIdx, length);
@@ -128,7 +156,8 @@ public class ByteArray {
 			front = null;
 			length = 0;
 		} else {
-			front = makeChunk(front.array, front.startIdx + numBytes, front.length - numBytes);
+			front.startIdx += numBytes;
+			front.length -= numBytes;
 			length = front.length;
 		}
 		back = front;
@@ -161,8 +190,17 @@ public class ByteArray {
 
 	public String getString() {
 		int len = getInt();
+		if (len == -1)
+			return null;
 		byte[] sb = remove(len);
-		return new String(sb);
+
+		CharsetDecoder dec = StringTools.getCharset().newDecoder();
+		dec.onMalformedInput(CodingErrorAction.IGNORE);
+		try {
+			return dec.decode(ByteBuffer.wrap(sb)).toString();
+		} catch (CharacterCodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public boolean getBoolean() {
@@ -174,16 +212,23 @@ public class ByteArray {
 	}
 
 	public void addByteArray(byte[] b) {
-		if (b == null || b.length == 0) {
+		if (b == null) {
+			Log.trace("add -1");
+			add(-1);
+		} else if (b.length == 0) {
+			Log.trace("add 0");
 			add(0);
 		} else {
+			Log.trace("add "+b.length);
 			add(b.length);
 			addRawBytes(b);
 		}
 	}
 
 	public void addByteArrayToFront(byte[] b) {
-		if (b == null || b.length == 0) {
+		if (b == null) {
+			addToFront(-1);
+		} else if (b.length == 0) {
 			addToFront(0);
 		} else {
 			addRawBytesToFront(b);
@@ -196,7 +241,7 @@ public class ByteArray {
 	}
 
 	public void addRawBytes(byte[] b) {
-		add(b, 0, b.length);
+		addRawBytes(b, 0, b.length);
 	}
 
 	public void addToFront(int i) {
@@ -272,11 +317,21 @@ public class ByteArray {
 
 	public void add(String s) {
 		if (s == null) {
-			add(0);
+			add(-1);
 		} else {
-			byte[] b = s.getBytes();
-			add(b.length);
-			addRawBytes(b);
+			CharsetEncoder enc = StringTools.getCharset().newEncoder();
+			enc.onMalformedInput(CodingErrorAction.IGNORE);
+			byte[] ba;
+			try {
+				ByteBuffer bb = enc.encode(CharBuffer.wrap(s));
+				bb.rewind();
+				ba = new byte[bb.remaining()];
+				bb.get(ba);
+			} catch (CharacterCodingException e) {
+				throw new RuntimeException(e);
+			}
+			add(ba.length);
+			addRawBytes(ba);
 		}
 	}
 
@@ -293,13 +348,17 @@ public class ByteArray {
 	}
 
 	public static short bytesToShort(byte[] array, int offset) {
-		return (short) (array[offset] & 0xFF << 8 | array[offset + 1] & 0xFF);
+		short n = 0;
+		n ^= array[offset] & 0xFF;
+		n <<= 8;
+		n ^= array[offset + 1] & 0xFF;
+		return n;
 	}
 
-	public static void shortToBytes(int i, byte[] byteBuff, int offset) {
-		for (int t = 0; t < 2; t++) {
-			byteBuff[offset + t] = (byte) (i >> (2 - (t + 1)) * 8);
-		}
+	public static void shortToBytes(short val, byte[] byteBuff, int offset) {
+		byteBuff[offset + 1] = (byte) val;
+		val >>= 8;
+		byteBuff[offset] = (byte) val;
 	}
 
 	public static long bytesToLong(byte[] array, int offset) {
@@ -360,8 +419,11 @@ public class ByteArray {
 
 	public byte[] getByteArray() {
 		int len = getInt();
-		if (len == 0)
+		Log.trace("get "+len);
+		if (len == -1)
 			return null;
+		if (len == 0)
+			return new byte[0];
 		byte[] sb = remove(len);
 		return sb;
 	}

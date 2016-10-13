@@ -1,4 +1,4 @@
-package org.nectarframework.junit;
+package org.nectarframework.junit.service;
 
 import static org.junit.Assert.*;
 
@@ -28,7 +28,7 @@ public class TemplateServicePatternTest {
 
 	@Test
 	public void test() {
-		System.out.println("Testing: variable "+CompiledTemplateService.variablePattern.pattern());
+//		System.out.println("Testing: variable "+CompiledTemplateService.variablePattern.pattern());
 		assertTrue(testPattern(CompiledTemplateService.variablePattern, "${cow}", new String[]{"cow"}));
 		assertFalse(testPattern(CompiledTemplateService.variablePattern, "${cow}", new String[]{"co1w"}));
 		assertTrue(testPattern(CompiledTemplateService.variablePattern, "${ cow}", new String[]{"cow"}));
@@ -36,7 +36,7 @@ public class TemplateServicePatternTest {
 		assertTrue(testPattern(CompiledTemplateService.variablePattern, " ${cow} ", new String[]{"cow"}));
 		assertTrue(testPattern(CompiledTemplateService.variablePattern, "${c.o.w}", new String[]{"c.o.w"}));
 		
-		System.out.println("Testing: eachTag "+CompiledTemplateService.eachTagPattern.pattern());
+//		System.out.println("Testing: eachTag "+CompiledTemplateService.eachTagPattern.pattern());
 		assertTrue(testPattern(CompiledTemplateService.eachTagPattern, "milk : ${c.o.w}", new String[]{"milk", "c.o.w"}));
 		assertFalse(testPattern(CompiledTemplateService.eachTagPattern, "$milk : ${c.o.w}", new String[]{"milk", "c.o.w"}));
 		
