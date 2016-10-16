@@ -27,6 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.xerces.impl.dv.util.Base64;
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.log.Log;
@@ -83,15 +84,15 @@ public class XmlServerService extends ConnectionService {
 	private Thread acceptThread = null;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		serverHost = serviceParameters.getValue("serverHost");
-		serverPort = serviceParameters.getInt("serverPort", 1, Short.MAX_VALUE, serverPort);
-		serverSocketBacklog = serviceParameters.getInt("serverSocketBacklog", 0, 10000, serverSocketBacklog);
-		maxConnections = serviceParameters.getInt("maxConnections", 1, 100000, maxConnections);
-		soTimeout = serviceParameters.getInt("soTimeout", 0, Integer.MAX_VALUE, soTimeout);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		serverHost = sp.getValue("serverHost");
+		serverPort = sp.getInt("serverPort", 1, Short.MAX_VALUE, serverPort);
+		serverSocketBacklog = sp.getInt("serverSocketBacklog", 0, 10000, serverSocketBacklog);
+		maxConnections = sp.getInt("maxConnections", 1, 100000, maxConnections);
+		soTimeout = sp.getInt("soTimeout", 0, Integer.MAX_VALUE, soTimeout);
 
-		rsaPublicKey = serviceParameters.getValue("rsaPublicKey");
-		rsaPrivateKey = serviceParameters.getValue("rsaPrivateKey");
+		rsaPublicKey = sp.getValue("rsaPublicKey");
+		rsaPrivateKey = sp.getValue("rsaPrivateKey");
 
 		if (serverHost != null) {
 			try {

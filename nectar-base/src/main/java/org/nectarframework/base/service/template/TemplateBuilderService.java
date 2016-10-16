@@ -2,6 +2,7 @@ package org.nectarframework.base.service.template;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
@@ -12,9 +13,9 @@ public class TemplateBuilderService extends Service {
 	private String outputDir;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		outputDir = serviceParameters.getString("outputDir", "src");
-		pathConfig = serviceParameters.getString("pathConfig", "config/pathConfig.xml");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		outputDir = sp.getString("outputDir", "src");
+		pathConfig = sp.getString("pathConfig", "config/pathConfig.xml");
 	}
 
 	@Override

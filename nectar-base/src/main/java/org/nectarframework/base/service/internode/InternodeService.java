@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
@@ -46,13 +47,13 @@ public class InternodeService extends Service {
 	private ThreadService threadService;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		listeningHost = this.serviceParameters.getValue("listeningHost");
-		listeningPort = this.serviceParameters.getInt("listeningPort", 1, 65536, -1);
-		controllerHost = this.serviceParameters.getValue("controllerHost");
-		controllerPort = this.serviceParameters.getInt("controllerPort", 1, 65536, -1);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		listeningHost = sp.getValue("listeningHost");
+		listeningPort = sp.getInt("listeningPort", 1, 65536, -1);
+		controllerHost = sp.getValue("controllerHost");
+		controllerPort = sp.getInt("controllerPort", 1, 65536, -1);
 
-		reconnectDelay = this.serviceParameters.getLong("reconnectDelay", 1, Long.MAX_VALUE, 5000);
+		reconnectDelay = sp.getLong("reconnectDelay", 1, Long.MAX_VALUE, 5000);
 
 		if (listeningHost != null) {
 			try {

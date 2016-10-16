@@ -67,6 +67,7 @@ import org.nectarframework.base.action.Action;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.file.FileInfo;
@@ -207,16 +208,16 @@ public class NanoHttpService extends Service {
 	static final String QUERY_STRING_PARAMETER = "NanoHttpd.QUERY_STRING";
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		socketReadTimeout = serviceParameters.getInt("socketReadTimeout", 0, Integer.MAX_VALUE, 15000);
-		listeningHost = serviceParameters.getString("listeningHost", null);
-		listeningPort = serviceParameters.getInt("listeningPort", 1, Short.MAX_VALUE, 80);
-		listeningSSLPort = serviceParameters.getInt("listeningSSLPort", 1, Short.MAX_VALUE, 443);
-		keyStoreFilePath = serviceParameters.getString("keyStoreFilePath", "config/keystore.jks");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		socketReadTimeout = sp.getInt("socketReadTimeout", 0, Integer.MAX_VALUE, 15000);
+		listeningHost = sp.getString("listeningHost", null);
+		listeningPort = sp.getInt("listeningPort", 1, Short.MAX_VALUE, 80);
+		listeningSSLPort = sp.getInt("listeningSSLPort", 1, Short.MAX_VALUE, 443);
+		keyStoreFilePath = sp.getString("keyStoreFilePath", "config/keystore.jks");
 
-		staticFileLocalDirectory = serviceParameters.getString("staticFileLocalDirectory", "public_root");
+		staticFileLocalDirectory = sp.getString("staticFileLocalDirectory", "public_root");
 
-		staticFileCacheExpiry = serviceParameters.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE,
+		staticFileCacheExpiry = sp.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE,
 				24 * 60 * 60 * 1000); // 24 hours
 	}
 

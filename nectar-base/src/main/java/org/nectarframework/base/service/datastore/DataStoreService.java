@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,18 +28,28 @@ public abstract class DataStoreService extends Service {
 		Element dsoConfig;
 		try {
 			dsoConfig = XmlService.fromXml(Files.readAllBytes(new File(dataStoreObjectsConfigFile).toPath()));
-		List<Element> dsoElmList = dsoConfig.getChildren("dataStoreObject");
-		for (Element dsoElm : dsoElmList) {
-			String packageName = dsoElm.get("package");
-			String className = dsoElm.get("className");
+			List<Element> dsoElmList = dsoConfig.getChildren("dataStoreObject");
+			for (Element dsoElm : dsoElmList) {
+				String packageName = dsoElm.get("package");
+				String className = dsoElm.get("className");
 
-			DataStoreObject dso = (DataStoreObject) ClassLoader.getSystemClassLoader().loadClass(packageName + "." + className).newInstance();
-			dso.initDataStoreObjectDescriptor(this);
-		}
+				DataStoreObject dso = (DataStoreObject) ClassLoader.getSystemClassLoader()
+						.loadClass(packageName + "." + className).newInstance();
+				dso.initDataStoreObjectDescriptor(this);
+			}
 		} catch (Exception e) {
 			Log.fatal(e);
 			return false;
 		}
+		HashSet<String> tableNames = new HashSet<>();
+		for (DataStoreObjectDescriptor dsod : dsodMap.values()) {
+			if (tableNames.contains(dsod.getTableName())) {
+				Log.fatal("[DataStoreService].init() : DataStoreObject " + dsod.getClass().getName()
+						+ " seems to use the same table name as another DataStoreObject, which could lead to serious conflicts. Please use a different name for either one of these DSO's.");
+				return false;
+			}
+		}
+
 		return secondStageinit();
 	}
 
@@ -46,9 +57,11 @@ public abstract class DataStoreService extends Service {
 
 	public abstract List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception;
 
-	public abstract List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception;
+	public abstract List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey,
+			Object endKey) throws Exception;
 
-	public abstract List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws Exception;
+	public abstract List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, Object... keys)
+			throws Exception;
 
 	public abstract DataStoreObject loadDSO(DataStoreObjectDescriptor dsod, Object key) throws Exception;
 
@@ -62,18 +75,15 @@ public abstract class DataStoreService extends Service {
 	 */
 
 	public void save(DataStoreObject dso) throws Exception {
-		LinkedList<DataStoreObject> dsoList = new LinkedList<DataStoreObject>();
-		dsoList.add(dso);
-		save(dsoList);
+		save(new DataStoreObject[] { dso });
 	}
 
-	public abstract void save(Collection<DataStoreObject> dsoList) throws Exception;
-
+	public abstract void save(DataStoreObject... dsoList) throws Exception;
 
 	public final void initDataStoreObjectDescriptor(DataStoreObjectDescriptor dsod) {
 		dsodMap.put(dsod.getDsoClass(), dsod);
 	}
-	
+
 	public final Collection<DataStoreObjectDescriptor> getAllDataStoreObjectDescriptors() {
 		return dsodMap.values();
 	}
@@ -81,11 +91,13 @@ public abstract class DataStoreService extends Service {
 	public final List<? extends DataStoreObject> loadAll(Class<? extends DataStoreObject> dsoClass) throws Exception {
 		return loadAll(getDataStoreObjectDescriptor(dsoClass));
 	}
-	
+
 	public final DataStoreObjectDescriptor getDataStoreObjectDescriptor(Class<? extends DataStoreObject> dsoClass) {
 		DataStoreObjectDescriptor dsod = dsodMap.get(dsoClass);
 		if (dsod == null) {
-			Log.fatal("DataStoreObject: " + dsoClass.getName() + " needs to be initialized by the DataStoreService before it can be instatiated. See the init() for " + this.getClass().getName());
+			Log.fatal("DataStoreObject: " + dsoClass.getName()
+					+ " needs to be initialized by the DataStoreService before it can be instatiated. See the init() for "
+					+ this.getClass().getName());
 		}
 		return dsod;
 	}

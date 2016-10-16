@@ -9,6 +9,7 @@ import java.util.Date;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.Log.Level;
 import org.nectarframework.base.service.session.Session;
@@ -40,8 +41,8 @@ public class LoggingService extends Service {
 	}
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		String logLevelStr = this.serviceParameters.getValue("logLevel");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		String logLevelStr = sp.getValue("logLevel");
 		if (logLevelStr == "trace") {
 			level = Level.TRACE;
 		} else if (logLevelStr == "debug") {

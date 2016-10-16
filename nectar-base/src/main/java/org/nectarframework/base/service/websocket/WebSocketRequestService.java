@@ -10,6 +10,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.event.EventService;
@@ -35,12 +36,12 @@ public class WebSocketRequestService extends Service {
 
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		compressionMinSize = this.serviceParameters.getInt("compressionMinSize", 0, Integer.MAX_VALUE, 5000);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		compressionMinSize = sp.getInt("compressionMinSize", 0, Integer.MAX_VALUE, 5000);
 		
-		this.listeningPort = serviceParameters.getInt("listeningPort", 1, Short.MAX_VALUE, 8001);
+		this.listeningPort = sp.getInt("listeningPort", 1, Short.MAX_VALUE, 8001);
 		this.listeningHost = null;
-		String listeningHostStr = this.serviceParameters.getValue("listeningHost");
+		String listeningHostStr = sp.getValue("listeningHost");
 
 		if (this.listeningHost == null) {
 			try {

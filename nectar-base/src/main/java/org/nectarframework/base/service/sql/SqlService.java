@@ -7,11 +7,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Vector;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.log.Log;
@@ -68,15 +71,15 @@ public abstract class SqlService extends Service {
 	}
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		host = serviceParameters.getValue("host");
-		port = serviceParameters.getValue("port");
-		database = serviceParameters.getValue("database");
-		user = serviceParameters.getValue("user");
-		password = serviceParameters.getValue("password");
-		poolSize = serviceParameters.getInt("poolSize", 1, 1000, 10);
-		startupConnections = serviceParameters.getInt("startupConnections", 1, 1000, 2);
-		maxInsertBatchSize = serviceParameters.getInt("maxInsertBatchSize", 1, 1000, 100);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		host = sp.getValue("host");
+		port = sp.getValue("port");
+		database = sp.getValue("database");
+		user = sp.getValue("user");
+		password = sp.getValue("password");
+		poolSize = sp.getInt("poolSize", 1, 1000, 10);
+		startupConnections = sp.getInt("startupConnections", 1, 1000, 2);
+		maxInsertBatchSize = sp.getInt("maxInsertBatchSize", 1, 1000, 100);
 	}
 
 	@Override
@@ -347,7 +350,8 @@ public abstract class SqlService extends Service {
 	}
 
 	/**
-	 * Begins an asynchronous query. The SQL query will be performed in a separate thread. Use AsyncTicket to get the result.
+	 * Begins an asynchronous query. The SQL query will be performed in a
+	 * separate thread. Use AsyncTicket to get the result.
 	 * 
 	 * @param sql
 	 * @return
@@ -366,7 +370,8 @@ public abstract class SqlService extends Service {
 	}
 
 	/**
-	 * Begins an asynchronous query. The SQL query will be performed in a separate thread. Use AsyncTicket to get the result.
+	 * Begins an asynchronous query. The SQL query will be performed in a
+	 * separate thread. Use AsyncTicket to get the result.
 	 * 
 	 * @param sql
 	 * @return
@@ -384,11 +389,14 @@ public abstract class SqlService extends Service {
 		return at;
 	}
 
-	
-	/** Begins an asynchronous query in a separate thread unless this request has already been cached. Use AsyncTicket to get the results. 
+	/**
+	 * Begins an asynchronous query in a separate thread unless this request has
+	 * already been cached. Use AsyncTicket to get the results.
 	 * 
-	 * @param sql the SQL query to perform
-	 * @param cacheExpiry the amount of time to keep this query in cache.
+	 * @param sql
+	 *            the SQL query to perform
+	 * @param cacheExpiry
+	 *            the amount of time to keep this query in cache.
 	 * @return
 	 */
 	public AsyncTicket asyncSelect(String sql, long cacheExpiry) {
@@ -413,39 +421,6 @@ public abstract class SqlService extends Service {
 		return at;
 	}
 
-	
-	//TODO move this to utils? what is this even used for?
-	private class SimpleDynamicList {
-		private class Link {
-			Link next;
-			Object[] rowData;
-		}
-
-		private Link first = null;
-		private Link last = null;
-
-		public Object[] popFirst() {
-			Object[] ret = first.rowData;
-			first = first.next;
-			return ret;
-		}
-
-		public void add(Object[] row) {
-			Link newLink = new Link();
-			newLink.rowData = row;
-			newLink.next = null;
-
-			if (first == null) {
-				first = newLink;
-				last = newLink;
-			} else {
-				last.next = newLink;
-			}
-			last = newLink;
-		}
-
-	}
-
 	/**
 	 * Converts a java.sql.ResultSet into a
 	 * nectar.base.service.mysql.ResultTable
@@ -456,15 +431,19 @@ public abstract class SqlService extends Service {
 	 * @throws SQLException
 	 */
 
-	protected ResultTable resultSetToResultTable(ResultSet rs) throws SQLException {
+	// TODO: this needs some performance benchmarking and trimming.
 
+	// We're essentially loading the result set into memory twice here, and
+	// that's not viable for large result sets.
+
+	protected ResultTable resultSetToResultTable(ResultSet rs) throws SQLException {
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int colCount = rsmd.getColumnCount();
 		JavaTypes[] typesMap = new JavaTypes[colCount];
 		HashMap<String, Integer> keyMap = new HashMap<String, Integer>();
 		for (int i = 0; i < colCount; i++) {
 			keyMap.put(rsmd.getColumnName(i + 1), i);
-			switch(rsmd.getColumnType(i + 1)) {
+			switch (rsmd.getColumnType(i + 1)) {
 			case Types.DECIMAL:
 				typesMap[i] = JavaTypes.BigDecimal;
 				break;
@@ -527,12 +506,10 @@ public abstract class SqlService extends Service {
 		}
 		long memorySize = 0;
 
-		
-		
 		String stringPtr = null;
 		byte[] baPtr = null;
 		int rowCount = 0;
-		SimpleDynamicList rowList = new SimpleDynamicList();
+		LinkedList<Object[]> rowList = new LinkedList<Object[]>();
 		while (rs.next()) {
 			Object[] rowData = new Object[colCount];
 			for (int col = 0; col < colCount; col++) { // k
@@ -628,7 +605,7 @@ public abstract class SqlService extends Service {
 
 		Object[] rowData = null;
 		for (int row = 0; row < rowCount; row++) {
-			rowData = rowList.popFirst();
+			rowData = rowList.pop();
 			for (int t = 0; t < colCount; t++) {
 				table[row * colCount + t] = rowData[t];
 			}
@@ -690,26 +667,20 @@ public abstract class SqlService extends Service {
 		stat.close();
 		returnConnection(conn);
 	}
-	
 
 	private ResultTable getCachedResultTable(SqlPreparedStatement mps, boolean refresh) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-
 
 	private ResultTable getCachedResultTable(String sql, boolean refresh) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-
 
 	private void addResultTableToCache(SqlPreparedStatement mps, ResultTable rt, long cacheExpiry) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	
 }

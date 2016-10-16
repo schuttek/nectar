@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.Locale;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.pathfinder.IPathFinder;
 import org.nectarframework.base.service.translation.TranslationService;
@@ -26,8 +27,8 @@ public class LiveTemplateService extends TemplateService {
 	}
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		rawTemplatesRootDir = this.serviceParameters.getString("rawTemplatesRootDir", null);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		rawTemplatesRootDir = sp.getString("rawTemplatesRootDir", null);
 		if (rawTemplatesRootDir == null) {
 			throw new ConfigurationException("TemplateService needs rawTemplatesRootDir config.");
 		}

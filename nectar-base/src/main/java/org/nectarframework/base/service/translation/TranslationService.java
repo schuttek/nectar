@@ -5,16 +5,16 @@ import java.util.Locale;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.cache.CacheableString;
 import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.sql.PrSt;
 import org.nectarframework.base.service.sql.ResultRow;
 import org.nectarframework.base.service.sql.ResultTable;
+import org.nectarframework.base.service.sql.SqlPreparedStatement;
 import org.nectarframework.base.service.sql.mysql.MysqlService;
-import org.nectarframework.base.tools.ByteArray;
 
 public class TranslationService extends Service {
 
@@ -25,9 +25,9 @@ public class TranslationService extends Service {
 	private CacheService cacheService;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		useCache = serviceParameters.getBoolean("useCache", useCache);
-		databaseTable = serviceParameters.getString("databaseTable", databaseTable);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		useCache = sp.getBoolean("useCache", useCache);
+		databaseTable = sp.getString("databaseTable", databaseTable);
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class TranslationService extends Service {
 	}
 
 	private boolean loadAll() {
-		PrSt st = new PrSt(
+		SqlPreparedStatement st = new SqlPreparedStatement(
 				"SELECT localeLanguage, localeCountry, localeVariant, namespace, messageKey, translatedText FROM w_lang");
 		try {
 			ResultTable rt = my.select(st);
@@ -94,7 +94,7 @@ public class TranslationService extends Service {
 			}
 		}
 
-		PrSt st = new PrSt(
+		SqlPreparedStatement st = new SqlPreparedStatement(
 				"SELECT localeLanguage, localeCountry, localeVariant, namespace, messageKey, translatedText FROM w_lang WHERE namespace = ? AND messageKey = ?");
 
 		st.setString(1, namespace);

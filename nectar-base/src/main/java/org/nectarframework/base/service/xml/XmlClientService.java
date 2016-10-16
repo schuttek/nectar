@@ -21,6 +21,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
@@ -55,11 +56,11 @@ public class XmlClientService extends ConnectionService {
 	private PublicKey publicKey;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		serverHost = serviceParameters.getValue("serverHost");
-		serverPort = serviceParameters.getInt("serverPort", 1, Short.MAX_VALUE, 8009);
-		compressionEnabled = serviceParameters.getBoolean("compressionEnabled", compressionEnabled);
-		encryptionEnabled = serviceParameters.getBoolean("encryptionEnabled", encryptionEnabled);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		serverHost = sp.getValue("serverHost");
+		serverPort = sp.getInt("serverPort", 1, Short.MAX_VALUE, 8009);
+		compressionEnabled = sp.getBoolean("compressionEnabled", compressionEnabled);
+		encryptionEnabled = sp.getBoolean("encryptionEnabled", encryptionEnabled);
 		if (serverHost != null) {
 			try {
 				serverHostAddress = InetAddress.getByName(serverHost);

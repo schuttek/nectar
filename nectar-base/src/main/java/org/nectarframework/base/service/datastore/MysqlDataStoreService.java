@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.cache.CacheableObject;
@@ -32,7 +33,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	private CacheService cacheService;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
 
 	}
 
@@ -58,7 +59,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		return true;
 	}
 
-	private List<? extends DataStoreObject> loadFromQuery(SqlPreparedStatement mps, DataStoreObjectDescriptor dsod) throws SQLException {
+	private List<DataStoreObject> loadFromQuery(SqlPreparedStatement mps, DataStoreObjectDescriptor dsod) throws SQLException {
 
 		LinkedList<DataStoreObject> dsoList = new LinkedList<DataStoreObject>();
 		ResultTable rt = mysqlService.select(mps);
@@ -82,7 +83,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception {
+	public List<DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey) throws Exception {
 		String sqlQuery = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM `" + dsod.getTableName() + "` WHERE `"+dsod.getPrimaryKey().getColumnName()+"` >= ? AND "+ dsod.getPrimaryKey().getColumnName() +" <= ?" ;
 		SqlPreparedStatement mps = new SqlPreparedStatement(sqlQuery);
 		
@@ -91,17 +92,17 @@ public class MysqlDataStoreService extends DataStoreService {
 		return loadFromQuery(mps, dsod);
 	}
 
-	public List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
+	public List<DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
 		String sqlQuery = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName();
 		SqlPreparedStatement mps = new SqlPreparedStatement(sqlQuery);
 		return loadFromQuery(mps, dsod);
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys) throws SQLException {
+	public List<DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, Object... keys) throws SQLException {
 		StringBuffer sql = new StringBuffer();
 		sql.append("SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName() + " WHERE " + dsod.getPrimaryKey().getColumnName() + " IN (");
-		int idsLen = keys.size();
+		int idsLen = keys.length;
 		for (int t = 0; t < idsLen; t++) {
 			if (t + 1 < idsLen)
 				sql.append("?,");
@@ -171,7 +172,7 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public void save(Collection<DataStoreObject> dsoList) throws SQLException {
+	public void save(DataStoreObject... dsoList) throws SQLException {
 		// we could have a mix of DSO's, so let's put them in batches by table.
 	
 		HashMap<DataStoreObjectDescriptor, LinkedList<DataStoreObject>> dsodMap = new HashMap<DataStoreObjectDescriptor, LinkedList<DataStoreObject>>();
@@ -187,7 +188,7 @@ public class MysqlDataStoreService extends DataStoreService {
 		/* batch inserts are faster when running in a transaction, but transactions also add some overhead. So 5 is an arbitrary threshold to keep single and small insert batches fast (transaction-less), while large batches will get a speed boost from being in a transaction */
 		
 		SqlTransactionHandle mth = null;
-		if (dsoList.size() > 5) {
+		if (dsoList.length > 5) {
 			mth = mysqlService.beginTransaction();
 		}
 

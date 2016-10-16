@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
@@ -24,7 +25,7 @@ public class EventService extends Service {
 	protected ThreadService threadService;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
 
 	}
 

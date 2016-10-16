@@ -26,7 +26,7 @@ public class ServiceParameters {
 		return str;
 	}
 
-	public static ServiceParameters parseServiceParameters(Element serviceElement) {
+	public static ServiceParameters parsesp(Element serviceElement) {
 		HashMap<String, String> params = new HashMap<String, String>();
 		HashMap<String, LinkedList<String>> paramSets = new HashMap<String, LinkedList<String>>();
 

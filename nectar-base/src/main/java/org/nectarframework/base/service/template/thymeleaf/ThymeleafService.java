@@ -9,6 +9,7 @@ import java.util.Locale;
 import org.nectarframework.base.Main;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;
@@ -27,8 +28,8 @@ public class ThymeleafService extends Service {
 	private String templatesDirectory;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		templatesDirectory = this.serviceParameters.getString("templatesDirectory", null);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		templatesDirectory = sp.getString("templatesDirectory", null);
 	}
 	
 	protected String getTemplatesDirectory() {

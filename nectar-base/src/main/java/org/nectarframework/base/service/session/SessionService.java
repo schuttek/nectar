@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 
 /**
  * 
@@ -50,7 +51,7 @@ public class SessionService extends Service {
 	}
 
 	@Override
-	public void checkParameters() {
+	public void checkParameters(ServiceParameters sp) {
 	}
 
 	public void forgetSession(Session session) {

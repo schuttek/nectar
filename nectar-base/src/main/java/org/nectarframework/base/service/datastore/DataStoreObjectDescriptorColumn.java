@@ -124,81 +124,81 @@ public class DataStoreObjectDescriptorColumn {
 			throw new IllegalArgumentException("invalid type:" + this.toString());
 		}
 
-		public void toBytes(Object value, ByteArray bq) {
+		public ByteArray toBytes(Object value, ByteArray bq) {
 			int len, i;
 			switch (this) {
 			case BOOLEAN:
 				bq.add((Boolean) value);
-				return;
+				return bq;
 			case BYTE:
 				bq.add((Byte) value);
-				return;
+				return bq;
 			case SHORT:
 				bq.add((Short) value);
-				return;
+				return bq;
 			case INT:
 				bq.add((Integer) value);
-				return;
+				return bq;
 			case LONG:
 				bq.add((Long) value);
-				return;
+				return bq;
 			case FLOAT:
 				bq.add((Float) value);
-				return;
+				return bq;
 			case DOUBLE:
 				bq.add((Double) value);
-				return;
+				return bq;
 			case STRING:
 				bq.add((String) value);
-				return;
+				return bq;
 			case BLOB:
 				bq.addByteArray((byte[]) value);
-				return;
+				return bq;
 			case BYTE_ARRAY:
 				bq.addByteArray((byte[]) value);
-				return;
+				return bq;
 			case SHORT_ARRAY:
 				len = ((short[]) value).length;
 				bq.add(len);
 				for (i = 0; i < len; i++) {
 					bq.add(((short[]) value)[i]);
 				}
-				return;
+				return bq;
 			case INT_ARRAY:
 				len = ((int[]) value).length;
 				bq.add(len);
 				for (i = 0; i < len; i++) {
 					bq.add(((int[]) value)[i]);
 				}
-				return;
+				return bq;
 			case LONG_ARRAY:
 				len = ((long[]) value).length;
 				bq.add(len);
 				for (i = 0; i < len; i++) {
 					bq.add(((long[]) value)[i]);
 				}
-				return;
+				return bq;
 			case FLOAT_ARRAY:
 				len = ((float[]) value).length;
 				bq.add(len);
 				for (i = 0; i < len; i++) {
 					bq.add(((float[]) value)[i]);
 				}
-				return;
+				return bq;
 			case DOUBLE_ARRAY:
 				len = ((double[]) value).length;
 				bq.add(len);
 				for (i = 0; i < len; i++) {
 					bq.add(((double[]) value)[i]);
 				}
-				return;
+				return bq;
 			case STRING_ARRAY:
 				len = ((String[]) value).length;
 				bq.add(len);
 				for (i = 0; i < len; i++) {
 					bq.add(((String[]) value)[i]);
 				}
-				return;
+				return bq;
 			}
 			throw new IllegalArgumentException("invalid type:" + this.toString());
 		}

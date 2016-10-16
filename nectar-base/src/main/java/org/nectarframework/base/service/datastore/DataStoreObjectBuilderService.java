@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
@@ -36,9 +37,9 @@ public class DataStoreObjectBuilderService extends Service {
 	private XmlService xmlService;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		inputFile = serviceParameters.getString("inputFile", "config/dataStoreObjects.xml");
-		outputDir = serviceParameters.getString("outputDir", "src/main/java");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		inputFile = sp.getString("inputFile", "config/dataStoreObjects.xml");
+		outputDir = sp.getString("outputDir", "src/main/java");
 	}
 
 	@Override

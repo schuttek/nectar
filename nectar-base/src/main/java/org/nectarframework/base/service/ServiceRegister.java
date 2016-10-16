@@ -122,7 +122,7 @@ public final class ServiceRegister {
 			}
 		}
 		for (Service s : serviceList) {
-			if (s.runState == Service.State.none) {
+			if (s.getRunState() == Service.State.none) {
 				try {
 					if (!initService(s))
 						return false;
@@ -130,9 +130,9 @@ public final class ServiceRegister {
 					Log.fatal(e);
 					return false;
 				}
-			} else if (s.runState != Service.State.initialized) {
+			} else if (s.getRunState() != Service.State.initialized) {
 				Log.fatal("ServiceRegister.init() has Service " + s.getClass().getName() + " in irregular state: "
-						+ s.runState);
+						+ s.getRunState());
 				return false;
 			}
 		}
@@ -151,7 +151,7 @@ public final class ServiceRegister {
 		}
 
 		if (s.init()) {
-			s.runState = Service.State.initialized;
+			s.setRunState(Service.State.initialized);
 		} else {
 			Log.fatal("Service: " + s.getClass().toString() + " failed to initialize!");
 			return false;
@@ -276,7 +276,7 @@ public final class ServiceRegister {
 			return null;
 		}
 
-		if (dependant.runState == Service.State.none) {
+		if (dependant.getRunState() == Service.State.none) {
 			if (!initService(dependant)) {
 				return null;
 			}
@@ -301,7 +301,7 @@ public final class ServiceRegister {
 		List<Service> list = dependancies.get(service);
 
 		for (Service dependant : list) {
-			if (dependant.runState == Service.State.running) {
+			if (dependant.getRunState() == Service.State.running) {
 				if (!_shutdownDependancies(dependant)) {
 					return false;
 				}

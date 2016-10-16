@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.file.FileService;
@@ -103,17 +104,17 @@ public class SimpleHttpRequestService extends Service implements Container {
 	}
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		compressionMinSize = this.serviceParameters.getInt("compressionMinSize", 0, Integer.MAX_VALUE, compressionMinSize);
-		staticFileBufferSize = this.serviceParameters.getInt("staticFileBufferSize", 1, Integer.MAX_VALUE, staticFileBufferSize);
-		defaultOutput = this.serviceParameters.getString("defaultOutput", defaultOutput);
-		staticRequestDirectory = this.serviceParameters.getString("staticRequestDirectory", staticRequestDirectory);
-		staticLocalDirectory = this.serviceParameters.getString("staticLocalDirectory", staticLocalDirectory);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		compressionMinSize = sp.getInt("compressionMinSize", 0, Integer.MAX_VALUE, compressionMinSize);
+		staticFileBufferSize = sp.getInt("staticFileBufferSize", 1, Integer.MAX_VALUE, staticFileBufferSize);
+		defaultOutput = sp.getString("defaultOutput", defaultOutput);
+		staticRequestDirectory = sp.getString("staticRequestDirectory", staticRequestDirectory);
+		staticLocalDirectory = sp.getString("staticLocalDirectory", staticLocalDirectory);
 		
-		this.listeningPort = this.serviceParameters.getInt("listeningPort", 1, 65536, listeningPort);
+		this.listeningPort = sp.getInt("listeningPort", 1, 65536, listeningPort);
 
 		this.listeningHost = null;
-		String listeningHostStr = this.serviceParameters.getValue("listeningHost");
+		String listeningHostStr = sp.getValue("listeningHost");
 		
 		if (listeningHost == null) {
 			try {
@@ -130,7 +131,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 			}
 		}
 		
-		staticFileCacheExpiry = serviceParameters.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE, 24*60*60*1000); // 24 hours
+		staticFileCacheExpiry = sp.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE, 24*60*60*1000); // 24 hours
 	}
 	
 

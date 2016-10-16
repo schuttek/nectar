@@ -102,11 +102,11 @@ public class Configuration {
 					Log.warn("While instantiating a Service in the configuration, the indicated class couldn't be found!", e);
 				}
 
-				ServiceParameters serviceParams = ServiceParameters.parseServiceParameters(serviceElm);
+				ServiceParameters serviceParams = ServiceParameters.parsesp(serviceElm);
 
 				service.setParameters(serviceParams);
 
-				service.checkParameters();
+				service.checkParameters(null);
 
 				serviceList.add(service);
 			}

@@ -24,6 +24,7 @@ import javax.xml.transform.TransformerFactory;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.file.FileService;
@@ -55,8 +56,8 @@ public class XmlService extends Service {
 	private int fileCacheExpiry;
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		fileCacheExpiry = serviceParameters.getInt("fileCacheExpiry", -1, Integer.MAX_VALUE, 24 * 60 * 60 * 1000); // 24
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		fileCacheExpiry = sp.getInt("fileCacheExpiry", -1, Integer.MAX_VALUE, 24 * 60 * 60 * 1000); // 24
 																													// hours
 	}
 

@@ -34,6 +34,7 @@ import org.jdom2.located.LocatedElement;
 import org.jdom2.located.LocatedJDOMFactory;
 import org.jdom2.output.XMLOutputter;
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.pathfinder.IPathFinder;
@@ -58,8 +59,8 @@ public class CompiledTemplateService extends TemplateService {
 	private static Namespace NS = Namespace.getNamespace("th", "http://www.nectarframework.org");
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		LinkedList<String> localeStrList = this.serviceParameters.getSet("locale");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		LinkedList<String> localeStrList = sp.getSet("locale");
 		if (localeStrList == null) {
 			throw new ConfigurationException("TempalteService needs at least one Locale.");
 		}
@@ -76,12 +77,12 @@ public class CompiledTemplateService extends TemplateService {
 			localeList.add(l);
 		}
 
-		templatePackageName = this.serviceParameters.getString("templatePackageName", null);
+		templatePackageName = sp.getString("templatePackageName", null);
 		if (templatePackageName == null) {
 			throw new ConfigurationException("TemplateService needs templatePackageName config.");
 		}
 
-		rawTemplatesRootDir = this.serviceParameters.getString("rawTemplatesRootDir", null);
+		rawTemplatesRootDir = sp.getString("rawTemplatesRootDir", null);
 		if (rawTemplatesRootDir == null) {
 			throw new ConfigurationException("TemplateService needs rawTemplatesRootDir config.");
 		}
@@ -231,7 +232,7 @@ public class CompiledTemplateService extends TemplateService {
 			pw.println("import org.nectarframework.base.service.xml.Element;");
 			pw.println("");
 			// class start
-			pw.println("@SuppressWarnings(\"unused\")");
+			pw.println("@SuppressWarnings(\"all\")");
 			pw.println("public class " + className + " implements ITemplate {");
 			pw.println("	@Override");
 			pw.println(

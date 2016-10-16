@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
 import org.nectarframework.base.service.file.FileService;
@@ -64,13 +65,13 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		storageRootDir = serviceParameters.getString("storageRootDir", "dataStore");
-		tableIndex = serviceParameters.getString("tableIndex", "table_index.xml");
-		dataTableSuffix = serviceParameters.getString("dataTableSuffix", "dat");
-		cacheExpiry = serviceParameters.getInt("cacheExpiry", 0, Integer.MAX_VALUE, 3600000);
-		compactionDelay = serviceParameters.getInt("compactionDelay", 1, Integer.MAX_VALUE, 30*60*1000); // 30 minutes
-		compactionThresholdFactor = serviceParameters.getFloat("compactionThresholdFactor", Float.MIN_VALUE, Float.MAX_VALUE, 0.05f); // 5 percent
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		storageRootDir = sp.getString("storageRootDir", "dataStore");
+		tableIndex = sp.getString("tableIndex", "table_index.xml");
+		dataTableSuffix = sp.getString("dataTableSuffix", "dat");
+		cacheExpiry = sp.getInt("cacheExpiry", 0, Integer.MAX_VALUE, 3600000);
+		compactionDelay = sp.getInt("compactionDelay", 1, Integer.MAX_VALUE, 30*60*1000); // 30 minutes
+		compactionThresholdFactor = sp.getFloat("compactionThresholdFactor", Float.MIN_VALUE, Float.MAX_VALUE, 0.05f); // 5 percent
 	}
 
 	@Override
@@ -94,7 +95,7 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
+	public List<DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception {
 		ConcurrentHashMap<Object, DataStoreObject> table = tableMap.get(dsod);
 		LinkedList<DataStoreObject> list = new LinkedList<>();
 
@@ -106,7 +107,7 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey)
+	public List<DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey)
 			throws Exception {
 		ConcurrentHashMap<Object, DataStoreObject> table = tableMap.get(dsod);
 		LinkedList<DataStoreObject> list = new LinkedList<>();
@@ -125,7 +126,7 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public List<? extends DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, LinkedList<Object> keys)
+	public List<DataStoreObject> loadBulkDSO(DataStoreObjectDescriptor dsod, Object... keys)
 			throws Exception {
 		ConcurrentHashMap<Object, DataStoreObject> table = tableMap.get(dsod);
 		LinkedList<DataStoreObject> list = new LinkedList<>();
@@ -147,7 +148,7 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public void save(Collection<DataStoreObject> dsoList) throws Exception {
+	public void save(DataStoreObject... dsoList) throws Exception {
 		for (DataStoreObject dso : dsoList) {
 			save(dso);
 		}

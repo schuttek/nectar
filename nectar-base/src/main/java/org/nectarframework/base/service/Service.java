@@ -1,6 +1,7 @@
 package org.nectarframework.base.service;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.Service.State;
 
 /**
  * Services tie together common functionality throughout Nectar. While most the
@@ -11,13 +12,13 @@ import org.nectarframework.base.exception.ConfigurationException;
  * 
  */
 public abstract class Service {
-	protected ServiceParameters serviceParameters;
+	private ServiceParameters serviceParameters;
 
 	protected enum State {
 		none, initialized, running, shutdown
 	}
 
-	protected State runState = State.none;
+	private State runState = State.none;
 
 	public void setParameters(ServiceParameters sp) {
 		serviceParameters = sp;
@@ -25,6 +26,10 @@ public abstract class Service {
 
 	public State getRunState() {
 		return runState;
+	}
+
+	public void setRunState(State rs) {
+		this.runState = rs;
 	}
 	
 	public ServiceParameters getParameters() {
@@ -51,10 +56,11 @@ public abstract class Service {
 	 * 
 	 * All we're doing is checking if our configuration file is just remotely
 	 * sane, and setting some default values.
+	 * @param sp TODO
 	 * 
 	 * @throws ConfigurationException
 	 */
-	public abstract void checkParameters() throws ConfigurationException;
+	public abstract void checkParameters(ServiceParameters sp) throws ConfigurationException;
 
 	/**
 	 * Stage 2: If your Service will make use of another Service, make sure you
@@ -134,4 +140,5 @@ public abstract class Service {
 	 *         restart and exit Nectar.
 	 */
 	protected abstract boolean shutdown();
+
 }

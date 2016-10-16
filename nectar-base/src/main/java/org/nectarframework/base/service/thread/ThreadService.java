@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Stack;
 
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.tools.Stopwatch;
 
@@ -145,10 +146,10 @@ public class ThreadService extends Service {
 	}
 
 	@Override
-	public void checkParameters() {
-		minWorkerThreads = this.serviceParameters.getInt("minWorkerThreads", 1, 1000, 10);
-		maxWorkerThreads = this.serviceParameters.getInt("maxWorkerThreads", 1, 10000, 20);
-		maxQueueLength = this.serviceParameters.getInt("maxQueueLength", 1, Integer.MAX_VALUE, 10000);
+	public void checkParameters(ServiceParameters sp) {
+		minWorkerThreads = sp.getInt("minWorkerThreads", 1, 1000, 10);
+		maxWorkerThreads = sp.getInt("maxWorkerThreads", 1, 10000, 20);
+		maxQueueLength = sp.getInt("maxQueueLength", 1, Integer.MAX_VALUE, 10000);
 	}
 
 	public void waitOn(ThreadServiceTask task) {

@@ -11,6 +11,7 @@ import java.util.Vector;
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.form.Form;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
@@ -26,8 +27,8 @@ public class PathFinderService extends IPathFinder {
 	private HashMap<String, VirtualHostResolution> virtualHostMap = new HashMap<>();
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		String pathConfigFile = this.serviceParameters.getString("pathConfigFile", "config/pathConfig.xml");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		String pathConfigFile = sp.getString("pathConfigFile", "config/pathConfig.xml");
 		try {
 			pathConfigElm = XmlService.fromXml(new FileInputStream(new File(pathConfigFile)));
 		} catch (SAXException | IOException e) {

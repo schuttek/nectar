@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.cache.CacheableObject;
@@ -65,8 +66,8 @@ public class FileService extends Service {
 
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		String rootDir = this.serviceParameters.getValue("rootDirectory");
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		String rootDir = sp.getValue("rootDirectory");
 		if (rootDir != null) {
 			File rootDirFile = new File(rootDir);
 			if (!rootDirFile.exists()) {
@@ -75,12 +76,12 @@ public class FileService extends Service {
 			this.rootDirectory = rootDirFile.getAbsolutePath();
 		}
 
-		totalFileCacheSize = serviceParameters.getInt("totalFileCacheSize", -1, maxTotalFileCacheSize,
+		totalFileCacheSize = sp.getInt("totalFileCacheSize", -1, maxTotalFileCacheSize,
 				defaultTotalFileCacheSize);
-		maxFilesInCache = serviceParameters.getInt("maxFilesInCache", -1, maxMaxFilesInCache, defaultMaxFilesInCache);
-		maxCachedFileSize = serviceParameters.getInt("maxCachedFileSize", -1, maxMaxCachedFileSize,
+		maxFilesInCache = sp.getInt("maxFilesInCache", -1, maxMaxFilesInCache, defaultMaxFilesInCache);
+		maxCachedFileSize = sp.getInt("maxCachedFileSize", -1, maxMaxCachedFileSize,
 				defaultMaxCachedFileSize);
-		recheckLastModified = serviceParameters.getBoolean("recheckLastModified", true);
+		recheckLastModified = sp.getBoolean("recheckLastModified", true);
 	}
 
 	@Override

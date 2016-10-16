@@ -2,12 +2,13 @@ package org.nectarframework.base.service.cluster;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 
 public class ClusterMasterService extends Service {
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
 		// TODO Auto-generated method stub
 
 	}

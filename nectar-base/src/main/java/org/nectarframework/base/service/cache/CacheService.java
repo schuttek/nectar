@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.Service;
+import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.internode.InternodeService;
 import org.nectarframework.base.service.log.Log;
@@ -42,11 +43,11 @@ public class CacheService extends Service {
 	/*** Service Methods ***/
 
 	@Override
-	public void checkParameters() throws ConfigurationException {
-		maxMemory = this.serviceParameters.getLong("maxMemory", 0, Integer.MAX_VALUE, maxMemory);
-		flushDelay = this.serviceParameters.getLong("flushDelay", 0, Integer.MAX_VALUE, flushDelay);
-		defaultExpiry = this.serviceParameters.getLong("defaultExpiry", 0, Integer.MAX_VALUE, defaultExpiry);
-		expiryFactor = this.serviceParameters.getFloat("expiryFactor", -1.0f, 10000.0f, 1.0f);
+	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+		maxMemory = sp.getLong("maxMemory", 0, Integer.MAX_VALUE, maxMemory);
+		flushDelay = sp.getLong("flushDelay", 0, Integer.MAX_VALUE, flushDelay);
+		defaultExpiry = sp.getLong("defaultExpiry", 0, Integer.MAX_VALUE, defaultExpiry);
+		expiryFactor = sp.getFloat("expiryFactor", -1.0f, 10000.0f, 1.0f);
 	}
 
 	@Override
