@@ -15,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 import org.nectarframework.base.config.Configuration;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.log.Log.Level;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.xml.sax.SAXException;
@@ -160,6 +161,7 @@ public class Main {
 	 */
 	public static void exit() {
 		ServiceRegister.getInstance().shutdown();
+		Runtime.getRuntime().removeShutdownHook(msh);
 		System.exit(0);
 	}
 
@@ -170,5 +172,34 @@ public class Main {
 	public static void crash__DO_NOT_USE_THIS_UNLESS_YOU_MEAN_HARM() {
 		Runtime.getRuntime().removeShutdownHook(msh);
 		System.exit(-1);
+	}
+
+	public static ServiceRegister runNectar(String configXmlFilePath, String nodeName, String nodeGroup, Level level) {
+		Log.preInitLogLevel = level;
+		ServiceRegister sr = new ServiceRegister();
+		Configuration config = new Configuration(sr);
+		File configFile = new File("s");
+
+		Element configElement;
+		try {
+			configElement = XmlService.fromXml(Files.readAllBytes(configFile.toPath()));
+		} catch (SAXException e1) {
+			Log.fatal(e1);
+			return null;
+		} catch (IOException e1) {
+			Log.fatal(e1);
+			return null;
+		}
+
+		sr.setConfiguration(config);
+		sr.setConfigElement(configElement);
+		msh = new MainShutdownHandler(sr);
+		Runtime.getRuntime().addShutdownHook(msh);
+		return sr;
+	}
+	
+	public static void endNectar() {
+		ServiceRegister.getInstance().shutdown();
+		Runtime.getRuntime().removeShutdownHook(msh);
 	}
 }

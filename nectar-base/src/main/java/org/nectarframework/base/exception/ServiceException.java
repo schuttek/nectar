@@ -1,6 +1,6 @@
-package org.nectarframework.base.service;
+package org.nectarframework.base.exception;
 
-public class ServiceException extends Exception {
+public class ServiceException extends NectarException {
 	public ServiceException(String s) {
 		super(s);
 	}

@@ -2,9 +2,9 @@ package org.nectarframework.base.service.nosql.redis;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.log.Log;
 
 import redis.clients.jedis.Jedis;

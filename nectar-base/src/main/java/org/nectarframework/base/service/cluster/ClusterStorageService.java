@@ -1,9 +1,9 @@
 package org.nectarframework.base.service.cluster;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceUnavailableException;
 
 /**
  * This Service provides read access to files stored in the cluster. 

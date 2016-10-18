@@ -67,6 +67,8 @@ public class Log {
 	}
 
 	private static final Level DEFAULT_LOG_LEVEL = Level.TRACE;
+	
+	public static Level preInitLogLevel = DEFAULT_LOG_LEVEL;
 
 	public static void setLoggingService(LoggingService loggingService) {
 		ls = loggingService;
@@ -76,7 +78,7 @@ public class Log {
 	}
 
 	private static void printLogEvent(PrintStream out, LogEvent le) {
-		if (le.getLevel().compareTo(DEFAULT_LOG_LEVEL) >= 0) {
+		if (le.getLevel().compareTo(preInitLogLevel) >= 0) {
 			SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss]SSS");
 			out.println(sdf.format(new Date(le.getTimestamp())) + " <" + le.getLevel().name() + "> " + le.getMessage());
 			if (le.getThrowable() != null) {
@@ -105,7 +107,7 @@ public class Log {
 
 	public static boolean isLevelEnabled(Level level) {
 		if (ls == null)
-			return level.compareTo(DEFAULT_LOG_LEVEL) >= 0;
+			return level.compareTo(preInitLogLevel) >= 0;
 		return ls.isLevelEnabled(level);
 	}
 

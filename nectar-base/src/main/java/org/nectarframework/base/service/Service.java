@@ -1,6 +1,7 @@
 package org.nectarframework.base.service;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service.State;
 
 /**
@@ -15,20 +16,23 @@ public abstract class Service {
 	private ServiceParameters serviceParameters;
 
 	protected enum State {
-		none, initialized, running, shutdown
+		none, initialized, running
 	}
 
 	private State runState = State.none;
 
-	public void setParameters(ServiceParameters sp) {
-		serviceParameters = sp;
+	public final void setParameters(ServiceParameters sp) throws ConfigurationException {
+		if (runState == State.none) {
+			checkParameters(sp);
+			serviceParameters = sp;
+		}
 	}
 
-	public State getRunState() {
+	public final State getRunState() {
 		return runState;
 	}
 
-	public void setRunState(State rs) {
+	public final void setRunState(State rs) {
 		this.runState = rs;
 	}
 	
@@ -60,7 +64,7 @@ public abstract class Service {
 	 * 
 	 * @throws ConfigurationException
 	 */
-	public abstract void checkParameters(ServiceParameters sp) throws ConfigurationException;
+	protected abstract void checkParameters(ServiceParameters sp) throws ConfigurationException;
 
 	/**
 	 * Stage 2: If your Service will make use of another Service, make sure you
@@ -102,7 +106,7 @@ public abstract class Service {
 		return service;
 	}
 
-	public final boolean __rootServiceRun() {
+	protected final boolean __rootServiceRun() {
 		if (runState != State.initialized)
 			throw new IllegalStateException("Can't run while in state: " + runState.name());
 		if (run()) {
@@ -122,11 +126,11 @@ public abstract class Service {
 	 */
 	protected abstract boolean run();
 
-	public final boolean __rootServiceShutdown() {
+	protected final boolean __rootServiceShutdown() {
 		if (runState != State.running)
 			throw new IllegalStateException();
 		if (ServiceRegister.shutdownDependancies(this) && shutdown()) {
-			this.runState = State.shutdown;
+			this.runState = State.none;
 			return true;
 		}
 		return false;

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config version="1.0">
+	<node group="junit">
+		<service class="org.nectarframework.base.service.thread.ThreadService">
+			<param name="minWorkerThreads" value="1" />
+			<param name="maxWorkerThreads" value="10" />
+		</service>
+	</node>
+	
+	<node group="hashMapCacheService" inherits="junit">
+		<service class="org.nectarframework.base.service.cache.HashMapCacheService">
+			
+		</service>
+	</node>
+</config>

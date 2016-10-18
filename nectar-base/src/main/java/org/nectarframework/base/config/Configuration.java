@@ -106,8 +106,6 @@ public class Configuration {
 
 				service.setParameters(serviceParams);
 
-				service.checkParameters(null);
-
 				serviceList.add(service);
 			}
 			this.serviceListByNodeGroup.put(nodeGroupName, serviceList);

@@ -8,9 +8,9 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.log.Log;

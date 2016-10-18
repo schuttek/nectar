@@ -4,9 +4,9 @@ import java.sql.SQLException;
 import java.util.Locale;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.cache.CacheableString;

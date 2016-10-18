@@ -5,9 +5,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.internode.InternodeService;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
@@ -41,12 +41,12 @@ public class HashMapCacheService extends CacheService {
 	/*** Service Methods ***/
 
 	@Override
-	public void _checkParameters(ServiceParameters sp) throws ConfigurationException {
+	protected void _checkParameters(ServiceParameters sp) throws ConfigurationException {
 		maxMemory = sp.getLong("maxMemory", 0, Integer.MAX_VALUE, maxMemory);
 	}
 
 	@Override
-	public boolean _establishDependencies() throws ServiceUnavailableException {
+	protected boolean _establishDependencies() throws ServiceUnavailableException {
 		threadService = (ThreadService) this.dependency(ThreadService.class);
 		return true;
 	}

@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceUnavailableException;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.file.ReadFileNotFoundException;

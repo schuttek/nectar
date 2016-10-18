@@ -8,6 +8,9 @@ import java.util.List;
 
 import org.nectarframework.base.config.Configuration;
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.exception.ServiceUnavailableRuntimeException;
+import org.nectarframework.base.service.Service.State;
 import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 
@@ -16,6 +19,8 @@ public final class ServiceRegister {
 	private Element configElement = null;
 	/** only one instance of this class allowed!! */
 	private static ServiceRegister instance = null;
+
+	private RUN_STATE runState = RUN_STATE.none;
 
 	/**
 	 * if you're not on the register, you're not a real Service...
@@ -48,8 +53,6 @@ public final class ServiceRegister {
 	public enum RUN_STATE {
 		none, configChecked, initialized, running, restarting, shutdown
 	}
-
-	private RUN_STATE runState = RUN_STATE.none;
 
 	private HashMap<String, Service> serviceDirectory = new HashMap<String, Service>();
 
@@ -117,7 +120,7 @@ public final class ServiceRegister {
 			registerByClass.put(s.getClass(), s);
 			Class<?> superClass = s.getClass().getSuperclass();
 			while (!superClass.equals(Service.class)) {
-				registerByClass.put((Class<? extends Service>)superClass, s);
+				registerByClass.put((Class<? extends Service>) superClass, s);
 				superClass = superClass.getSuperclass();
 			}
 		}
@@ -165,14 +168,10 @@ public final class ServiceRegister {
 	}
 
 	public boolean shutdown() {
-		Log.info("ServiceRegister.shutdown() triggered. Checking run status. Current run state before check is: "
-				+ runState.name());
-		Log.info(
-				"ServiceRegister will now try to shut down top level services (aka those that rely on other Services). ");
+		Log.info("[ServiceRegister] shutdown triggered.");
 		for (Service s : serviceDirectory.values()) {
 			shutdownDependancies(s);
 		}
-		Log.info("ServiceRegister is shutting down top level services (aka those that rely on other Services). ");
 
 		for (Service s : serviceDirectory.values()) {
 			s.__rootServiceShutdown();
@@ -181,6 +180,8 @@ public final class ServiceRegister {
 			runState = RUN_STATE.shutdown;
 		}
 		serviceDirectory.clear();
+		instance = null;
+		Log.info("[ServiceRegister] Nectar is closed for business.");
 		return true;
 	}
 
@@ -195,7 +196,7 @@ public final class ServiceRegister {
 		Configuration newConfig = new Configuration(this);
 
 		boolean newConfigSafe = false;
-		
+
 		try {
 			newConfigSafe = newConfig.parseFullConfig(configElement);
 		} catch (ConfigurationException e) {
@@ -219,7 +220,7 @@ public final class ServiceRegister {
 			Log.warn("Nectar should really only run with UTF-8 Charset. default charset is: " + Charset.defaultCharset()
 					+ ". This might cause weird problems. Please check your java installation / runtime options. ");
 		}
-		
+
 		try {
 			boolean configValid = config.parseFullConfig(configElement);
 			if (configValid) {
@@ -238,7 +239,7 @@ public final class ServiceRegister {
 		Log.info("ServiceRegister is running services...");
 		List<Service> serviceList = config.getServiceList(this.config.getNodeGroup());
 		if (serviceList == null) {
-			Log.fatal("No services configured for node group "+config.getNodeGroup());
+			Log.fatal("No services configured for node group " + config.getNodeGroup());
 			return false;
 		}
 		for (Service s : serviceList) {
@@ -259,7 +260,7 @@ public final class ServiceRegister {
 	public Configuration getConfiguration() {
 		return config;
 	}
-	
+
 	public void setConfigElement(Element configElement) {
 		this.configElement = configElement;
 	}
@@ -314,24 +315,37 @@ public final class ServiceRegister {
 	}
 
 	/**
-	 * use getServiceByClass(Class<? extends Service> serviceClass) instead:
-	 * it's faster and safer.
+	 * Get the instance of the Service implemented by the given serviceClass.
 	 * 
-	 * @param className
+	 * 
+	 * 
+	 * @param serviceClass
 	 * @return
+	 * @throws ServiceUnavailableRuntimeException
 	 */
-	@Deprecated
-	public static Service getServiceByClassName(String className) {
-		for (Class<? extends Service> c : instance.registerByClass.keySet()) {
-			if (c.getName().equals(className)) {
-				return instance.registerByClass.get(c);
-			}
+	@SuppressWarnings("unchecked")
+	public static <T extends Service> T getService(Class<T> serviceClass) {
+		if (instance == null) {
+			throw new ServiceUnavailableRuntimeException("Nectar is not running, or not available.");
 		}
-		return null;
+		switch (instance.runState) {
+		case configChecked:
+		case initialized:
+			throw new ServiceUnavailableRuntimeException("Nectar is starting up.");
+		case none:
+		case restarting:
+			throw new ServiceUnavailableRuntimeException("Nectar is restarting.");
+		case running:
+			Service service = instance.registerByClass.get(serviceClass);
+			if (service == null)
+				throw new ServiceUnavailableRuntimeException(
+						serviceClass.getName() + " is not running or is not available.");
+			return (T) service;
+		case shutdown:
+			throw new ServiceUnavailableRuntimeException("Nectar is shut down.");
+		}
+		// unreachable code since all switch cases are addressed.
+		throw new ServiceUnavailableRuntimeException(
+				"Nectar is in an unknown RUN_STATE, and has no idea what's going on.");
 	}
-
-	public static Service getService(Class<? extends Service> serviceClass) {
-		return instance.registerByClass.get(serviceClass);
-	}
-
 }
