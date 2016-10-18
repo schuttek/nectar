@@ -71,7 +71,7 @@ public abstract class Service {
 	 *         startup process and exit Nectar.
 	 * @throws ServiceUnavailableException
 	 */
-	public abstract boolean establishDependancies() throws ServiceUnavailableException;
+	public abstract boolean establishDependencies() throws ServiceUnavailableException;
 
 	/**
 	 * Stage 3: At this point, if your service has declared a dependancy, that
@@ -93,7 +93,7 @@ public abstract class Service {
 	 *             if the serviceClass couldn't be found, or isn't configured to
 	 *             be started.
 	 */
-	protected Service dependancy(Class<? extends Service> serviceClass) throws ServiceUnavailableException {
+	protected Service dependency(Class<? extends Service> serviceClass) throws ServiceUnavailableException {
 		Service service = ServiceRegister.addServiceDependancy(this, serviceClass);
 		if (service == null) {
 			throw new ServiceUnavailableException(
@@ -102,7 +102,7 @@ public abstract class Service {
 		return service;
 	}
 
-	public final boolean _run() {
+	public final boolean __rootServiceRun() {
 		if (runState != State.initialized)
 			throw new IllegalStateException("Can't run while in state: " + runState.name());
 		if (run()) {
@@ -122,7 +122,7 @@ public abstract class Service {
 	 */
 	protected abstract boolean run();
 
-	public final boolean _shutdown() {
+	public final boolean __rootServiceShutdown() {
 		if (runState != State.running)
 			throw new IllegalStateException();
 		if (ServiceRegister.shutdownDependancies(this) && shutdown()) {

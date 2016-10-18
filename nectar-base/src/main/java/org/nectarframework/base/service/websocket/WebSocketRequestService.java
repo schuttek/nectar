@@ -60,11 +60,11 @@ public class WebSocketRequestService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		eventService = (EventService)dependancy(EventService.class);
-		threadService = (ThreadService)dependancy(ThreadService.class);
-		directoryService = (DirectoryService)dependancy(DirectoryService.class);
-		xmlService = (XmlService)dependancy(XmlService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		eventService = (EventService)dependency(EventService.class);
+		threadService = (ThreadService)dependency(ThreadService.class);
+		directoryService = (DirectoryService)dependency(DirectoryService.class);
+		xmlService = (XmlService)dependency(XmlService.class);
 		
 		return true;
 	}

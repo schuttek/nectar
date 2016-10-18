@@ -129,11 +129,11 @@ public class XmlServerService extends ConnectionService {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		threadService = (ThreadService) dependancy(ThreadService.class);
-		xmlService = (XmlService) dependancy(XmlService.class);
-		directoryService = (DirectoryService) dependancy(DirectoryService.class);
-		sessionService = (SessionService) dependancy(SessionService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		threadService = (ThreadService) dependency(ThreadService.class);
+		xmlService = (XmlService) dependency(XmlService.class);
+		directoryService = (DirectoryService) dependency(DirectoryService.class);
+		sessionService = (SessionService) dependency(SessionService.class);
 		return true;
 	}
 

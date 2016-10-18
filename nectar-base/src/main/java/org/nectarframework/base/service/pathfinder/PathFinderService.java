@@ -37,7 +37,7 @@ public class PathFinderService extends IPathFinder {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
+	public boolean establishDependencies() throws ServiceUnavailableException {
 		return true;
 	}
 

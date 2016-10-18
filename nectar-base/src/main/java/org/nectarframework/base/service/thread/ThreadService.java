@@ -29,7 +29,7 @@ public class ThreadService extends Service {
 	private int minWorkerThreads = 2;
 	private int maxWorkerThreads = 50;
 
-	public boolean establishDependancies() {
+	public boolean establishDependencies() {
 		return true;
 	}
 

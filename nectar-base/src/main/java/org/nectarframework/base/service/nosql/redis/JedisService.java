@@ -40,7 +40,7 @@ public class JedisService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
+	public boolean establishDependencies() throws ServiceUnavailableException {
 		return true;
 	}
 

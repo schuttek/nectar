@@ -22,7 +22,7 @@ public class ClusterDatabaseService extends Service implements ClusterNodeServic
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
+	public boolean establishDependencies() throws ServiceUnavailableException {
 		// TODO Auto-generated method stub
 		return false;
 	}

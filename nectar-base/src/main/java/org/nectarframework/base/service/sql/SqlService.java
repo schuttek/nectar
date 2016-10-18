@@ -83,9 +83,9 @@ public abstract class SqlService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		threadService = (ThreadService) dependancy(ThreadService.class);
-		cacheService = (CacheService) dependancy(CacheService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		threadService = (ThreadService) dependency(ThreadService.class);
+		cacheService = (CacheService) dependency(CacheService.class);
 		return true;
 	}
 

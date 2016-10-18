@@ -76,9 +76,9 @@ public class XmlClientService extends ConnectionService {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		threadService = (ThreadService) dependancy(ThreadService.class);
-		xmlService = (XmlService) dependancy(XmlService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		threadService = (ThreadService) dependency(ThreadService.class);
+		xmlService = (XmlService) dependency(XmlService.class);
 		return true;
 	}
 

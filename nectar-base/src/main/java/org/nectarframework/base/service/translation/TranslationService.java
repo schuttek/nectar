@@ -31,9 +31,9 @@ public class TranslationService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		my = (MysqlService) dependancy(MysqlService.class);
-		cacheService = (CacheService) dependancy(CacheService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		my = (MysqlService) dependency(MysqlService.class);
+		cacheService = (CacheService) dependency(CacheService.class);
 		return true;
 	}
 

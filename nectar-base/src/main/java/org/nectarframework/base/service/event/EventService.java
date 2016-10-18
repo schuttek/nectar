@@ -30,7 +30,7 @@ public class EventService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() {
+	public boolean establishDependencies() {
 		threadService = (ThreadService) ServiceRegister.getService(ThreadService.class);
 		return true;
 	}

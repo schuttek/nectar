@@ -19,8 +19,8 @@ public class TemplateBuilderService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		dependancy(CompiledTemplateService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		dependency(CompiledTemplateService.class);
 		return true;
 	}
 

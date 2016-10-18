@@ -19,7 +19,7 @@ public class ClusterStorageService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
+	public boolean establishDependencies() throws ServiceUnavailableException {
 		// TODO Auto-generated method stub
 		return true;
 	}

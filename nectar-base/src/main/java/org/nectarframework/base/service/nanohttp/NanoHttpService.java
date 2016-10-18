@@ -222,12 +222,12 @@ public class NanoHttpService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		threadService = (ThreadService) dependancy(ThreadService.class);
-		pathFinderService = (PathFinderService) dependancy(PathFinderService.class);
-		xmlService = (XmlService) this.dependancy(XmlService.class);
-		fileService = (FileService) this.dependancy(FileService.class);
-		templateService = (TemplateService) this.dependancy(TemplateService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		threadService = (ThreadService) dependency(ThreadService.class);
+		pathFinderService = (PathFinderService) dependency(PathFinderService.class);
+		xmlService = (XmlService) this.dependency(XmlService.class);
+		fileService = (FileService) this.dependency(FileService.class);
+		templateService = (TemplateService) this.dependency(TemplateService.class);
 		return true;
 	}
 

@@ -47,8 +47,8 @@ public class RedisDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		jedisService = (JedisService) dependancy(JedisService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		jedisService = (JedisService) dependency(JedisService.class);
 		return true;
 	}
 

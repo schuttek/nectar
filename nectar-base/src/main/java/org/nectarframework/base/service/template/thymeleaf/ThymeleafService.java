@@ -37,10 +37,10 @@ public class ThymeleafService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		this.dependancy(XmlService.class);
-		fileService = (FileService) this.dependancy(FileService.class);
-		translationService = (TranslationService) this.dependancy(TranslationService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		this.dependency(XmlService.class);
+		fileService = (FileService) this.dependency(FileService.class);
+		translationService = (TranslationService) this.dependency(TranslationService.class);
 		return true;
 	}
 

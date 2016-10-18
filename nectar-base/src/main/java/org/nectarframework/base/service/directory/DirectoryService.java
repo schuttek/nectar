@@ -207,7 +207,7 @@ public class DirectoryService extends IPathFinder {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
+	public boolean establishDependencies() throws ServiceUnavailableException {
 		return true;
 	}
 

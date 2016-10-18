@@ -80,9 +80,9 @@ public class InternodeService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
+	public boolean establishDependencies() throws ServiceUnavailableException {
 
-		threadService = (ThreadService) dependancy(ThreadService.class);
+		threadService = (ThreadService) dependency(ThreadService.class);
 		return true;
 	}
 

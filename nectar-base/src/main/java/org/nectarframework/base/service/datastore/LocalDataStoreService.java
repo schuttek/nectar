@@ -75,10 +75,10 @@ public class LocalDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		this.fileService = (FileService) dependancy(FileService.class);
-		threadService = (ThreadService) dependancy(ThreadService.class);
-		dependancy(XmlService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		this.fileService = (FileService) dependency(FileService.class);
+		threadService = (ThreadService) dependency(ThreadService.class);
+		dependency(XmlService.class);
 		return true;
 	}
 

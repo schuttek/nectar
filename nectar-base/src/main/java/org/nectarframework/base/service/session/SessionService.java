@@ -33,7 +33,7 @@ public class SessionService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() {
+	public boolean establishDependencies() {
 		return true;
 	}
 

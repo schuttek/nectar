@@ -85,8 +85,8 @@ public class FileService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		cacheService = (CacheService) this.dependancy(CacheService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		cacheService = (CacheService) this.dependency(CacheService.class);
 		return true;
 	}
 

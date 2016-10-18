@@ -43,9 +43,9 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		mysqlService = (MysqlService) dependancy(MysqlService.class);
-		cacheService = (CacheService) dependancy(CacheService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		mysqlService = (MysqlService) dependency(MysqlService.class);
+		cacheService = (CacheService) dependency(CacheService.class);
 		return true;
 	}
 

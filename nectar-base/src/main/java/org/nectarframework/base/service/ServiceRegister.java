@@ -142,7 +142,7 @@ public final class ServiceRegister {
 	}
 
 	private boolean initService(Service s) throws ServiceUnavailableException {
-		if (!s.establishDependancies()) {
+		if (!s.establishDependencies()) {
 			// Log.fatal("ServiceResgster.init: Service " +
 			// s.getClass().getName() +
 			// " returned false on Service.establishDependancies().");
@@ -175,7 +175,7 @@ public final class ServiceRegister {
 		Log.info("ServiceRegister is shutting down top level services (aka those that rely on other Services). ");
 
 		for (Service s : serviceDirectory.values()) {
-			s._shutdown();
+			s.__rootServiceShutdown();
 		}
 		if (runState != RUN_STATE.restarting) {
 			runState = RUN_STATE.shutdown;
@@ -242,7 +242,7 @@ public final class ServiceRegister {
 			return false;
 		}
 		for (Service s : serviceList) {
-			if (!s._run()) {
+			if (!s.__rootServiceRun()) {
 				Log.info("ServiceRegister: Service " + s.getClass().getName() + " failed to run()");
 				System.exit(-1);
 			}
@@ -305,7 +305,7 @@ public final class ServiceRegister {
 				if (!_shutdownDependancies(dependant)) {
 					return false;
 				}
-				if (!dependant._shutdown()) {
+				if (!dependant.__rootServiceRun()) {
 					return false;
 				}
 			}

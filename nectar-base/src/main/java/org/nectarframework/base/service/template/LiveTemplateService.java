@@ -35,10 +35,10 @@ public class LiveTemplateService extends TemplateService {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		dependancy(XmlService.class);
-		translationService = (TranslationService) dependancy(TranslationService.class);
-		directoryService = (IPathFinder) dependancy(IPathFinder.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		dependency(XmlService.class);
+		translationService = (TranslationService) dependency(TranslationService.class);
+		directoryService = (IPathFinder) dependency(IPathFinder.class);
 		return true;
 	}
 

@@ -14,62 +14,63 @@ import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.tools.Tuple;
 
-//TODO: implement a cluster level cache that backs up the local cache.
+public class HashMapCacheService extends CacheService {
 
-public abstract class CacheService extends Service {
-
+	protected long maxMemory = 4294967296L; // 4 Gigs
 	protected long flushDelay = 60000; // one second
 	protected long defaultExpiry = 3600000; // one hour
 	protected float expiryFactor = 1.0f;
 
+	/**
+	 * knowing actual memory usage of an object is complicated and slow, so
+	 * we're just going to estimate it.
+	 * 
+	 * This number uses approximations, even in some cases just wild ass guesses
+	 * to begin with, and is updated without proper thread safety, but it's
+	 * better than nothing.
+	 * 
+	 * 
+	 */
+	protected long memoryUsage = 0;
 	protected long flushTimer = 0;
 
+	protected ConcurrentHashMap<String, Tuple<CacheableObject, Long>> generalCache;
+	protected ConcurrentHashMap<Service, ConcurrentHashMap<String, Tuple<CacheableObject, Long>>> realmCache;
 	private ThreadService threadService;
 
 	/*** Service Methods ***/
 
 	@Override
-	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		flushDelay = sp.getLong("flushDelay", 0, Integer.MAX_VALUE, flushDelay);
-		defaultExpiry = sp.getLong("defaultExpiry", 0, Integer.MAX_VALUE, defaultExpiry);
-		expiryFactor = sp.getFloat("expiryFactor", -1.0f, 10000.0f, 1.0f);
-		_checkParameters(sp);
+	public void _checkParameters(ServiceParameters sp) throws ConfigurationException {
+		maxMemory = sp.getLong("maxMemory", 0, Integer.MAX_VALUE, maxMemory);
 	}
-	
-
-	protected abstract void _checkParameters(ServiceParameters sp) throws ConfigurationException;
 
 	@Override
-	public boolean establishDependencies() throws ServiceUnavailableException {
+	public boolean _establishDependencies() throws ServiceUnavailableException {
 		threadService = (ThreadService) this.dependency(ThreadService.class);
-		return _establishDependencies();
+		return true;
 	}
 
-	protected abstract boolean _establishDependencies() throws ServiceUnavailableException;
-
 	@Override
-	protected boolean init() {
+	protected boolean _init() {
+		generalCache = new ConcurrentHashMap<>();
+		realmCache = new ConcurrentHashMap<>();
+		memoryUsage = 0;
 		flushTimer = 0;
-		return _init();
+		return true;
 	}
 
-	protected abstract boolean _init();
-
 	@Override
-	protected boolean run() {
+	protected boolean _run() {
 		createCheckFlushTimerTask();
-		return _run();
-	}
-	
-	protected abstract boolean _run();
-	
-	@Override
-	protected boolean shutdown() {
-		removeAll();
-		return _shutdown();
+		return true;
 	}
 
-	protected abstract boolean _shutdown();
+	@Override
+	protected boolean _shutdown() {
+		removeAll();
+		return true;
+	}
 
 	/*** Convenience Methods ***/
 	/**
@@ -149,18 +150,35 @@ public abstract class CacheService extends Service {
 		add(null, key, o, expiry);
 	}
 
-	/**
-	 * Removes a cache entry by the given key.
-	 * 
-	 * @param key
-	 */
-	public void remove(String key) {
-		remove(null, key);
-	}
-	
 	/*** Operational Methods ***/
 
-	public abstract CacheableObject getObject(Service realm, String key, boolean refreshCache);
+	public CacheableObject getObject(Service realm, String key, boolean refreshCache) {
+		checkFlushTimer();
+		Tuple<CacheableObject, Long> tup = null;
+		if (realm == null) {
+			tup = generalCache.get(key);
+		} else {
+			ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+			if (realmMap != null) {
+				tup = realmMap.get(key);
+			}
+		}
+		// Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null"
+		// : "found"));
+		if (tup == null)
+			return null;
+		long now = InternodeService.getTime();
+		if (tup.getRight() < now && !refreshCache) {
+			generalCache.remove(key);
+			return null;
+		}
+		if (refreshCache) {
+			Tuple<CacheableObject, Long> newTup = new Tuple<>(tup.getLeft(), now);
+			generalCache.put(key, newTup);
+		}
+		return tup.getLeft();
+	}
+
 	/**
 	 * Inserts a new key or overwrites an existing key with the given
 	 * CaheableObject. The entry will expire after the given expiry
@@ -170,7 +188,20 @@ public abstract class CacheService extends Service {
 	 * @param ba
 	 * @param expiry
 	 */
-	public abstract void set(Service realm, String key, CacheableObject co, long expiry);
+	public void set(Service realm, String key, CacheableObject co, long expiry) {
+		checkFlushTimer();
+		if (realm == null) {
+			generalCache.put(key, new Tuple<CacheableObject, Long>(co, expiry));
+		} else {
+			ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+			if (realmMap == null) {
+				realmMap = new ConcurrentHashMap<>();
+				realmCache.put(realm, realmMap);
+			}
+			realmMap.put(key, new Tuple<CacheableObject, Long>(co, expiry));
+		}
+	}
+
 	/**
 	 * Inserts a new key for the CacheableObject only if it doesn't already
 	 * exist. The entry will expire after the given expiry milliseconds, See
@@ -179,20 +210,51 @@ public abstract class CacheService extends Service {
 	 * @param key
 	 * @param ba
 	 */
-	public abstract void add(Service realm, String key, CacheableObject co, long expiry);
-	
+	public void add(Service realm, String key, CacheableObject co, long expiry) {
+		if (realm == null) {
+			generalCache.putIfAbsent(key, new Tuple<CacheableObject, Long>(co, expiry));
+		} else {
+			ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+			if (realmMap == null) {
+				realmMap = new ConcurrentHashMap<>();
+				realmCache.put(realm, realmMap);
+			}
+			realmMap.putIfAbsent(key, new Tuple<CacheableObject, Long>(co, expiry));
+		}
+	}
 
 	/**
 	 * Removes a cache entry by the given key.
 	 * 
 	 * @param key
 	 */
-	public abstract void remove(Service realm, String key);
+	public void remove(String key) {
+		remove(null, key);
+	}
+
+	/**
+	 * Removes a cache entry by the given key.
+	 * 
+	 * @param key
+	 */
+	public void remove(Service realm, String key) {
+		if (realm == null) {
+			generalCache.remove(key);
+		}
+		ConcurrentHashMap<String, Tuple<CacheableObject, Long>> realmMap = realmCache.get(realm);
+		if (realmMap != null) {
+			realmMap.remove(key);
+		}
+	}
 
 	/**
 	 * Removes ALL cache entries.
 	 */
-	public abstract void removeAll();
+	public void removeAll() {
+		generalCache.clear();
+		realmCache.clear();
+		flushTimer = InternodeService.getTime();
+	}
 	
 	/*** Self Maintenance Methods ***/
 	
@@ -218,8 +280,30 @@ public abstract class CacheService extends Service {
 	 * Removes out dated or inefficient cache entires.
 	 * 
 	 */
-	protected abstract void flushCache();
+	protected void flushCache() {
+		flushCacheMap(generalCache);
+		for (ConcurrentHashMap<String, Tuple<CacheableObject, Long>> m : realmCache.values()) {
+			flushCacheMap(m);
+		}
+	}
 	
+	
+	protected void flushCacheMap(ConcurrentHashMap<String, Tuple<CacheableObject, Long>> map) {
+		Set<String> keys = map.keySet();
+		long now = InternodeService.getTime();
+		ArrayList<String> toRemove = new ArrayList<String>();
+		for (String key : keys) {
+			Tuple<CacheableObject, Long> tup = map.get(key);
+			if (tup != null && tup.getRight() < now) {
+				toRemove.add(key);
+			}
+		}
+
+		for (String key : toRemove) {
+			map.remove(key);
+		}
+	}
+
 	protected void createCheckFlushTimerTask() {
 		CacheService thisCS = this;
 		threadService.executeLater(new ThreadServiceTask() {
@@ -231,5 +315,4 @@ public abstract class CacheService extends Service {
 
 		}, this.flushDelay - 1);
 	}
-
 }

@@ -56,13 +56,13 @@ public class SimpleHttpRequestService extends Service implements Container {
 	private SocketConnection socketConnection;
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		threadService = (ThreadService) this.dependancy(ThreadService.class);
-		directoryService = (DirectoryService) this.dependancy(DirectoryService.class);
-		xmlService = (XmlService) this.dependancy(XmlService.class);
-		fileService = (FileService) this.dependancy(FileService.class);
-		thymeleafService = (ThymeleafService) this.dependancy(ThymeleafService.class);
-		templateService = (TemplateService) this.dependancy(TemplateService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		threadService = (ThreadService) this.dependency(ThreadService.class);
+		directoryService = (DirectoryService) this.dependency(DirectoryService.class);
+		xmlService = (XmlService) this.dependency(XmlService.class);
+		fileService = (FileService) this.dependency(FileService.class);
+		thymeleafService = (ThymeleafService) this.dependency(ThymeleafService.class);
+		templateService = (TemplateService) this.dependency(TemplateService.class);
 		return true;
 	}
 

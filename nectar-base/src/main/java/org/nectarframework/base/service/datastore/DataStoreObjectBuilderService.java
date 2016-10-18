@@ -43,8 +43,8 @@ public class DataStoreObjectBuilderService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		xmlService = (XmlService) dependancy(XmlService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		xmlService = (XmlService) dependency(XmlService.class);
 		return true;
 	}
 

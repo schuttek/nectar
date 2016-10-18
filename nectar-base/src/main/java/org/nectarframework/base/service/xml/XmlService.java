@@ -62,9 +62,9 @@ public class XmlService extends Service {
 	}
 
 	@Override
-	public boolean establishDependancies() throws ServiceUnavailableException {
-		fileService = (FileService) dependancy(FileService.class);
-		mysqlService = (MysqlService) dependancy(MysqlService.class);
+	public boolean establishDependencies() throws ServiceUnavailableException {
+		fileService = (FileService) dependency(FileService.class);
+		mysqlService = (MysqlService) dependency(MysqlService.class);
 		return true;
 	}
 
