@@ -2,7 +2,7 @@ package org.nectarframework.base.service.sql;
 
 import java.sql.SQLException;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 
 public class DelayedInsertTask extends ThreadServiceTask {

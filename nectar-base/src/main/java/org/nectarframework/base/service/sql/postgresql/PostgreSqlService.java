@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.sql.SqlService;
 
 public class PostgreSqlService extends SqlService {

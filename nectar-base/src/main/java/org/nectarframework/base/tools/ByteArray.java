@@ -10,7 +10,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 
-import org.nectarframework.base.service.log.Log;
 
 /**
  * This class essentially works like java.io.ByteBuffer. You can add data to the
@@ -213,13 +212,10 @@ public class ByteArray {
 
 	public void addByteArray(byte[] b) {
 		if (b == null) {
-			Log.trace("add -1");
 			add(-1);
 		} else if (b.length == 0) {
-			Log.trace("add 0");
 			add(0);
 		} else {
-			Log.trace("add "+b.length);
 			add(b.length);
 			addRawBytes(b);
 		}
@@ -419,7 +415,6 @@ public class ByteArray {
 
 	public byte[] getByteArray() {
 		int len = getInt();
-		Log.trace("get "+len);
 		if (len == -1)
 			return null;
 		if (len == 0)

@@ -9,11 +9,12 @@ import java.util.HashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.file.FileService;
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.template.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.thread.ThreadService;
@@ -32,6 +33,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 	private FileService fileService;
 	private ThymeleafService thymeleafService;
 	private TemplateService templateService;
+	private AccessLogService accessLogService;
 	
 	protected HashMap<String, String> mimeTypesByExtension;
 	
@@ -63,6 +65,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 		fileService = (FileService) this.dependency(FileService.class);
 		thymeleafService = (ThymeleafService) this.dependency(ThymeleafService.class);
 		templateService = (TemplateService) this.dependency(TemplateService.class);
+		accessLogService = dependency(AccessLogService.class);
 		return true;
 	}
 
@@ -152,7 +155,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 	}
 
 	public void handle(Request httpRequest, Response httpResponse) {
-		SimpleHttpRequestHandler rh = new SimpleHttpRequestHandler(httpRequest, httpResponse, this, directoryService, xmlService, fileService, thymeleafService, templateService);
+		SimpleHttpRequestHandler rh = new SimpleHttpRequestHandler(httpRequest, httpResponse, this, directoryService, xmlService, fileService, thymeleafService, templateService, accessLogService);
 		threadService.execute(rh);
 	}
 

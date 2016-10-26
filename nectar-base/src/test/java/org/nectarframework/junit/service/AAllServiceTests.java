@@ -8,7 +8,7 @@ import junit.framework.TestSuite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ TemplateServicePatternTest.class,
-	XmlServiceTest.class })
+	XmlServiceTest.class, HashMapCacheServiceTest.class })
 
 public class AAllServiceTests {
 

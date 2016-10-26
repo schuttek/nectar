@@ -9,7 +9,7 @@
 		</service>
 		<service class="org.nectarframework.base.service.xml.XmlService">
 		</service>
-		<service class="org.nectarframework.base.service.cache.CacheService">
+		<service class="org.nectarframework.base.service.cache.HashMapCacheService">
 		</service>
 		<service class="org.nectarframework.base.service.file.FileService">
 			<param name="rootDirectory" value="files" />
@@ -89,11 +89,13 @@
 			<param name="maxWorkerThreads" value="50" />
 		</service>
 
-		<service class="org.nectarframework.base.service.cache.CacheService">
+		<service class="org.nectarframework.base.service.cache.HashMapCacheService">
 		</service>
 		<service class="org.nectarframework.base.service.session.SessionService">
 		</service>
-		<service class="org.nectarframework.base.service.log.LoggingService">
+		<service class="org.nectarframework.base.service.log.MysqlLogService">
+		</service>
+		<service class="org.nectarframework.base.service.event.EventService">
 		</service>
 		<service class="org.nectarframework.base.service.file.FileService">
 			<param name="rootDirectory" value="files" />

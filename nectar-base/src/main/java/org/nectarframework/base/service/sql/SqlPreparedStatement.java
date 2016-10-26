@@ -18,10 +18,9 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 
 public class SqlPreparedStatement {
-	// TODO: extends Lockable
 
 	public SqlPreparedStatement() {
 	}

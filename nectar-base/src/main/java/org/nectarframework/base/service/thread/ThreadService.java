@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Stack;
 
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.tools.Stopwatch;
 
 public class ThreadService extends Service {

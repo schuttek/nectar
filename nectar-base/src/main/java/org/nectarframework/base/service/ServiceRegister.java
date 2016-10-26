@@ -6,12 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.nectarframework.base.config.Configuration;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.exception.ServiceUnavailableRuntimeException;
 import org.nectarframework.base.service.Service.State;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.xml.Element;
 
 public final class ServiceRegister {
@@ -105,21 +103,22 @@ public final class ServiceRegister {
 	 */
 	@SuppressWarnings("unchecked")
 	public boolean init() {
-		Log.info("ServiceRegister is initializing services...");
+		Log.info("ServiceRegister is initializing services for "+config.getNodeName()+"@"+config.getNodeGroup());
 		if (runState != RUN_STATE.configChecked && runState != RUN_STATE.restarting) {
 			throw new IllegalStateException();
 		}
 
 		List<Service> serviceList = config.getServiceList(this.config.getNodeGroup());
-
 		if (serviceList == null) {
 			Log.fatal("No services configured for nodeGroup " + config.getNodeGroup());
 			return false;
 		}
 		for (Service s : serviceList) {
+			Log.trace("Registering " + s.getClass().getName());
 			registerByClass.put(s.getClass(), s);
 			Class<?> superClass = s.getClass().getSuperclass();
 			while (!superClass.equals(Service.class)) {
+				Log.trace("Registering " + superClass.getName());
 				registerByClass.put((Class<? extends Service>) superClass, s);
 				superClass = superClass.getSuperclass();
 			}
@@ -239,10 +238,15 @@ public final class ServiceRegister {
 		Log.info("ServiceRegister is running services...");
 		List<Service> serviceList = config.getServiceList(this.config.getNodeGroup());
 		if (serviceList == null) {
+			Log.fatal("Null services configured for node group " + config.getNodeGroup());
+			return false;
+		}
+		if (serviceList.isEmpty()) {
 			Log.fatal("No services configured for node group " + config.getNodeGroup());
 			return false;
 		}
 		for (Service s : serviceList) {
+			Log.trace("running Service: " + s.getClass().getName());
 			if (!s.__rootServiceRun()) {
 				Log.info("ServiceRegister: Service " + s.getClass().getName() + " failed to run()");
 				System.exit(-1);
@@ -329,17 +333,17 @@ public final class ServiceRegister {
 			throw new ServiceUnavailableRuntimeException("Nectar is not running, or not available.");
 		}
 		switch (instance.runState) {
-		case configChecked:
-		case initialized:
-			throw new ServiceUnavailableRuntimeException("Nectar is starting up.");
 		case none:
+			throw new ServiceUnavailableRuntimeException("Nectar is not started.");
 		case restarting:
 			throw new ServiceUnavailableRuntimeException("Nectar is restarting.");
+		case configChecked:
+		case initialized:
+			throw new ServiceUnavailableRuntimeException("Nectar is starting up...");
 		case running:
 			Service service = instance.registerByClass.get(serviceClass);
 			if (service == null)
-				throw new ServiceUnavailableRuntimeException(
-						serviceClass.getName() + " is not running or is not available.");
+				return null;
 			return (T) service;
 		case shutdown:
 			throw new ServiceUnavailableRuntimeException("Nectar is shut down.");

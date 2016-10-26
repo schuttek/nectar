@@ -19,7 +19,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.tools.ByteArray;
 
 /**

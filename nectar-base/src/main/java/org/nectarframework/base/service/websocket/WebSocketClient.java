@@ -1,11 +1,11 @@
 package org.nectarframework.base.service.websocket;
 
 import org.java_websocket.WebSocket;
-import org.nectarframework.base.service.event.Event;
+import org.nectarframework.base.service.event.NectarEvent;
 import org.nectarframework.base.service.event.EventListener;
 import org.nectarframework.base.service.session.Session;
 
-public class WebSocketClient implements EventListener {
+public class WebSocketClient {
 	private WebSocket webSocket;
 	private Session session;
 	
@@ -24,12 +24,4 @@ public class WebSocketClient implements EventListener {
 	public Session getSession() {
 		return session;
 	}
-
-	@Override
-	public void handleListenerServiceEvent(Event e) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	
 }

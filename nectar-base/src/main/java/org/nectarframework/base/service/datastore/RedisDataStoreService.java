@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.file.ReadFileNotFoundException;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.nosql.redis.JedisService;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;

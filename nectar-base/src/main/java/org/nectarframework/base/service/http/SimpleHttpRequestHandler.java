@@ -13,6 +13,7 @@ import java.util.zip.GZIPOutputStream;
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.form.ValidationError;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.directory.DirAction;
 import org.nectarframework.base.service.directory.DirPath;
 import org.nectarframework.base.service.directory.DirRedirect;
@@ -22,8 +23,7 @@ import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.service.file.ReadFileAccessDeniedException;
 import org.nectarframework.base.service.file.ReadFileNotAFileException;
 import org.nectarframework.base.service.file.ReadFileNotFoundException;
-import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.log.LoggingService;
+import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.template.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
@@ -32,6 +32,7 @@ import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.ByteArrayOutputStream;
 import org.nectarframework.base.tools.FastByteArrayOutputStream;
 import org.nectarframework.base.tools.Stopwatch;
+import org.nectarframework.base.tools.StringTools;
 import org.simpleframework.http.Address;
 import org.simpleframework.http.Query;
 import org.simpleframework.http.Request;
@@ -49,7 +50,7 @@ import org.thymeleaf.exceptions.TemplateEngineException;
  */
 public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
-	private static final String serverName = "Nectar/" + org.nectarframework.base.Main.VERSION;;
+	protected static final String serverName = "Nectar/" + org.nectarframework.base.Main.VERSION;;
 	protected SimpleHttpRequestService simpleHttpRequestService;
 	protected DirectoryService directoryService;
 	protected ThymeleafService thymeleafService;
@@ -58,6 +59,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 	protected Request request;
 	protected Response response;
 	protected XmlService xmlService;
+	protected AccessLogService accessLogService;
 
 	protected String contentType;
 	protected long contentLength;
@@ -65,7 +67,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 	public SimpleHttpRequestHandler(Request httpRequest, Response httpResponse,
 			SimpleHttpRequestService simpleHttpRequestService, DirectoryService directoryService, XmlService xmlService,
-			FileService fileService, ThymeleafService thymeleafService, TemplateService templateService) {
+			FileService fileService, ThymeleafService thymeleafService, TemplateService templateService, AccessLogService accessLogService) {
 		this.simpleHttpRequestService = simpleHttpRequestService;
 		this.directoryService = directoryService;
 		this.request = httpRequest;
@@ -74,6 +76,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		this.fileService = fileService;
 		this.thymeleafService = thymeleafService;
 		this.templateService = templateService;
+		this.accessLogService = accessLogService;
 
 		// outputBuffer = new ByteArrayOutputStream();
 	}
@@ -190,7 +193,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		sb.append(
 				"<!DOCTYPE html><html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1>");
 		sb.append("<p>The requested URL " + path + " was generated the following error:</p>");
-		sb.append("<pre>" + LoggingService.throwableStackTracetoString(e) + "</pre>");
+		sb.append("<pre>" + StringTools.throwableStackTracetoString(e) + "</pre>");
 		sb.append("<hr><address>" + serverName + " Server at " + request.getAddress().getDomain() + " Port "
 				+ request.getAddress().getPort() + "</address>");
 		sb.append("</body></html>\n");
@@ -340,7 +343,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		if (output.equals("raw")) {
 			elm = handleRawAction(action);
 			stopwatch.stop();
-			Log.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(),
+			accessLogService.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(),
 					request.getClientAddress().toString(), form.getSession());
 			Log.trace("Request processed");
 			return;
@@ -409,7 +412,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 		stopwatch.stop();
 
-		Log.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(),
+		accessLogService.accessLog(actionPath, form.getElement(), form.getElement(), elm, stopwatch.sinceStart(),
 				request.getClientAddress().toString(), form.getSession());
 
 		Log.trace("Request processed: "+stopwatch.toString());
@@ -606,7 +609,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 
 		stopwatch.stop();
 
-		Log.accessLog(this.request.getPath().getPath(), null, null, null, stopwatch.sinceStart(),
+		accessLogService.accessLog(this.request.getPath().getPath(), null, null, null, stopwatch.sinceStart(),
 				request.getClientAddress().toString(), null);
 
 		Log.trace("Request processed");

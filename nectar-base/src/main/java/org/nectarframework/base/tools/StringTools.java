@@ -1,5 +1,7 @@
 package org.nectarframework.base.tools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -12,16 +14,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 
 public abstract class StringTools {
 	private static SecureRandom rand = new SecureRandom();
-	
+
 	/**
-	 * Get this Nectar instance's charset encoding. 
+	 * Get this Nectar instance's charset encoding.
 	 * 
 	 * @return
 	 */
@@ -128,6 +131,16 @@ public abstract class StringTools {
 		}
 		s += ")";
 		return s;
+	}
+
+	public static String mapSSToString(Map<String, String> map) {
+		if (map == null)
+			return "null";
+		Vector<String> vs = new Vector<String>();
+		for (Entry<String, String> es : map.entrySet()) {
+			vs.add(es.getKey() + "=" + es.getValue());
+		}
+		return implode(vs, " ");
 	}
 
 	private static char[] xmlEntities = { '"', '&', '\'', '<', '>' };
@@ -284,7 +297,6 @@ public abstract class StringTools {
 		return sb.toString();
 	}
 
-
 	/**
 	 * equivalent to PHP's implode or join functions, returns a String in which
 	 * the pieces are seperated by glue.
@@ -306,7 +318,7 @@ public abstract class StringTools {
 		}
 		return out.toString();
 	}
-	
+
 	/**
 	 * equivalent to PHP's implode or join functions, returns a String in which
 	 * the pieces are seperated by glue.
@@ -373,6 +385,18 @@ public abstract class StringTools {
 
 	public static String msTimeToDatetime(long timestamp) {
 		return (new SimpleDateFormat("d MMM yyyy HH:mm")).format(new Date(timestamp));
+	}
+
+	public static String throwableStackTracetoString(Throwable t) {
+		if (t == null) {
+			return null;
+		}
+		ByteArrayOutputStream buff = new ByteArrayOutputStream();
+		PrintStream ps = new PrintStream(buff);
+		t.printStackTrace(ps);
+		ps.flush();
+		ps.close();
+		return new String(buff.toByteArray());
 	}
 
 }

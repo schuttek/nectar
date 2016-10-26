@@ -22,8 +22,7 @@ package org.nectarframework.base.service.template.thymeleaf;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 import org.thymeleaf.expression.IExpressionObjects;
-
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.thymeleaf.standard.expression.IStandardVariableExpression;
 import org.thymeleaf.standard.expression.IStandardVariableExpressionEvaluator;

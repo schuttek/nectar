@@ -21,22 +21,22 @@ public abstract class Service {
 
 	private State runState = State.none;
 
-	public final void setParameters(ServiceParameters sp) throws ConfigurationException {
+	protected final void setParameters(ServiceParameters sp) throws ConfigurationException {
 		if (runState == State.none) {
 			checkParameters(sp);
 			serviceParameters = sp;
 		}
 	}
 
-	public final State getRunState() {
+	protected final State getRunState() {
 		return runState;
 	}
 
-	public final void setRunState(State rs) {
+	protected final void setRunState(State rs) {
 		this.runState = rs;
 	}
 	
-	public ServiceParameters getParameters() {
+	protected final ServiceParameters getParameters() {
 		return this.serviceParameters;
 	}
 
@@ -75,7 +75,7 @@ public abstract class Service {
 	 *         startup process and exit Nectar.
 	 * @throws ServiceUnavailableException
 	 */
-	public abstract boolean establishDependencies() throws ServiceUnavailableException;
+	protected abstract boolean establishDependencies() throws ServiceUnavailableException;
 
 	/**
 	 * Stage 3: At this point, if your service has declared a dependancy, that
@@ -97,13 +97,13 @@ public abstract class Service {
 	 *             if the serviceClass couldn't be found, or isn't configured to
 	 *             be started.
 	 */
-	protected Service dependency(Class<? extends Service> serviceClass) throws ServiceUnavailableException {
+	protected <T extends Service>T dependency(Class<T> serviceClass) throws ServiceUnavailableException {
 		Service service = ServiceRegister.addServiceDependancy(this, serviceClass);
 		if (service == null) {
 			throw new ServiceUnavailableException(
 					this.getClass().getName() + " requires the Service " + serviceClass.getName());
 		}
-		return service;
+		return serviceClass.cast(service);
 	}
 
 	protected final boolean __rootServiceRun() {

@@ -13,8 +13,8 @@ import java.util.List;
 
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.form.Form;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.pathfinder.IPathFinder;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;

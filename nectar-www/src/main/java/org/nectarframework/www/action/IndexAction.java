@@ -3,7 +3,7 @@ package org.nectarframework.www.action;
 import java.util.Collections;
 import java.util.List;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.tools.StringTools;
 import org.nectarframework.www.comparators.NewestBlogPostFirst;

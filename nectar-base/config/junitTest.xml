@@ -10,7 +10,6 @@
 	
 	<node group="hashMapCacheService" inherits="junit">
 		<service class="org.nectarframework.base.service.cache.HashMapCacheService">
-			
 		</service>
 	</node>
 </config>

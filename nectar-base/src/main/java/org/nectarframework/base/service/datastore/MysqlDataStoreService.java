@@ -8,10 +8,10 @@ import java.util.List;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.cache.CacheService;
 import org.nectarframework.base.service.cache.CacheableObject;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.sql.SqlPreparedStatement;
 import org.nectarframework.base.service.sql.SqlTransactionHandle;
 import org.nectarframework.base.service.sql.ResultRow;

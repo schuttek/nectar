@@ -10,11 +10,12 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.event.EventService;
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.xml.XmlService;
 
@@ -27,18 +28,17 @@ public class WebSocketRequestService extends Service {
 	private InetSocketAddress address;
 	private WebSocketServer webSocketServer;
 	private HashMap<WebSocket, WebSocketClient> clientMap;
-	
+
 	private EventService eventService;
 	private ThreadService threadService;
 	private DirectoryService directoryService;
 	private XmlService xmlService;
-
-
+	private AccessLogService accessLogService;
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
 		compressionMinSize = sp.getInt("compressionMinSize", 0, Integer.MAX_VALUE, 5000);
-		
+
 		this.listeningPort = sp.getInt("listeningPort", 1, Short.MAX_VALUE, 8001);
 		this.listeningHost = null;
 		String listeningHostStr = sp.getValue("listeningHost");
@@ -61,11 +61,11 @@ public class WebSocketRequestService extends Service {
 
 	@Override
 	public boolean establishDependencies() throws ServiceUnavailableException {
-		eventService = (EventService)dependency(EventService.class);
-		threadService = (ThreadService)dependency(ThreadService.class);
-		directoryService = (DirectoryService)dependency(DirectoryService.class);
-		xmlService = (XmlService)dependency(XmlService.class);
-		
+		eventService = (EventService) dependency(EventService.class);
+		threadService = (ThreadService) dependency(ThreadService.class);
+		directoryService = (DirectoryService) dependency(DirectoryService.class);
+		xmlService = (XmlService) dependency(XmlService.class);
+		accessLogService = dependency(AccessLogService.class);
 		return true;
 	}
 
@@ -118,19 +118,21 @@ public class WebSocketRequestService extends Service {
 	}
 
 	public void handleOnClose(WebSocket conn, int code, String reason, boolean remote) {
-		Log.trace("WebSocketRequestService.handleOnClose() " + conn.toString() + " " + code + " " + reason + " " + (remote ? "true" : "false"));
-		
+		Log.trace("WebSocketRequestService.handleOnClose() " + conn.toString() + " " + code + " " + reason + " "
+				+ (remote ? "true" : "false"));
+
 		WebSocketClient wsc = this.clientMap.get(conn);
-		if (wsc != null) {
-			eventService.unregisterListener(wsc); 
-		}
+		//if (wsc != null) {
+		//	eventService.unregisterListener(wsc);
+		//}
 	}
 
 	public void handleOnError(WebSocket conn, Exception ex) {
-		if (ex instanceof IOException && ex.getMessage().compareTo("An existing connection was forcibly closed by the remote host") == 0) {
-			Log.trace("WebSocketRequestService / " + conn.toString() + ": Client forced disconnect."); 
+		if (ex instanceof IOException
+				&& ex.getMessage().compareTo("An existing connection was forcibly closed by the remote host") == 0) {
+			Log.trace("WebSocketRequestService / " + conn.toString() + ": Client forced disconnect.");
 		}
-		Log.info("WebSocketRequestService.handleOnError() "+conn.toString(), ex);
+		Log.info("WebSocketRequestService.handleOnError() " + conn.toString(), ex);
 	}
 
 	public void handleOnOpen(WebSocket conn, ClientHandshake handshake) {
@@ -138,26 +140,25 @@ public class WebSocketRequestService extends Service {
 	}
 
 	public void handleOnMessage(WebSocket conn, String message) {
-		//Log.trace("WebSocketRequestService.handleOnMessage() " + conn.toString() + " " + message);
-		
+		// Log.trace("WebSocketRequestService.handleOnMessage() " +
+		// conn.toString() + " " + message);
+
 		// 1 JSON to WebSocketRawRequest
 		WebSocketRequest wsr = null;
-/*		try {
-			wsr = mapper.readValue(message, WebSocketRequest.class);
-		} catch (JsonParseException e) {
-			Log.fatal("WebSocketRequestService.handleOnMessage()", e);
-			return;
-		} catch (JsonMappingException e) {
-			Log.fatal("WebSocketRequestService.handleOnMessage()", e);
-			return;
-		} catch (IOException e) {
-			Log.fatal("WebSocketRequestService.handleOnMessage()", e);
-			return;
-		}*/
-		
+		/*
+		 * try { wsr = mapper.readValue(message, WebSocketRequest.class); }
+		 * catch (JsonParseException e) {
+		 * Log.fatal("WebSocketRequestService.handleOnMessage()", e); return; }
+		 * catch (JsonMappingException e) {
+		 * Log.fatal("WebSocketRequestService.handleOnMessage()", e); return; }
+		 * catch (IOException e) {
+		 * Log.fatal("WebSocketRequestService.handleOnMessage()", e); return; }
+		 */
+
 		// 3 give it to the RequestService superclass
-		WebSocketRequestHandler rh = new WebSocketRequestHandler(wsr, this, directoryService, xmlService);
-		
+		WebSocketRequestHandler rh = new WebSocketRequestHandler(wsr, this, directoryService, xmlService,
+				accessLogService);
+
 		threadService.execute(rh);
 	}
 

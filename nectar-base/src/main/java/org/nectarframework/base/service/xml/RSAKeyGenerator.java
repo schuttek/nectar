@@ -7,7 +7,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import org.apache.xerces.impl.dv.util.Base64;
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.tools.Stopwatch;
 
 public class RSAKeyGenerator {

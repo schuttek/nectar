@@ -1,6 +1,6 @@
 package org.nectarframework.www.action;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.www.data.Article;
 

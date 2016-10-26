@@ -18,7 +18,7 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.tools.IoTools;
 
 /**

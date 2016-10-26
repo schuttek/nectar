@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
 
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.file.FileService;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.tools.StringTools;
 import org.thymeleaf.IEngineConfiguration;
 import org.thymeleaf.cache.TTLCacheEntryValidity;

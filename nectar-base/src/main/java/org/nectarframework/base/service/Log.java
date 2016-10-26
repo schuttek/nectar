@@ -1,10 +1,13 @@
-package org.nectarframework.base.service.log;
+package org.nectarframework.base.service;
 
 import java.io.PrintStream;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 
+import org.nectarframework.base.service.event.EventService;
+import org.nectarframework.base.service.log.LogEvent;
+import org.nectarframework.base.service.log.LogLevel;
 import org.nectarframework.base.service.session.Session;
 import org.nectarframework.base.service.xml.Element;
 
@@ -56,26 +59,15 @@ import org.nectarframework.base.service.xml.Element;
  *
  */
 
-public class Log {
+public final class Log {
 
 	private static LinkedList<LogEvent> eventStore = new LinkedList<LogEvent>();
 
-	private static LoggingService ls = null;
+	private static EventService ev = null;
 
-	public enum Level {
-		TRACE, DEBUG, INFO, WARN, ERROR, FATAL
-	}
+	public static final LogLevel DEFAULT_LOG_LEVEL = LogLevel.INFO;
 
-	private static final Level DEFAULT_LOG_LEVEL = Level.TRACE;
-	
-	public static Level preInitLogLevel = DEFAULT_LOG_LEVEL;
-
-	public static void setLoggingService(LoggingService loggingService) {
-		ls = loggingService;
-		if (ls != null) {
-			sendStoredEvents();
-		}
-	}
+	public static LogLevel preInitLogLevel = DEFAULT_LOG_LEVEL;
 
 	private static void printLogEvent(PrintStream out, LogEvent le) {
 		if (le.getLevel().compareTo(preInitLogLevel) >= 0) {
@@ -90,138 +82,113 @@ public class Log {
 
 	private static void sendStoredEvents() {
 		for (LogEvent le : eventStore) {
-			ls.log(le);
+			ev.publishEvent(le);
 		}
 		eventStore.clear();
 	}
 
-	public static void log(Level level, String msg, Throwable t) {
-		LogEvent le = new LogEvent(System.currentTimeMillis(), level, msg, t);
-		if (ls == null) {
-			eventStore.add(le);
-			printLogEvent(System.out, le);
-		} else {
-			ls.log(le);
+	public static void log(LogLevel level, String msg, Throwable t) {
+		logImpl(level, msg, t);
+	}
+
+	private static void logImpl(LogLevel level, String msg, Throwable t) {
+		if (isLevelEnabled(level)) {
+			LogEvent le = new LogEvent(System.currentTimeMillis(), level, msg, t, Thread.currentThread().getStackTrace());
+			if (ev == null) {
+				eventStore.add(le);
+				printLogEvent(System.out, le);
+			} else {
+				ev.publishEvent(le);
+			}
 		}
 	}
 
-	public static boolean isLevelEnabled(Level level) {
-		if (ls == null)
+	public static boolean isLevelEnabled(LogLevel level) {
+		if (ev == null)
 			return level.compareTo(preInitLogLevel) >= 0;
-		return ls.isLevelEnabled(level);
+		return isLevelEnabled(level);
 	}
 
+	/*** Convenience Methods ***/
+
 	public static boolean isTrace() {
-		return isLevelEnabled(Level.TRACE);
+		return isLevelEnabled(LogLevel.TRACE);
 	}
 
 	public static boolean isDebug() {
-		return isLevelEnabled(Level.DEBUG);
+		return isLevelEnabled(LogLevel.DEBUG);
 	}
 
 	public static boolean isInfo() {
-		return isLevelEnabled(Level.INFO);
+		return isLevelEnabled(LogLevel.INFO);
 	}
 
 	public static boolean isWarn() {
-		return isLevelEnabled(Level.WARN);
+		return isLevelEnabled(LogLevel.WARN);
 	}
 
 	public static boolean isFatal() {
-		return isLevelEnabled(Level.FATAL);
+		return isLevelEnabled(LogLevel.FATAL);
 	}
 
 	public static void trace(String msg) {
-		log(Level.TRACE, msg, null);
+		log(LogLevel.TRACE, msg, null);
 	}
 
 	public static void trace(String msg, Throwable t) {
-		log(Level.TRACE, msg, t);
+		log(LogLevel.TRACE, msg, t);
 	}
 
 	public static void trace(Throwable t) {
-		log(Level.TRACE, null, t);
+		log(LogLevel.TRACE, null, t);
 	}
 
 	public static void debug(String msg) {
-		log(Level.DEBUG, msg, null);
+		log(LogLevel.DEBUG, msg, null);
 	}
 
 	public static void debug(String msg, Throwable t) {
-		log(Level.DEBUG, msg, t);
+		log(LogLevel.DEBUG, msg, t);
 	}
 
 	public static void debug(Throwable t) {
-		log(Level.DEBUG, null, t);
+		log(LogLevel.DEBUG, null, t);
 	}
 
 	public static void info(String msg) {
-		log(Level.INFO, msg, null);
+		log(LogLevel.INFO, msg, null);
 	}
 
 	public static void info(String msg, Throwable t) {
-		log(Level.INFO, msg, t);
+		log(LogLevel.INFO, msg, t);
 	}
 
 	public static void info(Throwable t) {
-		log(Level.INFO, null, t);
+		log(LogLevel.INFO, null, t);
 	}
 
 	public static void warn(String msg) {
-		log(Level.WARN, msg, null);
+		log(LogLevel.WARN, msg, null);
 	}
 
 	public static void warn(String msg, Throwable t) {
-		log(Level.WARN, msg, t);
+		log(LogLevel.WARN, msg, t);
 	}
 
 	public static void warn(Throwable t) {
-		log(Level.WARN, null, t);
+		log(LogLevel.WARN, null, t);
 	}
 
 	public static void fatal(String msg) {
-		log(Level.FATAL, msg, null);
+		log(LogLevel.FATAL, msg, null);
 	}
 
 	public static void fatal(String msg, Throwable t) {
-		log(Level.FATAL, msg, t);
+		log(LogLevel.FATAL, msg, t);
 	}
 
 	public static void fatal(Throwable t) {
-		log(Level.FATAL, null, t);
-	}
-
-	public static void accessLog(String path, Element rawForm, Element validated, Element output, long duration,
-			String remoteIp, Session session) {
-		if (ls != null) {
-			ls.accessLog(path, rawForm, validated, output, duration, remoteIp, session);
-		}
-	}
-
-	public static String getStackTrace() {
-		StackTraceElement[] stes = Thread.currentThread().getStackTrace();
-		StringBuffer sb = new StringBuffer();
-
-		for (int t = 2; t < stes.length; t++) {
-			sb.append("      at " + stes[t].getClassName() + "." + stes[t].getMethodName() + "(" + stes[t].getFileName()
-					+ ":" + stes[t].getLineNumber() + ")\n");
-		}
-
-		return sb.toString();
-	}
-
-	public static String getStackTrace(Throwable te) {
-		StackTraceElement[] stes = te.getStackTrace();
-
-		StringBuffer sb = new StringBuffer();
-
-		for (int t = 0; t < stes.length; t++) {
-			sb.append("      at " + stes[t].getClassName() + "." + stes[t].getMethodName() + "(" + stes[t].getFileName()
-					+ ":" + stes[t].getLineNumber() + ")\n");
-		}
-
-		return sb.toString();
-
+		log(LogLevel.FATAL, null, t);
 	}
 
 }

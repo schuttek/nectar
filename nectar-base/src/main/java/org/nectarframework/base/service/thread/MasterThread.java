@@ -3,7 +3,7 @@ package org.nectarframework.base.service.thread;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 
 public class MasterThread extends Thread {
 

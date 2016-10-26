@@ -277,11 +277,29 @@ public class Element {
 	}
 
 	public String toString() {
-		String s = name + " " + StringTools.mapToString(attributes);
+		StringBuffer s = new StringBuffer("\nroot=" + name + " " + StringTools.mapSSToString(attributes));
 		for (Element c : children) {
-			s += " {" + c.toString() + "}";
+			s.append("\n");
+			c.toStringBuffer(s, 1);
+		}
+		return s.toString();
+	}
+
+	private String toStringAddTabs(int tabc) {
+		String s = "";
+		for (int t = 0; t < tabc; t++) {
+			s += "\t";
 		}
 		return s;
+	}
+
+	public StringBuffer toStringBuffer(StringBuffer sb, int tabInc) {
+		sb.append(toStringAddTabs(tabInc)+name+ " "+StringTools.mapSSToString(attributes));
+		for (Element c : children) {
+			sb.append("\n");
+			c.toStringBuffer(sb, tabInc+1);
+		}
+		return sb;
 	}
 
 	public boolean isName(String name) {
@@ -310,6 +328,7 @@ public class Element {
 
 	/**
 	 * returns a deep copy of this Element
+	 * 
 	 * @return
 	 */
 	public Element copy() {
@@ -325,6 +344,10 @@ public class Element {
 
 	public void removeChild(Element elm) {
 		this.children.removeFirstOccurrence(elm);
+	}
+
+	public void addAll(Collection<Element> children) {
+		children.forEach(c -> add(c));
 	}
 
 }

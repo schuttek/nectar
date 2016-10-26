@@ -9,11 +9,12 @@ import java.util.Map;
 import org.java_websocket.WebSocket;
 import org.nectarframework.base.action.Action;
 import org.nectarframework.base.form.Form;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.directory.DirAction;
 import org.nectarframework.base.service.directory.DirPath;
 import org.nectarframework.base.service.directory.DirRedirect;
 import org.nectarframework.base.service.directory.DirectoryService;
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
@@ -23,14 +24,16 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 	protected WebSocketRequestService rs;
 	protected DirectoryService ds;
 	protected XmlService xs;
+	protected AccessLogService accessLogService; 
 	protected WebSocketRequest request = null;
 	private ByteArrayOutputStream outputBuffer = null;
 
-	public WebSocketRequestHandler(WebSocketRequest r, WebSocketRequestService rs, DirectoryService ds, XmlService xs) {
+	public WebSocketRequestHandler(WebSocketRequest r, WebSocketRequestService rs, DirectoryService ds, XmlService xs, AccessLogService accessLogService) {
 		this.rs = rs;
 		this.ds = ds;
 		this.xs = xs;
 		this.request = r;
+		this.accessLogService = accessLogService;
 	}
 
 	@Override
@@ -93,7 +96,7 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 		// Log.accessLog(request, directoryPath, form,
 		// this.outputBuffer.toByteArray(), (execEnd - execStart) / 1000);
 
-		Log.accessLog(request.getPath(), form.getElement(), form.getElement(), elm, (execEnd - execStart) / 1000,
+		accessLogService.accessLog(request.getPath(), form.getElement(), form.getElement(), elm, (execEnd - execStart) / 1000,
 				webSocketLocalAddress.getHostName(), form.getSession());
 
 		Log.trace("Request processed: input " + form.toString() + " --- output " + this.outputBuffer.toString());

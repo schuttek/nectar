@@ -4,7 +4,10 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 
 import org.apache.commons.cli.CommandLine;
@@ -12,12 +15,14 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.nectarframework.base.config.Configuration;
+import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.Configuration;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceRegister;
-import org.nectarframework.base.service.log.Log;
-import org.nectarframework.base.service.log.Log.Level;
+import org.nectarframework.base.service.log.LogLevel;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
+import org.nectarframework.base.tools.Triple;
 import org.xml.sax.SAXException;
 
 /**
@@ -54,24 +59,26 @@ public class Main {
 
 			ServiceRegister sr = null;
 
+			if (line.hasOption("log")) {
+				if (!setLogLevel(options, line)) {
+					runHelp(options);
+					return;
+				}
+			}
 			// startup
 			if (line.hasOption("version")) {
 				runVersion();
 			} else if (line.hasOption("help")) {
 				runHelp(options);
 			} else if (line.hasOption("configCheck")) {
-				sr = runStartup(options, line); 
-				if (sr != null) {
-					sr.configCheck();
-				}
+				Triple<File, String, String> argSet = parseArgs(options, line);
+				runNectar(new FileInputStream(argSet.getLeft()), argSet.getMiddle(), argSet.getRight(),
+						Log.DEFAULT_LOG_LEVEL);
+
 			} else {
-				sr = runStartup(options, line);
-				if (sr != null && sr.configCheck() && sr.initNode()) {
-					sr.begin();
-				} else {
-					exit();
-				}
-				
+				Triple<File, String, String> argSet = parseArgs(options, line);
+				runNectar(new FileInputStream(argSet.getLeft()), argSet.getMiddle(), argSet.getRight(),
+						Log.DEFAULT_LOG_LEVEL);
 				if (line.hasOption("scriptMode")) {
 					exit();
 				}
@@ -84,13 +91,15 @@ public class Main {
 		// main thread ends after startup.
 	}
 
+
 	private static Options buildArgumentOptions() {
 		Options options = new Options();
 
 		options.addOption("v", "version", false, "print Version number and exit");
 		options.addOption("h", "help", false, "print this message");
 		options.addOption("cc", "configCheck", false, "run some basic sanity checks on the configuration file");
-		options.addOption("s", "scriptMode", false, "Instead of running as a server, script mode starts and runs all configured Services, then shuts down.");
+		options.addOption("s", "scriptMode", false,
+				"Instead of running as a server, script mode starts and runs all configured Services, then shuts down.");
 		Option opt = new Option("c", "configFile", true, "path to the configuration XML file");
 		opt.setArgName("PATH");
 		options.addOption(opt);
@@ -100,34 +109,62 @@ public class Main {
 		opt = new Option("g", "nodeGroup", true, "the run mode to use, as described in the config file");
 		opt.setArgName("GROUP");
 		options.addOption(opt);
+		opt = new Option("l", "log", true, "set initial log level to {trace, debug, info, warn, fatal, silent}");
+		opt.setArgName("LOG");
+		options.addOption(opt);
 
 		return options;
 	}
 
-	private static ServiceRegister runStartup(Options options, CommandLine line) {
-		ServiceRegister sr = new ServiceRegister();
-		Configuration config = new Configuration(sr);
-		File configFile = config.parseArgs(options, line);
 
-		Element configElement;
-		try {
-			configElement = XmlService.fromXml(Files.readAllBytes(configFile.toPath()));
-		} catch (SAXException e1) {
-			Log.fatal(e1);
-			return null;
-		} catch (IOException e1) {
-			Log.fatal(e1);
+	private static boolean setLogLevel(Options options, CommandLine line) {
+		if (line.hasOption("log")) {
+			String logStr = line.getOptionValue("log");
+			LogLevel ll = LogLevel.valueOf(logStr.toUpperCase());
+			if (ll != null) {
+				Log.preInitLogLevel = ll;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static Triple<File, String, String> parseArgs(Options options, CommandLine line) {
+		boolean missingArgs = false;
+		if (!line.hasOption("configFile")) {
+			System.err.println("ERROR: configFile command line argument is required.");
+			missingArgs = true;
+		}
+		if (!line.hasOption("nodeName")) {
+			System.err.println("ERROR: nodeName command line argument is required.");
+			missingArgs = true;
+		}
+		if (!line.hasOption("nodeGroup")) {
+			System.err.println("ERROR: nodeGroup command line argument is required.");
+			missingArgs = true;
+		}
+
+		if (missingArgs) {
+			Main.runHelp(options);
 			return null;
 		}
 
-		sr.setConfiguration(config);
-		sr.setConfigElement(configElement);
-		msh = new MainShutdownHandler(sr);
-		Runtime.getRuntime().addShutdownHook(msh);
-		return sr;
+		File configFile = new File(line.getOptionValue("configFile"));
+		if (!configFile.exists()) {
+			System.err.println("configuration file: " + line.getOptionValue("configFile") + " cannot be found.");
+			return null;
+		}
+		if (!configFile.canRead()) {
+			System.err.println("configuration file: " + line.getOptionValue("configFile") + " is not readable.");
+			return null;
+		}
+
+		String nodeName = line.getOptionValue("nodeName");
+		String nodeGroup = line.getOptionValue("nodeGroup");
+		return new Triple<File, String, String>(configFile, nodeName, nodeGroup);
 	}
 
-	public static void runHelp(Options opts) {
+	private static void runHelp(Options opts) {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp("java nectar.base.Main", opts);
 	}
@@ -139,8 +176,6 @@ public class Main {
 
 	/**
 	 * An emergency exit handler. will try to shutdown all services.
-	 * 
-	 * @author skander
 	 * 
 	 */
 	private static class MainShutdownHandler extends Thread {
@@ -174,15 +209,22 @@ public class Main {
 		System.exit(-1);
 	}
 
-	public static ServiceRegister runNectar(String configXmlFilePath, String nodeName, String nodeGroup, Level level) {
+	public static void runNectar(InputStream configXmlFileIS, String nodeName, String nodeGroup, LogLevel level) throws ConfigurationException {
+		startNectar(initNectar(configXmlFileIS, nodeName, nodeGroup, level));
+	}
+
+	public static ServiceRegister initNectar(InputStream configXmlFileIS, String nodeName, String nodeGroup,
+			LogLevel level) throws ConfigurationException {
 		Log.preInitLogLevel = level;
+		Log.info("Nectar is starting up");
 		ServiceRegister sr = new ServiceRegister();
 		Configuration config = new Configuration(sr);
-		File configFile = new File("s");
+		config.setNodeName(nodeName);
+		config.setNodeGroup(nodeGroup);
 
 		Element configElement;
 		try {
-			configElement = XmlService.fromXml(Files.readAllBytes(configFile.toPath()));
+			configElement = XmlService.fromXml(configXmlFileIS);
 		} catch (SAXException e1) {
 			Log.fatal(e1);
 			return null;
@@ -195,11 +237,25 @@ public class Main {
 		sr.setConfigElement(configElement);
 		msh = new MainShutdownHandler(sr);
 		Runtime.getRuntime().addShutdownHook(msh);
+
 		return sr;
 	}
-	
+
+	private static void startNectar(ServiceRegister sr) {
+		if (sr.configCheck() && sr.initNode()) {
+			Log.trace("Configuration set, running Nectar " + sr.getConfiguration().getNodeName() + "@"
+					+ sr.getConfiguration().getNodeGroup());
+			sr.begin();
+		}
+	}
+
 	public static void endNectar() {
 		ServiceRegister.getInstance().shutdown();
 		Runtime.getRuntime().removeShutdownHook(msh);
+	}
+
+	public static void runNectar(String configFilePath, String nodeName, String nodeGroup, LogLevel trace)
+			throws FileNotFoundException, ConfigurationException {
+		runNectar(new FileInputStream(configFilePath), nodeName, nodeGroup, trace);
 	}
 }

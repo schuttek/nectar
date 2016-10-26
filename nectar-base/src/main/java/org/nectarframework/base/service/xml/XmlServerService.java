@@ -28,9 +28,10 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.xerces.impl.dv.util.Base64;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.directory.DirectoryService;
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.session.Session;
 import org.nectarframework.base.service.session.SessionService;
 import org.nectarframework.base.service.thread.ThreadService;
@@ -82,6 +83,7 @@ public class XmlServerService extends ConnectionService {
 	private boolean keepRunning = true;
 
 	private Thread acceptThread = null;
+	private AccessLogService accessLogService;
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
@@ -134,6 +136,7 @@ public class XmlServerService extends ConnectionService {
 		xmlService = (XmlService) dependency(XmlService.class);
 		directoryService = (DirectoryService) dependency(DirectoryService.class);
 		sessionService = (SessionService) dependency(SessionService.class);
+		accessLogService = dependency(AccessLogService.class);
 		return true;
 	}
 
@@ -265,7 +268,7 @@ public class XmlServerService extends ConnectionService {
 				sessions.put(connection, session);
 			}
 			if (element.isName("request")) {
-				XmlRequestHandler xrh = new XmlRequestHandler(this, directoryService, connection, session, element);
+				XmlRequestHandler xrh = new XmlRequestHandler(this, directoryService, accessLogService, connection, session, element);
 				threadService.execute(xrh);
 			} else if (element.isName("internalRequest")) {
 				handleInternal(connection, packetOptions, element);

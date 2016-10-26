@@ -6,10 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.internode.InternodeService;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.tools.Tuple;
@@ -29,47 +29,35 @@ public abstract class CacheService extends Service {
 	/*** Service Methods ***/
 
 	@Override
-	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
+	protected void checkParameters(ServiceParameters sp) throws ConfigurationException {
 		flushDelay = sp.getLong("flushDelay", 0, Integer.MAX_VALUE, flushDelay);
 		defaultExpiry = sp.getLong("defaultExpiry", 0, Integer.MAX_VALUE, defaultExpiry);
 		expiryFactor = sp.getFloat("expiryFactor", -1.0f, 10000.0f, 1.0f);
-		_checkParameters(sp);
 	}
-	
-
-	protected abstract void _checkParameters(ServiceParameters sp) throws ConfigurationException;
 
 	@Override
-	public boolean establishDependencies() throws ServiceUnavailableException {
+	protected boolean establishDependencies() throws ServiceUnavailableException {
 		threadService = (ThreadService) this.dependency(ThreadService.class);
-		return _establishDependencies();
+		return true;
 	}
-
-	protected abstract boolean _establishDependencies() throws ServiceUnavailableException;
 
 	@Override
 	protected boolean init() {
 		flushTimer = 0;
-		return _init();
+		return true;
 	}
-
-	protected abstract boolean _init();
 
 	@Override
 	protected boolean run() {
 		createCheckFlushTimerTask();
-		return _run();
+		return true;
 	}
-	
-	protected abstract boolean _run();
-	
+
 	@Override
 	protected boolean shutdown() {
 		removeAll();
-		return _shutdown();
+		return true;
 	}
-
-	protected abstract boolean _shutdown();
 
 	/*** Convenience Methods ***/
 	/**
@@ -97,7 +85,7 @@ public abstract class CacheService extends Service {
 	public CacheableObject getObject(Service realm, String key) {
 		return getObject(null, key, true);
 	}
-	
+
 	/**
 	 * Inserts a new key or overwrites an existing key with the given
 	 * CacheableObject. The entry will expire after defaultExpiry milliseconds.
@@ -157,10 +145,11 @@ public abstract class CacheService extends Service {
 	public void remove(String key) {
 		remove(null, key);
 	}
-	
+
 	/*** Operational Methods ***/
 
 	public abstract CacheableObject getObject(Service realm, String key, boolean refreshCache);
+
 	/**
 	 * Inserts a new key or overwrites an existing key with the given
 	 * CaheableObject. The entry will expire after the given expiry
@@ -171,6 +160,7 @@ public abstract class CacheService extends Service {
 	 * @param expiry
 	 */
 	public abstract void set(Service realm, String key, CacheableObject co, long expiry);
+
 	/**
 	 * Inserts a new key for the CacheableObject only if it doesn't already
 	 * exist. The entry will expire after the given expiry milliseconds, See
@@ -180,7 +170,6 @@ public abstract class CacheService extends Service {
 	 * @param ba
 	 */
 	public abstract void add(Service realm, String key, CacheableObject co, long expiry);
-	
 
 	/**
 	 * Removes a cache entry by the given key.
@@ -193,9 +182,9 @@ public abstract class CacheService extends Service {
 	 * Removes ALL cache entries.
 	 */
 	public abstract void removeAll();
-	
+
 	/*** Self Maintenance Methods ***/
-	
+
 	protected void checkFlushTimer() {
 		long now = InternodeService.getTime();
 		CacheService thisCS = this;
@@ -219,7 +208,7 @@ public abstract class CacheService extends Service {
 	 * 
 	 */
 	protected abstract void flushCache();
-	
+
 	protected void createCheckFlushTimerTask() {
 		CacheService thisCS = this;
 		threadService.executeLater(new ThreadServiceTask() {

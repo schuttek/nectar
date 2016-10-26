@@ -6,10 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.internode.InternodeService;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 import org.nectarframework.base.tools.Tuple;
@@ -41,18 +41,21 @@ public class HashMapCacheService extends CacheService {
 	/*** Service Methods ***/
 
 	@Override
-	protected void _checkParameters(ServiceParameters sp) throws ConfigurationException {
+	protected void checkParameters(ServiceParameters sp) throws ConfigurationException {
 		maxMemory = sp.getLong("maxMemory", 0, Integer.MAX_VALUE, maxMemory);
+		super.checkParameters(sp);
 	}
 
 	@Override
-	protected boolean _establishDependencies() throws ServiceUnavailableException {
+	protected boolean establishDependencies() throws ServiceUnavailableException {
+		Log.warn("beep");
 		threadService = (ThreadService) this.dependency(ThreadService.class);
 		return true;
 	}
 
 	@Override
-	protected boolean _init() {
+	protected boolean init() {
+		Log.warn("boop");
 		generalCache = new ConcurrentHashMap<>();
 		realmCache = new ConcurrentHashMap<>();
 		memoryUsage = 0;
@@ -61,13 +64,13 @@ public class HashMapCacheService extends CacheService {
 	}
 
 	@Override
-	protected boolean _run() {
+	protected boolean run() {
 		createCheckFlushTimerTask();
 		return true;
 	}
 
 	@Override
-	protected boolean _shutdown() {
+	protected boolean shutdown() {
 		removeAll();
 		return true;
 	}

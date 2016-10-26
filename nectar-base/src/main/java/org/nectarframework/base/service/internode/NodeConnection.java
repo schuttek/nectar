@@ -18,8 +18,8 @@ import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceRegister;
-import org.nectarframework.base.service.log.Log;
 
 public class NodeConnection extends Thread {
 

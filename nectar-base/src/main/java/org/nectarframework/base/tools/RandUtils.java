@@ -21,7 +21,8 @@ public class RandUtils {
 	}
 
 	public static int nextInt(int bound) {
-		if (bound == 0) return 0;
+		if (bound == 0)
+			return 0;
 		return rand(false).nextInt(bound);
 	}
 
@@ -36,7 +37,7 @@ public class RandUtils {
 	public static int nextInt(int i, int j) {
 		if (i == j)
 			return j;
-		return nextInt(Math.abs(i-j)+1) + i-1;
+		return nextInt(j - i) + i;
 	}
 
 	public static short nextShort() {

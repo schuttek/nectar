@@ -67,7 +67,7 @@ public class BitmapTest {
 		}
 
 		BitMap seqbitmap = new BitMap(len);
-		assertNotEquals(seqbitmap.size(), len);
+		assertEquals(seqbitmap.size(), len);
 		for (int i = 0; i < len; i++) {
 			if (boolArray[i]) {
 				seqbitmap.set(i);
@@ -91,7 +91,7 @@ public class BitmapTest {
 			assertNotEquals(boolArray[i], !seqbitmap.is(i));
 			assertNotEquals(!boolArray[i], seqbitmap.is(i));
 			assertNotEquals(boolArray[i], !seqbitmap.is(i));
-			assertEquals(boolArray[i], !seqbitmap.is(i));
+			assertEquals(boolArray[i], seqbitmap.is(i));
 		}
 	}
 
@@ -103,9 +103,13 @@ public class BitmapTest {
 		assertArrayEquals(map1.map(), map2.map());
 		ByteArray ba1 = map1.toBytes(new ByteArray());
 		ByteArray ba2 = map2.toBytes(new ByteArray());
-		assertArrayEquals(ba1.getAllBytes(), ba1.getAllBytes());
-		map1 = new BitMap().fromBytes(ba1);
-		map2 = new BitMap().fromBytes(ba2);
+		byte[] ba1b = ba1.getAllBytes();
+		byte[] ba2b = ba2.getAllBytes();
+		assertArrayEquals(ba1b, ba2b);
+		ByteArray ba1copy = new ByteArray(ba1b);
+		ByteArray ba2copy = new ByteArray(ba2b);
+		map1 = new BitMap().fromBytes(ba1copy);
+		map2 = new BitMap().fromBytes(ba2copy);
 		assertArrayEquals(map1.map(), map2.map());
 	}
 

@@ -10,5 +10,5 @@ public interface EventListener {
 	 * 
 	 * @param e
 	 */
-	public void handleListenerServiceEvent(Event e);
+	public void handleListenerServiceEvent(NectarEvent e);
 }

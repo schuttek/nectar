@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 
 //TODO: this needs better security and error handling
 //TODO: add in a firewall? ie limit clients by IP?

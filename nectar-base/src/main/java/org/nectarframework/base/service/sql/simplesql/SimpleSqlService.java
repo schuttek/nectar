@@ -7,9 +7,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.log.Log;
 
 public class SimpleSqlService extends Service {
 

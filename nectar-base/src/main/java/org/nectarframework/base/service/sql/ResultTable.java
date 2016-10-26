@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.cache.CacheableObject;
-import org.nectarframework.base.service.log.Log;
 import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;

@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 
 public abstract class IoTools {
 

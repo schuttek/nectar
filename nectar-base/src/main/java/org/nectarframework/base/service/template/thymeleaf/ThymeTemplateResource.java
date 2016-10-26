@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.nectarframework.base.service.log.Log;
+import org.nectarframework.base.service.Log;
 import org.thymeleaf.templateresource.ITemplateResource;
 
 public class ThymeTemplateResource implements ITemplateResource {
