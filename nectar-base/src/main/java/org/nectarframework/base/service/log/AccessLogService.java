@@ -4,12 +4,8 @@ import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.session.Session;
-import org.nectarframework.base.service.sql.SqlPreparedStatement;
-import org.nectarframework.base.service.sql.mysql.MysqlService;
 import org.nectarframework.base.service.xml.Element;
-import org.nectarframework.base.service.xml.XmlService;
 
 public abstract class AccessLogService extends Service {
 

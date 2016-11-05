@@ -3,23 +3,15 @@
  */
 package org.nectarframework.junit.service;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.Random;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlClientService;
 import org.nectarframework.base.service.xml.XmlResponse;
 import org.nectarframework.base.service.xml.XmlResponseHandler;
-import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.RandUtils;
-import org.nectarframework.base.tools.StringTools;
 
 /**
  * @author skander

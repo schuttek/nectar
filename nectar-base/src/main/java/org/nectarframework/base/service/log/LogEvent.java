@@ -4,17 +4,17 @@ import org.nectarframework.base.service.event.EventChannel;
 import org.nectarframework.base.service.event.NectarEvent;
 
 public class LogEvent implements NectarEvent {
-	private long timestamp;
-	private LogLevel level;
-	private String message;
-	private Throwable throwable;
-	private String className;
-	private String methodName;
-	private int lineNumber;
+	private final long timestamp;
+	private final LogLevel level;
+	private final String message;
+	private final Throwable throwable;
+	private final String className;
+	private final String methodName;
+	private final int lineNumber;
+	private final String threadName;
 
-	
-	public LogEvent(long timestamp, LogLevel level, String msg, Throwable t, String className, String methodName,
-			int lineNumber) {
+	protected LogEvent(long timestamp, LogLevel level, String msg, Throwable t, String className, String methodName,
+			int lineNumber, String threadName) {
 		this.timestamp = timestamp;
 		this.level = level;
 		this.message = msg;
@@ -22,24 +22,26 @@ public class LogEvent implements NectarEvent {
 		this.className = className;
 		this.methodName = methodName;
 		this.lineNumber = lineNumber;
+		this.threadName = threadName;
 	}
 
-	public LogEvent(long timestamp, LogLevel level, String msg, Throwable t, StackTraceElement[] stackTrace) {
-		this.timestamp = timestamp;
-		this.level = level;
-		this.message = msg;
-		this.throwable = t;
+	public static LogEvent buildLogEvent(long timestamp, LogLevel level, String msg, Throwable t,
+			StackTraceElement[] stackTrace) {
+		String className = null;
+		String methodName = null;
+		int lineNumber = 0;
+
 		if (stackTrace == null) {
-			this.className = null;
-			this.methodName = null;
-			this.lineNumber = 0;
+			throw new IllegalArgumentException("stackTrace cannot be null");
 		} else if (stackTrace.length < 3) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("stackTrace must be at least 3 in length.");
 		} else {
-			this.className = stackTrace[2].getClassName();
-			this.methodName = stackTrace[2].getMethodName();
-			this.lineNumber = stackTrace[2].getLineNumber();
+			className = stackTrace[2].getClassName();
+			methodName = stackTrace[2].getMethodName();
+			lineNumber = stackTrace[2].getLineNumber();
 		}
+		String threadName = Thread.currentThread().getName();
+		return new LogEvent(timestamp, level, msg, t, className, methodName, lineNumber, threadName);
 	}
 
 	public long getTimestamp() {
@@ -70,9 +72,12 @@ public class LogEvent implements NectarEvent {
 		return lineNumber;
 	}
 
+	public String getThreadName() {
+		return threadName;
+	}
+
 	@Override
 	public EventChannel getChannel() {
 		return LogService.eventChannel;
 	}
-
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.exception.ServiceUnavailableRuntimeException;
-import org.nectarframework.base.service.Service.State;
 import org.nectarframework.base.service.xml.Element;
 
 public final class ServiceRegister {
@@ -339,7 +338,6 @@ public final class ServiceRegister {
 			throw new ServiceUnavailableRuntimeException("Nectar is restarting.");
 		case configChecked:
 		case initialized:
-			throw new ServiceUnavailableRuntimeException("Nectar is starting up...");
 		case running:
 			Service service = instance.registerByClass.get(serviceClass);
 			if (service == null)

@@ -1,31 +1,43 @@
 package org.nectarframework.base.service.datastore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
+import org.nectarframework.base.tools.Sanity;
 import org.nectarframework.base.tools.Tuple;
 
 public final class DataStoreObjectDescriptor {
 	private String table;
 	private DataStoreObjectDescriptorKey primaryKey;
 
-	private LinkedList<DataStoreObjectDescriptorColumn> colDescriptors;
+	private ArrayList<DataStoreObjectDescriptorColumn> colDescriptors;
 	private HashMap<String, DataStoreObjectDescriptorColumn> columnNameLookupMap;
 	private Class<? extends DataStoreObject> dsoClass;
 
 	public DataStoreObjectDescriptor(String table, DataStoreObjectDescriptorKey primaryKey,
-			DataStoreObjectDescriptorColumn[] colDescriptorsArray, Class<? extends DataStoreObject> dsoClass) {
+			DataStoreObjectDescriptorColumn[] colDescriptors, Class<? extends DataStoreObject> dsoClass) {
+		Sanity.nn(table);
+		Sanity.nn(primaryKey);
+		Sanity.nn(dsoClass);
+		Sanity.nn(colDescriptors);
+		
 		this.table = table;
 		this.primaryKey = primaryKey;
 		this.dsoClass = dsoClass;
 
-		colDescriptors = new LinkedList<>();
-		colDescriptors.addAll(colDescriptors);
-
+		if (colDescriptors.length == 0) {
+			throw new IllegalArgumentException();
+		}
+		this.colDescriptors = new ArrayList<>(colDescriptors.length);
+		for (DataStoreObjectDescriptorColumn cd : colDescriptors) {
+			this.colDescriptors.add(cd);
+		}
+		
 		columnNameLookupMap = new HashMap<>();
-		colDescriptors.forEach(c -> columnNameLookupMap.put(c.getName(), c));
+		this.colDescriptors.forEach(c -> columnNameLookupMap.put(c.getName(), c));
 	}
 
 	public int getColumnCount() {
@@ -49,7 +61,7 @@ public final class DataStoreObjectDescriptor {
 		colDescriptors.forEach(c -> l.add(c.getType()));
 		return l;
 	}
-	
+
 	public List<DataStoreObjectDescriptorColumn> getColumnDescriptors() {
 		return colDescriptors;
 	}
@@ -87,11 +99,12 @@ public final class DataStoreObjectDescriptor {
 	public int getNullAllowedCount() {
 		int n = 0;
 		for (DataStoreObjectDescriptorColumn c : colDescriptors) {
-			if (c.isNullAllowed()) n++;
+			if (c.isNullAllowed())
+				n++;
 		}
 		return n;
 	}
-	
+
 	public boolean isNullAllowed(int columnIndex) {
 		return colDescriptors.get(columnIndex).isNullAllowed();
 	}

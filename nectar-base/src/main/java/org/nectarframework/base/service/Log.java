@@ -3,13 +3,9 @@ package org.nectarframework.base.service;
 import java.io.PrintStream;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-
 import org.nectarframework.base.service.event.EventService;
 import org.nectarframework.base.service.log.LogEvent;
 import org.nectarframework.base.service.log.LogLevel;
-import org.nectarframework.base.service.session.Session;
-import org.nectarframework.base.service.xml.Element;
 
 /**
  * Useable from anywhere when using Nectar, there's 6 functions from this class
@@ -42,18 +38,6 @@ import org.nectarframework.base.service.xml.Element;
  * started, it'll send it's messages onto it, which may then pass it on to a
  * database or whatever...
  * 
- * TODO: try to find /dev/nectar.base.log and print to it.
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * @author skander
  *
@@ -61,30 +45,18 @@ import org.nectarframework.base.service.xml.Element;
 
 public final class Log {
 
-	private static LinkedList<LogEvent> eventStore = new LinkedList<LogEvent>();
-
 	private static EventService ev = null;
 
 	public static final LogLevel DEFAULT_LOG_LEVEL = LogLevel.INFO;
 
-	public static LogLevel preInitLogLevel = DEFAULT_LOG_LEVEL;
+	public static LogLevel logLevelOverride = DEFAULT_LOG_LEVEL;
+	private static SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss]SSS");
 
 	private static void printLogEvent(PrintStream out, LogEvent le) {
-		if (le.getLevel().compareTo(preInitLogLevel) >= 0) {
-			SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss]SSS");
-			out.println(sdf.format(new Date(le.getTimestamp())) + " <" + le.getLevel().name() + "> " + le.getMessage());
-			if (le.getThrowable() != null) {
-				le.getThrowable().printStackTrace(out);
-			}
-			out.flush();
+		out.println(sdf.format(new Date(le.getTimestamp())) + " <" + le.getLevel().name() + "> " + le.getMessage());
+		if (le.getThrowable() != null) {
+			le.getThrowable().printStackTrace(out);
 		}
-	}
-
-	private static void sendStoredEvents() {
-		for (LogEvent le : eventStore) {
-			ev.publishEvent(le);
-		}
-		eventStore.clear();
 	}
 
 	public static void log(LogLevel level, String msg, Throwable t) {
@@ -93,20 +65,17 @@ public final class Log {
 
 	private static void logImpl(LogLevel level, String msg, Throwable t) {
 		if (isLevelEnabled(level)) {
-			LogEvent le = new LogEvent(System.currentTimeMillis(), level, msg, t, Thread.currentThread().getStackTrace());
-			if (ev == null) {
-				eventStore.add(le);
-				printLogEvent(System.out, le);
-			} else {
+			LogEvent le = LogEvent.buildLogEvent(System.currentTimeMillis(), level, msg, t,
+					Thread.currentThread().getStackTrace());
+			printLogEvent(System.out, le);
+			if (ev != null) {
 				ev.publishEvent(le);
 			}
 		}
 	}
 
 	public static boolean isLevelEnabled(LogLevel level) {
-		if (ev == null)
-			return level.compareTo(preInitLogLevel) >= 0;
-		return isLevelEnabled(level);
+		return true; // FIXME: mantis issue 37.
 	}
 
 	/*** Convenience Methods ***/

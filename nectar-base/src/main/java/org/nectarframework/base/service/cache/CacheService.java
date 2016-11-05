@@ -1,9 +1,5 @@
 package org.nectarframework.base.service.cache;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Log;
@@ -12,7 +8,6 @@ import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.internode.InternodeService;
 import org.nectarframework.base.service.thread.ThreadService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
-import org.nectarframework.base.tools.Tuple;
 
 //TODO: implement a cluster level cache that backs up the local cache.
 

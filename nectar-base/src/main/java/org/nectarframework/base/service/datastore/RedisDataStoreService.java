@@ -1,27 +1,12 @@
 package org.nectarframework.base.service.datastore;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
-import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceParameters;
-import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
-import org.nectarframework.base.service.file.FileService;
-import org.nectarframework.base.service.file.ReadFileNotFoundException;
 import org.nectarframework.base.service.nosql.redis.JedisService;
-import org.nectarframework.base.service.thread.ThreadService;
-import org.nectarframework.base.service.thread.ThreadServiceTask;
-import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.ByteArray;
 
 import redis.clients.jedis.Jedis;

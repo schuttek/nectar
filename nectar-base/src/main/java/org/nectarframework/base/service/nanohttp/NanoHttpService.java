@@ -217,8 +217,8 @@ public class NanoHttpService extends Service {
 
 		staticFileLocalDirectory = sp.getString("staticFileLocalDirectory", "public_root");
 
-		staticFileCacheExpiry = sp.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE,
-				24 * 60 * 60 * 1000); // 24 hours
+		staticFileCacheExpiry = sp.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE, 24 * 60 * 60 * 1000); // 24
+																												// hours
 	}
 
 	@Override
@@ -466,22 +466,29 @@ public class NanoHttpService extends Service {
 			return newFixedLengthResponse(Status.NOT_FOUND, NanoHttpService.MIME_PLAINTEXT, "Not Found");
 		}
 
-		switch (uriResolution.getType()) {
-		case Action:
-			return serveAction((ActionResolution) uriResolution, uri, method, headers, parms, queryParameterString,
-					files);
-		case Alias:
-			return serveAlias((AliasResolution) uriResolution, uri, method, headers, parms, queryParameterString,
-					files);
-		case Proxy:
-			return serveProxy((ProxyResolution) uriResolution, uri, method, headers, parms, queryParameterString,
-					files);
-		case Redirect:
-			return serveRedirect((RedirectResolution) uriResolution, uri, method, headers, parms, queryParameterString,
-					files);
-		case Static:
-			return serveStatic((StaticResolution) uriResolution, uri, method, headers, parms, queryParameterString,
-					files);
+		try {
+			switch (uriResolution.getType()) {
+			case Action:
+				return serveAction((ActionResolution) uriResolution, uri, method, headers, parms, queryParameterString,
+						files);
+			case Alias:
+				return serveAlias((AliasResolution) uriResolution, uri, method, headers, parms, queryParameterString,
+						files);
+			case Proxy:
+				return serveProxy((ProxyResolution) uriResolution, uri, method, headers, parms, queryParameterString,
+						files);
+			case Redirect:
+				return serveRedirect((RedirectResolution) uriResolution, uri, method, headers, parms,
+						queryParameterString, files);
+			case Static:
+				return serveStatic((StaticResolution) uriResolution, uri, method, headers, parms, queryParameterString,
+						files);
+			}
+		} catch (Throwable e) {
+			Log.warn(e);
+			return newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHttpService.MIME_PLAINTEXT,
+					"SERVER INTERNAL ERROR: Exception: " + e.getMessage());
+
 		}
 
 		return newFixedLengthResponse(Status.NOT_FOUND, NanoHttpService.MIME_PLAINTEXT, "Not Found");

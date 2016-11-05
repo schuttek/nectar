@@ -7,7 +7,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Vector;
@@ -293,7 +292,6 @@ public abstract class SqlService extends Service {
 		if (Log.isWarn()) {
 			this.verifySelect(mps);
 		}
-
 		Connection conn = getConnection();
 		PreparedStatement prepStat = conn.prepareStatement(mps.getSql(), ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);

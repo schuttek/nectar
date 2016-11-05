@@ -1,7 +1,5 @@
 package org.nectarframework.base.service.event;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -15,7 +13,6 @@ import org.nectarframework.base.service.thread.ThreadServiceTask;
 /**
  * The EventService allows the spreading of an Event object to other Services
  * that are listening.
- * 
  * 
  * 
  * @author skander

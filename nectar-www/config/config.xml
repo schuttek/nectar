@@ -95,6 +95,8 @@
 		</service>
 		<service class="org.nectarframework.base.service.log.MysqlLogService">
 		</service>
+		<service class="org.nectarframework.base.service.log.ConsoleLogService">
+		</service>
 		<service class="org.nectarframework.base.service.event.EventService">
 		</service>
 		<service class="org.nectarframework.base.service.file.FileService">

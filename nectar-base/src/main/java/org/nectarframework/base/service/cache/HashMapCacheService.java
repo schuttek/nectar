@@ -48,14 +48,12 @@ public class HashMapCacheService extends CacheService {
 
 	@Override
 	protected boolean establishDependencies() throws ServiceUnavailableException {
-		Log.warn("beep");
 		threadService = (ThreadService) this.dependency(ThreadService.class);
 		return true;
 	}
 
 	@Override
 	protected boolean init() {
-		Log.warn("boop");
 		generalCache = new ConcurrentHashMap<>();
 		realmCache = new ConcurrentHashMap<>();
 		memoryUsage = 0;

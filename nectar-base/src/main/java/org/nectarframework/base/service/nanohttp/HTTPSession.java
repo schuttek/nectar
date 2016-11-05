@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
 
 import org.nectarframework.base.service.Log;
-import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.file.FileService;
 import org.nectarframework.base.tools.IoTools;
 import org.nectarframework.base.tools.StringTools;

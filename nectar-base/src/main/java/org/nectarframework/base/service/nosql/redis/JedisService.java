@@ -7,7 +7,6 @@ import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 public class JedisService extends Service {

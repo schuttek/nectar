@@ -29,7 +29,6 @@ public class ControllerDaemon extends Thread {
 	// The host:port combination to listen on
 	private InetAddress hostAddress;
 	private int port;
-	private boolean locked = false;
 
 	protected InternodeService is;
 

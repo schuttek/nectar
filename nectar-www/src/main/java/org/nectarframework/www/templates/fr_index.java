@@ -7,6 +7,7 @@ import org.nectarframework.base.service.template.ITemplate;
 import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.xml.Element;
 
+@SuppressWarnings("unused")
 public class fr_index implements ITemplate {
 	@Override
 	public void run(TemplateService templateService, OutputStream os, Element actionElement, Element sessionElement) throws IOException {

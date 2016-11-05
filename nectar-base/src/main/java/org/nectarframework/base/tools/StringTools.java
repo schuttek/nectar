@@ -308,7 +308,7 @@ public abstract class StringTools {
 	public static String implode(Collection<String> pieces, String glue) {
 		int k = pieces.size();
 		if (k == 0) {
-			return null;
+			return "";
 		}
 		StringBuilder out = new StringBuilder();
 		Iterator<String> iter = pieces.iterator();

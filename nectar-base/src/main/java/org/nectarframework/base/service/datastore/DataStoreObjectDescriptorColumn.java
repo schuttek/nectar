@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import org.nectarframework.base.service.sql.ResultRow;
 import org.nectarframework.base.service.sql.SqlPreparedStatement;
 import org.nectarframework.base.tools.Base64;
-import org.nectarframework.base.tools.BitMap;
 import org.nectarframework.base.tools.ByteArray;
 import org.nectarframework.base.tools.StringTools;
 

@@ -2,7 +2,6 @@ package org.nectarframework.base.service;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
-import org.nectarframework.base.service.Service.State;
 
 /**
  * Services tie together common functionality throughout Nectar. While most the

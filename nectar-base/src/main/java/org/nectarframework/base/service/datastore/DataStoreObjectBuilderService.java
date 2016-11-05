@@ -34,7 +34,6 @@ public class DataStoreObjectBuilderService extends Service {
 
 	private String outputDir;
 	private String inputFile;
-	private XmlService xmlService;
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
@@ -44,7 +43,6 @@ public class DataStoreObjectBuilderService extends Service {
 
 	@Override
 	public boolean establishDependencies() throws ServiceUnavailableException {
-		xmlService = (XmlService) dependency(XmlService.class);
 		return true;
 	}
 

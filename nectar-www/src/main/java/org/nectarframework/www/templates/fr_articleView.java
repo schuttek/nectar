@@ -2,7 +2,6 @@ package org.nectarframework.www.templates;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.nectarframework.base.service.template.ITemplate;
 import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.xml.Element;

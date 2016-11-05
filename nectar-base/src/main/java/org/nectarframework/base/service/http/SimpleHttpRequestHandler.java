@@ -418,6 +418,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 		Log.trace("Request processed: "+stopwatch.toString());
 	}
 
+	@SuppressWarnings("unused")
 	private byte[] doCompression(byte[] byteArray) throws InternalErrorException {
 		// content length
 		if (byteArray.length < simpleHttpRequestService.getCompressionMinSize()) {

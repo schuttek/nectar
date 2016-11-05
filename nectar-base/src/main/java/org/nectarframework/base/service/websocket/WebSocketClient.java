@@ -1,8 +1,6 @@
 package org.nectarframework.base.service.websocket;
 
 import org.java_websocket.WebSocket;
-import org.nectarframework.base.service.event.NectarEvent;
-import org.nectarframework.base.service.event.EventListener;
 import org.nectarframework.base.service.session.Session;
 
 public class WebSocketClient {

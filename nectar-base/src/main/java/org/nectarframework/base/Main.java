@@ -8,8 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -56,9 +54,7 @@ public class Main {
 				e.printStackTrace();
 				return;
 			}
-
-			ServiceRegister sr = null;
-
+			
 			if (line.hasOption("log")) {
 				if (!setLogLevel(options, line)) {
 					runHelp(options);
@@ -122,7 +118,8 @@ public class Main {
 			String logStr = line.getOptionValue("log");
 			LogLevel ll = LogLevel.valueOf(logStr.toUpperCase());
 			if (ll != null) {
-				Log.preInitLogLevel = ll;
+				Log.logLevelOverride = ll;
+				Log.debug("Log Level Override set to "+ll);
 				return true;
 			}
 		}
@@ -215,7 +212,7 @@ public class Main {
 
 	public static ServiceRegister initNectar(InputStream configXmlFileIS, String nodeName, String nodeGroup,
 			LogLevel level) throws ConfigurationException {
-		Log.preInitLogLevel = level;
+		Log.logLevelOverride = level;
 		Log.info("Nectar is starting up");
 		ServiceRegister sr = new ServiceRegister();
 		Configuration config = new Configuration(sr);
