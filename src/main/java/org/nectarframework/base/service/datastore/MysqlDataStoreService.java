@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
@@ -36,8 +37,8 @@ public class MysqlDataStoreService extends DataStoreService {
 	}
 
 	@Override
-	protected boolean secondStageinit() {
-		return true;
+	public boolean init() {
+		return super.init();
 	}
 
 	@Override
@@ -137,9 +138,9 @@ public class MysqlDataStoreService extends DataStoreService {
 			return null;
 		}
 
-		CacheableObject cacheObj = cacheService.getObject(this, cacheKey(dsod, key));
-		if (cacheObj != null) {
-			return (DataStoreObject)cacheObj;
+		Optional<CacheableObject> cacheObj = cacheService.getObject(this, cacheKey(dsod, key));
+		if (cacheObj.isPresent()) {
+			return (DataStoreObject)cacheObj.get();
 		}
 
 		String sql = "SELECT " + StringTools.implode(dsod.getColumnNames(), ",") + " FROM " + dsod.getTableName() + " WHERE " + dsod.getPrimaryKey().getColumnName() + " = ?";

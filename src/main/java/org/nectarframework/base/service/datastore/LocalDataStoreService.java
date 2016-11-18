@@ -50,7 +50,7 @@ public class LocalDataStoreService extends DataStoreService {
 
 	
 	@Override
-	protected boolean secondStageinit() {
+	public boolean init() {
 		Collection<DataStoreObjectDescriptor> dsodList = getAllDataStoreObjectDescriptors();
 		tableMap = new ConcurrentHashMap<>();
 		int t = 0;
@@ -61,7 +61,7 @@ public class LocalDataStoreService extends DataStoreService {
 			tableMap.put(dsod, buildTable(dsod));
 		}
 		
-		return true;
+		return super.init();
 	}
 
 	@Override

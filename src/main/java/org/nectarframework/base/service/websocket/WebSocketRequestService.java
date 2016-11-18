@@ -41,14 +41,12 @@ public class WebSocketRequestService extends Service {
 
 		this.listeningPort = sp.getInt("listeningPort", 1, Short.MAX_VALUE, 8001);
 		this.listeningHost = null;
-		String listeningHostStr = sp.getValue("listeningHost");
+		String listeningHostStr = sp.getString("listeningHost", "localhost");
 
-		if (this.listeningHost == null) {
-			try {
-				this.listeningHost = InetAddress.getByName(listeningHostStr);
-			} catch (UnknownHostException e) {
-				Log.warn("SimpleHttpService: Listening host could not be resoloved, reverting to local host.", e);
-			}
+		try {
+			this.listeningHost = InetAddress.getByName(listeningHostStr);
+		} catch (UnknownHostException e) {
+			Log.warn("SimpleHttpService: Listening host could not be resoloved, reverting to local host.", e);
 		}
 		if (this.listeningHost == null) {
 			try {
@@ -122,9 +120,9 @@ public class WebSocketRequestService extends Service {
 				+ (remote ? "true" : "false"));
 
 		WebSocketClient wsc = this.clientMap.get(conn);
-		//if (wsc != null) {
-		//	eventService.unregisterListener(wsc);
-		//}
+		// if (wsc != null) {
+		// eventService.unregisterListener(wsc);
+		// }
 	}
 
 	public void handleOnError(WebSocket conn, Exception ex) {

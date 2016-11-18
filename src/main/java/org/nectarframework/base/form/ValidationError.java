@@ -1,14 +1,16 @@
 package org.nectarframework.base.form;
 
+import java.util.Optional;
+
 public class ValidationError {
 
 	public enum ErrorType {
 		NULL_NOT_ALLOWED, NUMBER_PARSING_ERROR;
 	}
 
-	private String key;
-	private ErrorType type;
-	private String message;
+	private final String key;
+	private final ErrorType type;
+	private final String message;
 
 	public ValidationError(String key, ErrorType type) {
 		this.key = key;
@@ -30,7 +32,7 @@ public class ValidationError {
 		return type;
 	}
 
-	public String getMessage() {
-		return message;
+	public Optional<String> getMessage() {
+		return Optional.ofNullable(message);
 	}
 }

@@ -105,7 +105,7 @@ public abstract class Service {
 		return serviceClass.cast(service);
 	}
 
-	protected final boolean __rootServiceRun() {
+	protected final boolean rootServiceRun() {
 		if (runState != State.initialized)
 			throw new IllegalStateException("Can't run while in state: " + runState.name());
 		if (run()) {

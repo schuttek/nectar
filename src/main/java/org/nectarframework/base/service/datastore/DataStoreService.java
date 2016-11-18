@@ -23,6 +23,7 @@ public abstract class DataStoreService extends Service {
 	private String dataStoreObjectsConfigFile = "config/dataStoreObjects.xml";
 	private HashMap<Class<? extends DataStoreObject>, DataStoreObjectDescriptor> dsodMap = new HashMap<Class<? extends DataStoreObject>, DataStoreObjectDescriptor>();
 
+	
 	public boolean init() {
 		Element dsoConfig;
 		try {
@@ -48,11 +49,8 @@ public abstract class DataStoreService extends Service {
 				return false;
 			}
 		}
-
-		return secondStageinit();
+		return true;
 	}
-
-	protected abstract boolean secondStageinit();
 
 	public abstract List<? extends DataStoreObject> loadAll(DataStoreObjectDescriptor dsod) throws Exception;
 
@@ -64,6 +62,10 @@ public abstract class DataStoreService extends Service {
 
 	public abstract DataStoreObject loadDSO(DataStoreObjectDescriptor dsod, Object key) throws Exception;
 
+	public final List<? extends DataStoreObject> loadAll(Class<? extends DataStoreObject> dsoClass) throws Exception {
+		return loadAll(getDataStoreObjectDescriptor(dsoClass));
+	}
+
 	/**
 	 * Updates the existing record, or inserts a new DSO if the given key is not
 	 * found, or if the DSOD's primary key is an auto increment key, sets the
@@ -72,7 +74,6 @@ public abstract class DataStoreService extends Service {
 	 * @param dso
 	 * @throws Exception
 	 */
-
 	public void save(DataStoreObject dso) throws Exception {
 		save(new DataStoreObject[] { dso });
 	}
@@ -85,10 +86,6 @@ public abstract class DataStoreService extends Service {
 
 	public final Collection<DataStoreObjectDescriptor> getAllDataStoreObjectDescriptors() {
 		return dsodMap.values();
-	}
-
-	public final List<? extends DataStoreObject> loadAll(Class<? extends DataStoreObject> dsoClass) throws Exception {
-		return loadAll(getDataStoreObjectDescriptor(dsoClass));
 	}
 
 	public final DataStoreObjectDescriptor getDataStoreObjectDescriptor(Class<? extends DataStoreObject> dsoClass) {

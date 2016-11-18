@@ -48,9 +48,9 @@ public class InternodeService extends Service {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		listeningHost = sp.getValue("listeningHost");
+		listeningHost = sp.getString("listeningHost", "localhost");
 		listeningPort = sp.getInt("listeningPort", 1, 65536, -1);
-		controllerHost = sp.getValue("controllerHost");
+		controllerHost = sp.getString("controllerHost", "localhost");
 		controllerPort = sp.getInt("controllerPort", 1, 65536, -1);
 
 		reconnectDelay = sp.getLong("reconnectDelay", 1, Long.MAX_VALUE, 5000);

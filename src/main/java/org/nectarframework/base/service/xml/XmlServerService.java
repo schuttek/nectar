@@ -87,14 +87,14 @@ public class XmlServerService extends ConnectionService {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		serverHost = sp.getValue("serverHost");
+		serverHost = sp.getString("serverHost", "serverHost");
 		serverPort = sp.getInt("serverPort", 1, Short.MAX_VALUE, serverPort);
 		serverSocketBacklog = sp.getInt("serverSocketBacklog", 0, 10000, serverSocketBacklog);
 		maxConnections = sp.getInt("maxConnections", 1, 100000, maxConnections);
 		soTimeout = sp.getInt("soTimeout", 0, Integer.MAX_VALUE, soTimeout);
 
-		rsaPublicKey = sp.getValue("rsaPublicKey");
-		rsaPrivateKey = sp.getValue("rsaPrivateKey");
+		rsaPublicKey = sp.getString("rsaPublicKey", null);
+		rsaPrivateKey = sp.getString("rsaPrivateKey", null);
 
 		if (serverHost != null) {
 			try {

@@ -2,10 +2,13 @@ package org.nectarframework.base.service;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Optional;
 
 import org.nectarframework.base.service.xml.Element;
 
 public class ServiceParameters {
+	public static final int PORT_MAX = 65535;
+
 	private HashMap<String, String> params;
 	private HashMap<String, LinkedList<String>> paramSets;
 
@@ -14,8 +17,8 @@ public class ServiceParameters {
 		this.paramSets = paramSets; 
 	}
 
-	public String getValue(String key) {
-		return this.params.get(key);
+	public Optional<String> getValue(String key) {
+		return Optional.ofNullable(this.params.get(key));
 	}
 
 	public String toString() {

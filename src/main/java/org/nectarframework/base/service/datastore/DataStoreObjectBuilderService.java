@@ -355,8 +355,8 @@ public class DataStoreObjectBuilderService extends Service {
 
 			}
 
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			Log.warn(e);
 		}
 
 	}

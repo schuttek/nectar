@@ -8,19 +8,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.nectarframework.base.exception.ConfigurationException;
+import org.nectarframework.base.service.BasicConfig;
 import org.nectarframework.base.service.Configuration;
 import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.LogLevel;
 import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
-import org.nectarframework.base.tools.Triple;
 import org.xml.sax.SAXException;
 
 /**
@@ -54,7 +56,7 @@ public class Main {
 				e.printStackTrace();
 				return;
 			}
-			
+
 			if (line.hasOption("log")) {
 				if (!setLogLevel(options, line)) {
 					runHelp(options);
@@ -67,26 +69,37 @@ public class Main {
 			} else if (line.hasOption("help")) {
 				runHelp(options);
 			} else if (line.hasOption("configCheck")) {
-				Triple<File, String, String> argSet = parseArgs(options, line);
-				runNectar(new FileInputStream(argSet.getLeft()), argSet.getMiddle(), argSet.getRight(),
-						Log.DEFAULT_LOG_LEVEL);
-
+				Optional<BasicConfig> obc = parseArgs(options, line);
+				if (obc.isPresent()) {
+					ServiceRegister sr = initNectar(obc.get());
+					if (sr.configCheck()) {
+						Log.info("Config Ok.");
+						exit(0);
+					} else {
+						Log.info("Config Failed.");
+						exit(-1);
+					}
+				}
 			} else {
-				Triple<File, String, String> argSet = parseArgs(options, line);
-				runNectar(new FileInputStream(argSet.getLeft()), argSet.getMiddle(), argSet.getRight(),
-						Log.DEFAULT_LOG_LEVEL);
+				Optional<BasicConfig> obc = parseArgs(options, line);
+
+				if (obc.isPresent()) {
+					runNectar(obc.get());
+				} else {
+					exit(-1);
+				}
+
 				if (line.hasOption("scriptMode")) {
-					exit();
+					exit(0);
 				}
 			}
 
 		} catch (Throwable t) {
 			Log.fatal("CRASH", t);
-			exit();
+			exit(-1);
 		}
 		// main thread ends after startup.
 	}
-
 
 	private static Options buildArgumentOptions() {
 		Options options = new Options();
@@ -112,21 +125,20 @@ public class Main {
 		return options;
 	}
 
-
 	private static boolean setLogLevel(Options options, CommandLine line) {
 		if (line.hasOption("log")) {
 			String logStr = line.getOptionValue("log");
 			LogLevel ll = LogLevel.valueOf(logStr.toUpperCase());
 			if (ll != null) {
 				Log.logLevelOverride = ll;
-				Log.debug("Log Level Override set to "+ll);
+				Log.debug("Log Level Override set to " + ll);
 				return true;
 			}
 		}
 		return false;
 	}
-	
-	private static Triple<File, String, String> parseArgs(Options options, CommandLine line) {
+
+	private static Optional<BasicConfig> parseArgs(Options options, CommandLine line) {
 		boolean missingArgs = false;
 		if (!line.hasOption("configFile")) {
 			System.err.println("ERROR: configFile command line argument is required.");
@@ -158,7 +170,7 @@ public class Main {
 
 		String nodeName = line.getOptionValue("nodeName");
 		String nodeGroup = line.getOptionValue("nodeGroup");
-		return new Triple<File, String, String>(configFile, nodeName, nodeGroup);
+		return Optional.of(new BasicConfig(configFile, nodeName, nodeGroup));
 	}
 
 	private static void runHelp(Options opts) {
@@ -191,10 +203,10 @@ public class Main {
 	 * Begin a controlled shutdown procedure, where all running Services will be
 	 * asked to shutdown in orderly fashion.
 	 */
-	public static void exit() {
+	public static void exit(int exitCode) {
 		ServiceRegister.getInstance().shutdown();
 		Runtime.getRuntime().removeShutdownHook(msh);
-		System.exit(0);
+		System.exit(exitCode);
 	}
 
 	/**
@@ -206,8 +218,19 @@ public class Main {
 		System.exit(-1);
 	}
 
-	public static void runNectar(InputStream configXmlFileIS, String nodeName, String nodeGroup, LogLevel level) throws ConfigurationException {
+	private static void runNectar(BasicConfig basicConfig) throws ConfigurationException, FileNotFoundException {
+		runNectar(basicConfig);
+	}
+
+	public static void runNectar(InputStream configXmlFileIS, String nodeName, String nodeGroup, LogLevel level)
+			throws ConfigurationException {
 		startNectar(initNectar(configXmlFileIS, nodeName, nodeGroup, level));
+	}
+
+	public static ServiceRegister initNectar(BasicConfig basicConfig)
+			throws ConfigurationException, FileNotFoundException {
+		return initNectar(new FileInputStream(basicConfig.getConfigFile()), basicConfig.getNodeName(),
+				basicConfig.getNodeGroup(), Log.DEFAULT_LOG_LEVEL);
 	}
 
 	public static ServiceRegister initNectar(InputStream configXmlFileIS, String nodeName, String nodeGroup,

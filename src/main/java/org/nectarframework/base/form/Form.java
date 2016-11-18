@@ -18,7 +18,7 @@ public class Form {
 
 	private Element element;
 
-	private List<ValidationError> validationErrors = null;
+	private List<ValidationError> validationErrors = new LinkedList<ValidationError>();
 
 	private Session session = null;
 
@@ -220,12 +220,7 @@ public class Form {
 	}
 
 	public void addValidationError(ValidationError ve) {
-		if (ve != null) {
-			if (validationErrors == null) {
-				validationErrors = new LinkedList<ValidationError>();
-			}
-			validationErrors.add(ve);
-		}
+		validationErrors.add(ve);
 	}
 
 	public Long uid() {

@@ -29,8 +29,6 @@ import org.nectarframework.base.service.sql.SqlService;
  * 
  * TODO: managing master & slave connections.
  * 
- * TODO: get a connection for a specific table semi-transparently (ie, parse the sql), when tables are hosted on separate servers. Requires a lot of config work, and preparsing of Queries.  
- * 
  * TODO: check that all connections are returned to the pool or recreated, no matter what happens. 
  * 
  * Things to note:

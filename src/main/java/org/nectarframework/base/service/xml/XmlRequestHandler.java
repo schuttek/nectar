@@ -67,7 +67,7 @@ public class XmlRequestHandler extends ThreadServiceTask {
 
 		Action action = (Action) ClassLoader.getSystemClassLoader().loadClass(dirAction.className).newInstance();
 
-		action._init(form);
+		action.init(form);
 		Element response = action.execute();
 
 		xmlServerService.sendResponse(connection, element.get("id"), response);

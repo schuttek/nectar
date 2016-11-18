@@ -27,20 +27,8 @@ public abstract class DataStoreObject implements CacheableObject {
 		this.dsod = dsod;
 	}
 
-	public final DataStoreObject copy() {
-		DataStoreObject dso;
-		try {
-			dso = this.getClass().newInstance();
-		} catch (InstantiationException e) {
-			Log.fatal(e);
-			Main.exit();
-			return null;
-		} catch (IllegalAccessException e) {
-			Log.fatal(e);
-			Main.exit();
-			return null;
-		}
-
+	public final DataStoreObject copy() throws InstantiationException, IllegalAccessException {
+		DataStoreObject dso = this.getClass().newInstance();
 		dso.dsod = dsod;
 		dso.data = new ArrayList<>(dsod.getColumnCount());
 		List<DataStoreObjectDescriptorColumn> colDescs = dsod.getColumnDescriptors();
@@ -264,7 +252,7 @@ public abstract class DataStoreObject implements CacheableObject {
 		}
 		throw new ClassCastException();
 	}
-	
+
 	public final Object getObject(int index) {
 		return data.get(index);
 	}

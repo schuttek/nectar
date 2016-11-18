@@ -14,7 +14,7 @@ import org.nectarframework.base.service.xml.Element;
 public abstract class Action {
 	protected Form form;
 	
-	public final void _init(Form form) {
+	public final void init(Form form) {
 		this.form = form;
 	}
 	

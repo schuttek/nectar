@@ -246,7 +246,7 @@ public final class ServiceRegister {
 		}
 		for (Service s : serviceList) {
 			Log.trace("running Service: " + s.getClass().getName());
-			if (!s.__rootServiceRun()) {
+			if (!s.rootServiceRun()) {
 				Log.info("ServiceRegister: Service " + s.getClass().getName() + " failed to run()");
 				System.exit(-1);
 			}
@@ -309,7 +309,7 @@ public final class ServiceRegister {
 				if (!_shutdownDependancies(dependant)) {
 					return false;
 				}
-				if (!dependant.__rootServiceRun()) {
+				if (!dependant.rootServiceRun()) {
 					return false;
 				}
 			}

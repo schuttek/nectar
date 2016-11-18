@@ -34,9 +34,9 @@ public class SimpleHttpRequestService extends Service implements Container {
 	private ThymeleafService thymeleafService;
 	private TemplateService templateService;
 	private AccessLogService accessLogService;
-	
+
 	protected HashMap<String, String> mimeTypesByExtension;
-	
+
 	// config
 	private int compressionMinSize = 5000;
 	private int staticFileBufferSize = 8192;
@@ -48,7 +48,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 
 	private String staticLocalDirectory = "public_root";
 	private int staticFileCacheExpiry;
-	
+
 	public int getStaticFileCacheExpiry() {
 		return staticFileCacheExpiry;
 	}
@@ -69,7 +69,6 @@ public class SimpleHttpRequestService extends Service implements Container {
 		return true;
 	}
 
-
 	@Override
 	protected boolean init() {
 		address = new InetSocketAddress(listeningHost, listeningPort);
@@ -77,21 +76,19 @@ public class SimpleHttpRequestService extends Service implements Container {
 		return true;
 	}
 
-
 	@Override
 	protected boolean run() {
-		
-		
+
 		try {
 			containerSocketProcessor = new ContainerSocketProcessor(this);
-			
+
 			socketConnection = new SocketConnection(containerSocketProcessor);
 			address = socketConnection.connect(address);
 		} catch (IOException e) {
 			Log.fatal("SimpleHttpService: Couldn't establish listening connection.", e);
 			return false;
 		}
-		Log.trace("SimpleHttpService listening on "+address.toString());
+		Log.trace("SimpleHttpService listening on " + address.toString());
 		return true;
 	}
 
@@ -113,18 +110,16 @@ public class SimpleHttpRequestService extends Service implements Container {
 		defaultOutput = sp.getString("defaultOutput", defaultOutput);
 		staticRequestDirectory = sp.getString("staticRequestDirectory", staticRequestDirectory);
 		staticLocalDirectory = sp.getString("staticLocalDirectory", staticLocalDirectory);
-		
+
 		this.listeningPort = sp.getInt("listeningPort", 1, 65536, listeningPort);
 
 		this.listeningHost = null;
-		String listeningHostStr = sp.getValue("listeningHost");
-		
-		if (listeningHost == null) {
-			try {
-				this.listeningHost = InetAddress.getByName(listeningHostStr);
-			} catch (UnknownHostException e) {
-				Log.warn("SimpleHttpService: Listening host could not be resoloved, reverting to local host.", e);
-			}
+		String listeningHostStr = sp.getString("listeningHost", "localhost");
+
+		try {
+			this.listeningHost = InetAddress.getByName(listeningHostStr);
+		} catch (UnknownHostException e) {
+			Log.warn("SimpleHttpService: Listening host could not be resoloved, reverting to local host.", e);
 		}
 		if (this.listeningHost == null) {
 			try {
@@ -133,10 +128,10 @@ public class SimpleHttpRequestService extends Service implements Container {
 				throw new ConfigurationException("SimpleHttpService: Couldn't resolve local host!", e);
 			}
 		}
-		
-		staticFileCacheExpiry = sp.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE, 24*60*60*1000); // 24 hours
+
+		staticFileCacheExpiry = sp.getInt("staticFileCacheExpiry", -1, Integer.MAX_VALUE, 24 * 60 * 60 * 1000); // 24
+																												// hours
 	}
-	
 
 	public String getStaticRequestDirectory() {
 		return staticRequestDirectory;
@@ -145,7 +140,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 	public String getStaticLocalDirectory() {
 		return staticLocalDirectory;
 	}
-	
+
 	public int getCompressionMinSize() {
 		return compressionMinSize;
 	}
@@ -155,7 +150,8 @@ public class SimpleHttpRequestService extends Service implements Container {
 	}
 
 	public void handle(Request httpRequest, Response httpResponse) {
-		SimpleHttpRequestHandler rh = new SimpleHttpRequestHandler(httpRequest, httpResponse, this, directoryService, xmlService, fileService, thymeleafService, templateService, accessLogService);
+		SimpleHttpRequestHandler rh = new SimpleHttpRequestHandler(httpRequest, httpResponse, this, directoryService,
+				xmlService, fileService, thymeleafService, templateService, accessLogService);
 		threadService.execute(rh);
 	}
 
@@ -166,11 +162,10 @@ public class SimpleHttpRequestService extends Service implements Container {
 	public HashMap<String, String> getMimeTypesByExtension() {
 		return mimeTypesByExtension;
 	}
-	
 
 	private HashMap<String, String> buildMimeTypesMap() {
 		HashMap<String, String> map = new HashMap<String, String>();
-		
+
 		map.put("123", "application/vnd.lotus-1-2-3");
 		map.put("3dml", "text/vnd.in3d.3dml");
 		map.put("3ds", "image/x-3ds");
@@ -1154,7 +1149,7 @@ public class SimpleHttpRequestService extends Service implements Container {
 		map.put("zir", "application/vnd.zul");
 		map.put("zirz", "application/vnd.zul");
 		map.put("zmm", "application/vnd.handheld-entertainment+xm");
-		
+
 		return map;
 	}
 

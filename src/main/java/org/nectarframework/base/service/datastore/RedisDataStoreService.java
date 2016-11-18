@@ -23,8 +23,8 @@ public class RedisDataStoreService extends DataStoreService {
 	private JedisService jedisService;
 
 	@Override
-	protected boolean secondStageinit() {
-		return true;
+	public boolean init() {
+		return init();
 	}
 
 	@Override
@@ -67,7 +67,10 @@ public class RedisDataStoreService extends DataStoreService {
 	}
 
 	/**
-	 * Scanning keys
+	 * Scanning keys is not supported by redis, at least not in the we're
+	 * storing the objects. So loadAll() and filter...
+	 * 
+	 * Needless to say, don't use this on large tables.
 	 */
 	@Override
 	public List<DataStoreObject> loadRange(DataStoreObjectDescriptor dsod, Object startKey, Object endKey)
@@ -116,6 +119,12 @@ public class RedisDataStoreService extends DataStoreService {
 		return l.get(0);
 	}
 
+	/**
+	 * In redis we store all DSO's in hashmap with key = this.primaryTablePrefix
+	 * + dsod.tableName, field = dsod.primaryKey.value , value =
+	 * toByteArray(dso). 
+	 * FIXME: this doesn't work for auto increment keys.
+	 */
 	@Override
 	public void save(DataStoreObject... dsoList) throws Exception {
 

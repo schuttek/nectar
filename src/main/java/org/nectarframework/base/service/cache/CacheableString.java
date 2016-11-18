@@ -6,6 +6,9 @@ public class CacheableString implements CacheableObject {
 	private String str;
 
 	public CacheableString(String s) {
+		if (s == null) {
+			throw new IllegalArgumentException();
+		}
 		this.str = s;
 	}
 
@@ -22,10 +25,6 @@ public class CacheableString implements CacheableObject {
 	}
 
 	public String getString() {
-		return str;
-	}
-	
-	public String setString() {
 		return str;
 	}
 }

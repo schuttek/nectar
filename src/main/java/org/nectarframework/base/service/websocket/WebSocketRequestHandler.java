@@ -82,7 +82,7 @@ public class WebSocketRequestHandler extends ThreadServiceTask {
 		// set up the form.
 		Form form = new Form(dirAction.form, parameters);
 
-		action._init(form);
+		action.init(form);
 
 		// execute the action
 		Element elm = action.execute();

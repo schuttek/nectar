@@ -1,5 +1,7 @@
 package org.nectarframework.base.service.cache;
 
+import java.util.Optional;
+
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Log;
@@ -61,7 +63,7 @@ public abstract class CacheService extends Service {
 	 * @param key
 	 * @return
 	 */
-	public CacheableObject getObject(String key) {
+	public Optional<CacheableObject> getObject(String key) {
 		return getObject(null, key, true);
 	}
 
@@ -73,11 +75,11 @@ public abstract class CacheService extends Service {
 	 *            if true, update the last used time for this cache entry.
 	 * @return
 	 */
-	public CacheableObject getObject(String key, boolean refreshCache) {
+	public Optional<CacheableObject> getObject(String key, boolean refreshCache) {
 		return getObject(null, key, refreshCache);
 	}
 
-	public CacheableObject getObject(Service realm, String key) {
+	public Optional<CacheableObject> getObject(Service realm, String key) {
 		return getObject(null, key, true);
 	}
 
@@ -143,7 +145,7 @@ public abstract class CacheService extends Service {
 
 	/*** Operational Methods ***/
 
-	public abstract CacheableObject getObject(Service realm, String key, boolean refreshCache);
+	public abstract Optional<CacheableObject> getObject(Service realm, String key, boolean refreshCache);
 
 	/**
 	 * Inserts a new key or overwrites an existing key with the given

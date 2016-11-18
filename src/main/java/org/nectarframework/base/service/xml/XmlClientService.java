@@ -57,7 +57,7 @@ public class XmlClientService extends ConnectionService {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		serverHost = sp.getValue("serverHost");
+		serverHost = sp.getString("serverHost", "localhost");
 		serverPort = sp.getInt("serverPort", 1, Short.MAX_VALUE, 8009);
 		compressionEnabled = sp.getBoolean("compressionEnabled", compressionEnabled);
 		encryptionEnabled = sp.getBoolean("encryptionEnabled", encryptionEnabled);

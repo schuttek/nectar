@@ -320,7 +320,7 @@ public class SimpleHttpRequestHandler extends ThreadServiceTask {
 			throw new FormValidationException(form);
 		}
 
-		action._init(form);
+		action.init(form);
 		// execute the action
 
 		String output = simpleHttpRequestService.getDefaultOutput();

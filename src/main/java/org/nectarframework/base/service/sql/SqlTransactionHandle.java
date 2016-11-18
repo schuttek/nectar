@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Vector;
 
-public class SqlTransactionHandle {
+public class SqlTransactionHandle implements AutoCloseable {
 
 	Connection connection;
 	SqlService my;
@@ -42,12 +42,22 @@ public class SqlTransactionHandle {
 		connection.rollback();
 		connection.setAutoCommit(false);
 		my.returnConnection(connection);
+		connection = null;
 	}
 	
 	public void commit() throws SQLException {
 		connection.commit();
 		connection.setAutoCommit(true);
 		my.returnConnection(connection);
+		connection = null;
+	}
+
+
+	@Override
+	public void close() throws Exception {
+		if (connection != null) {
+			my.returnConnection(connection);
+		}
 	}
 	
 }

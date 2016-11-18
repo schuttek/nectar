@@ -2,6 +2,7 @@ package org.nectarframework.base.service.translation;
 
 import java.sql.SQLException;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
@@ -79,17 +80,18 @@ public class TranslationService extends Service {
 		String keyStr3 = "translate:" + locale.getLanguage() + "." + locale.getCountry() + "." + locale.getVariant()
 				+ "-" + namespace + "/" + key;
 
-		CacheableObject co = cacheService.getObject(keyStr3, true);
-		if (co != null) {
-			return ((CacheableString)co).getString();
+		Optional<CacheableObject> co = cacheService.getObject(keyStr3, true);
+
+		if (co.isPresent()) {
+			return ((CacheableString)co.get()).getString();
 		} else {
 			co = cacheService.getObject(keyStr2, true);
-			if (co != null) {
-				return ((CacheableString)co).getString();
+			if (co.isPresent()) {
+				return ((CacheableString)co.get()).getString();
 			} else {
 				co = cacheService.getObject(keyStr1, true);
-				if (co != null) {
-					return ((CacheableString)co).getString();
+				if (co.isPresent()) {
+					return ((CacheableString)co.get()).getString();
 				}
 			}
 		}

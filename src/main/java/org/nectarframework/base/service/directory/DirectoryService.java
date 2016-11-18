@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
  */
 public class DirectoryService extends IPathFinder {
 
-	private String configFilePath = "config/pathConfig.xml";
+	private String configFilePath;
 
 	private HashMap<String, DirPath> pathMap;
 
@@ -38,7 +38,7 @@ public class DirectoryService extends IPathFinder {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) {
-		configFilePath = sp.getValue("configFilePath");
+		configFilePath = sp.getString("configFilePath", "config/pathConfig.xml");
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package org.nectarframework.base.service.cache;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -73,87 +74,9 @@ public class HashMapCacheService extends CacheService {
 		return true;
 	}
 
-	/*** Convenience Methods ***/
-	/**
-	 * returns a cached CacheableObject for string key if it exists.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	public CacheableObject getObject(String key) {
-		return getObject(null, key, true);
-	}
-
-	/**
-	 * returns a cached CacheableObject for string key if it exists.
-	 * 
-	 * @param key
-	 * @param refreshCache
-	 *            if true, update the last used time for this cache entry.
-	 * @return
-	 */
-	public CacheableObject getObject(String key, boolean refreshCache) {
-		return getObject(null, key, refreshCache);
-	}
-
-	public CacheableObject getObject(Service realm, String key) {
-		return getObject(null, key, true);
-	}
-	
-	/**
-	 * Inserts a new key or overwrites an existing key with the given
-	 * CacheableObject. The entry will expire after defaultExpiry milliseconds.
-	 * See configuration for this Service.
-	 * 
-	 * @param key
-	 * @param ba
-	 */
-
-	public void set(String key, CacheableObject co) {
-		set(null, key, co, defaultExpiry);
-	}
-
-	/**
-	 * Inserts a new key or overwrites an existing key with the given
-	 * CaheableObject. The entry will expire after the given expiry
-	 * milliseconds.
-	 * 
-	 * @param key
-	 * @param ba
-	 * @param expiry
-	 */
-
-	public void set(String key, CacheableObject co, long expiry) {
-		set(null, key, co, expiry);
-	}
-
-	public void set(Service realm, String key, CacheableObject co) {
-		set(realm, key, co, defaultExpiry);
-	}
-
-	/**
-	 * Inserts a new key for the CacheableObject only if it doesn't already
-	 * exist. The entry will expire after defaultExpiry milliseconds, See
-	 * configuration for this Service.
-	 * 
-	 * @param key
-	 * @param ba
-	 */
-	public void add(String key, CacheableObject o) {
-		add(null, key, o, defaultExpiry);
-	}
-
-	public void add(Service realm, String key, CacheableObject o) {
-		add(realm, key, o, defaultExpiry);
-	}
-
-	public void add(String key, CacheableObject o, long expiry) {
-		add(null, key, o, expiry);
-	}
-
 	/*** Operational Methods ***/
 
-	public CacheableObject getObject(Service realm, String key, boolean refreshCache) {
+	public Optional<CacheableObject> getObject(Service realm, String key, boolean refreshCache) {
 		checkFlushTimer();
 		Tuple<CacheableObject, Long> tup = null;
 		if (realm == null) {
@@ -164,10 +87,9 @@ public class HashMapCacheService extends CacheService {
 				tup = realmMap.get(key);
 			}
 		}
-		// Log.trace("[CacheService:getWrapper " + key + ((tup == null) ? "null"
-		// : "found"));
+		Log.trace(key + ((tup == null) ? "null" : "found"));
 		if (tup == null)
-			return null;
+			return Optional.empty();
 		long now = InternodeService.getTime();
 		if (tup.getRight() < now && !refreshCache) {
 			generalCache.remove(key);
@@ -177,7 +99,7 @@ public class HashMapCacheService extends CacheService {
 			Tuple<CacheableObject, Long> newTup = new Tuple<>(tup.getLeft(), now);
 			generalCache.put(key, newTup);
 		}
-		return tup.getLeft();
+		return Optional.of(tup.getLeft());
 	}
 
 	/**

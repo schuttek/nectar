@@ -515,7 +515,7 @@ public class NanoHttpService extends Service {
 					"SERVER INTERNAL ERROR: FormValidationException");
 		}
 
-		action._init(form);
+		action.init(form);
 		// execute the action
 
 		OutputType output = this.defaultOutput;

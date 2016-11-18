@@ -42,7 +42,7 @@ public abstract class SqlService extends Service {
 	protected int poolSize;
 
 	protected String host;
-	protected String port;
+	protected int port;
 	protected String database;
 	protected String user;
 	protected String password;
@@ -71,11 +71,11 @@ public abstract class SqlService extends Service {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		host = sp.getValue("host");
-		port = sp.getValue("port");
-		database = sp.getValue("database");
-		user = sp.getValue("user");
-		password = sp.getValue("password");
+		host = sp.getString("host", "localhost");
+		port = sp.getInt("port", 0, ServiceParameters.PORT_MAX, 3306);
+		database = sp.getString("database", "nectar");
+		user = sp.getString("user", "nectar");
+		password = sp.getString("password", "nectar");
 		poolSize = sp.getInt("poolSize", 1, 1000, 10);
 		startupConnections = sp.getInt("startupConnections", 1, 1000, 2);
 		maxInsertBatchSize = sp.getInt("maxInsertBatchSize", 1, 1000, 100);
@@ -143,7 +143,12 @@ public abstract class SqlService extends Service {
 
 	public SqlTransactionHandle beginTransaction() throws SQLException {
 		Connection conn = getConnection();
-		conn.setAutoCommit(false);
+		try {
+			conn.setAutoCommit(false);
+		} catch (SQLException e) {
+			returnConnection(conn);
+			throw e;
+		}
 		SqlTransactionHandle mth = new SqlTransactionHandle(conn, this);
 		return mth;
 	}

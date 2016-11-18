@@ -35,7 +35,7 @@ public abstract class LogService extends Service implements EventListener {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		String logLevelStr = sp.getValue("logLevel");
+		String logLevelStr = sp.getString("logLevel", Log.DEFAULT_LOG_LEVEL.toString());
 		if (logLevelStr == "trace") {
 			level = LogLevel.TRACE;
 		} else if (logLevelStr == "debug") {

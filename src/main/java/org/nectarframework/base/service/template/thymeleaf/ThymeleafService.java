@@ -87,7 +87,6 @@ public class ThymeleafService extends Service {
 			osw.close();
 		} catch (IOException e) {
 			Log.fatal(e);
-			Main.exit();
 		}
 	}
 	

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
@@ -67,7 +68,7 @@ public class FileService extends Service {
 
 	@Override
 	public void checkParameters(ServiceParameters sp) throws ConfigurationException {
-		String rootDir = sp.getValue("rootDirectory");
+		String rootDir = sp.getString("rootDirectory", "files");
 		if (rootDir != null) {
 			File rootDirFile = new File(rootDir);
 			if (!rootDirFile.exists()) {
@@ -116,7 +117,7 @@ public class FileService extends Service {
 
 	public InputStream getFileAsInputStream(String path, long cacheExpiry) throws IOException {
 		// attempt a cache hit
-		CacheableObject cachedCO = null;
+		Optional<CacheableObject> cachedCO = null;
 		try {
 			cachedCO = cacheService.getObject(this, cacheKey(path), true);
 		} catch (Exception e) {
@@ -124,8 +125,8 @@ public class FileService extends Service {
 		}
 
 		FileInfo fi = null;
-		if (cachedCO != null) {
-			fi = (FileInfo) cachedCO;
+		if (cachedCO.isPresent()) {
+			fi = (FileInfo) cachedCO.get();
 			if (this.recheckLastModified) {
 				// cache is out of date
 				if (fi.lastModified < getFileInfo(path).lastModified) {
@@ -190,7 +191,7 @@ public class FileService extends Service {
 	public byte[] readAllBytes(String path, long cacheExpiry) throws IOException {
 
 		// attempt a cache hit
-		CacheableObject cachedCO = null;
+		Optional<CacheableObject> cachedCO = null;
 		try {
 			cachedCO = cacheService.getObject(this, cacheKey(path), true);
 		} catch (Exception e) {
@@ -198,8 +199,8 @@ public class FileService extends Service {
 		}
 
 		FileInfo fi = null;
-		if (cachedCO != null) {
-			fi = (FileInfo) cachedCO;
+		if (cachedCO.isPresent()) {
+			fi = (FileInfo) cachedCO.get();
 			if (this.recheckLastModified) {
 				// cache is out of date
 				if (fi.lastModified < getFileInfo(path).lastModified) {
