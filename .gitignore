@@ -1,7 +1,10 @@
+.settings
+.project
 .metadata
 .recommenders
+.classpath
+.gradle
 RemoteSystemsTempFiles
 /target/
-/.gradle/
 /build/
 /bin/

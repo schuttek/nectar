@@ -27,6 +27,16 @@ task fatjar(type: OneJar) {
 	archiveName = "nectar-base-" + version + ".jar"
 }
 
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+     classifier = 'sources'
+     from sourceSets.main.allSource
+}
+
+artifacts {
+     archives sourcesJar
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
