@@ -1,10 +1,10 @@
 package org.nectarframework.base.service.log;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.session.Session;
 import org.nectarframework.base.service.sql.SqlPreparedStatement;
 import org.nectarframework.base.service.sql.mysql.MysqlService;
-import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 
 public class MysqlAccessLogService extends AccessLogService {

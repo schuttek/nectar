@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.exception.ConfigurationException;
-import org.nectarframework.base.service.xml.Element;
 
 public class Configuration {
 	ServiceRegister sr = null;

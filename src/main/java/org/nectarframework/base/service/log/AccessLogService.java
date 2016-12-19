@@ -1,11 +1,11 @@
 package org.nectarframework.base.service.log;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.Service;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.session.Session;
-import org.nectarframework.base.service.xml.Element;
 
 public abstract class AccessLogService extends Service {
 

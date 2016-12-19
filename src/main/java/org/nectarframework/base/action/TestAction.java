@@ -4,7 +4,7 @@ package org.nectarframework.base.action;
 import java.text.DateFormat;
 import java.util.Date;
 
-import org.nectarframework.base.service.xml.Element;
+import org.nectarframework.base.element.Element;
 
 public class TestAction extends Action {
 	

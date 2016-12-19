@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 import org.nectarframework.base.action.Action;
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.directory.DirAction;
@@ -16,7 +17,6 @@ import org.nectarframework.base.service.directory.DirRedirect;
 import org.nectarframework.base.service.directory.DirectoryService;
 import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
-import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 
 public class WebSocketRequestHandler extends ThreadServiceTask {

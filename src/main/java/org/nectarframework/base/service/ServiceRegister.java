@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.exception.ServiceUnavailableRuntimeException;
-import org.nectarframework.base.service.xml.Element;
 
 public final class ServiceRegister {
 	private Configuration config = null;

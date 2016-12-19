@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.Service;
-import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 
 /**

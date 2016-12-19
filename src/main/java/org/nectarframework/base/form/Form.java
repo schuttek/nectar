@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.directory.DirForm;
 import org.nectarframework.base.service.directory.DirFormvar;
 import org.nectarframework.base.service.pathfinder.FormResolution;
 import org.nectarframework.base.service.pathfinder.FormvarResolution;
 import org.nectarframework.base.service.session.Session;
-import org.nectarframework.base.service.xml.Element;
 import org.simpleframework.http.Request;
 
 public class Form {

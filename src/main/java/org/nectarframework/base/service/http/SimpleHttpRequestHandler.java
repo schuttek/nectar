@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import java.util.zip.GZIPOutputStream;
 
 import org.nectarframework.base.action.Action;
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.form.ValidationError;
 import org.nectarframework.base.service.Log;
@@ -27,7 +28,6 @@ import org.nectarframework.base.service.log.AccessLogService;
 import org.nectarframework.base.service.template.TemplateService;
 import org.nectarframework.base.service.template.thymeleaf.ThymeleafService;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
-import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.nectarframework.base.tools.ByteArrayOutputStream;
 import org.nectarframework.base.tools.FastByteArrayOutputStream;

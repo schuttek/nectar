@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.nectarframework.base.service.xml.Element;
+import org.nectarframework.base.element.Element;
 import org.thymeleaf.context.IContext;
 
 public class ThymeContext implements IContext {

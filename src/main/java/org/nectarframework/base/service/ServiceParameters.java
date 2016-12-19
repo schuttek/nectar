@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
 
-import org.nectarframework.base.service.xml.Element;
+import org.nectarframework.base.element.Element;
 
 public class ServiceParameters {
 	public static final int PORT_MAX = 65535;

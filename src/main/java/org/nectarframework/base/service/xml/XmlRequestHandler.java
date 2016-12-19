@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.nectarframework.base.action.Action;
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.form.Form;
 import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.directory.DirAction;

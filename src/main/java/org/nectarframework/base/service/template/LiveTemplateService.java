@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.exception.ServiceUnavailableException;
 import org.nectarframework.base.service.ServiceParameters;
 import org.nectarframework.base.service.pathfinder.IPathFinder;
 import org.nectarframework.base.service.translation.TranslationService;
-import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 
 public class LiveTemplateService extends TemplateService {

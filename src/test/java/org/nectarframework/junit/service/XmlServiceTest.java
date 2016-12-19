@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import org.junit.Test;
-import org.nectarframework.base.service.xml.Element;
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.service.xml.XmlClientService;
 import org.nectarframework.base.service.xml.XmlResponse;
 import org.nectarframework.base.service.xml.XmlResponseHandler;

@@ -1,7 +1,7 @@
 package org.nectarframework.base.action;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.form.Form;
-import org.nectarframework.base.service.xml.Element;
 
 /**
  * The absolute base class of any class in Nectar that actually does any real

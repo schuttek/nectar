@@ -1,4 +1,4 @@
-package org.nectarframework.base.service.xml;
+package org.nectarframework.base.element;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,7 +9,11 @@ import org.apache.xerces.impl.dv.util.Base64;
 import org.nectarframework.base.tools.StringTools;
 
 /**
- * Structured data. docs/Data Transport.txt
+ * The Element is basically a <String name, HashMap<String attribute, String value>, List<Element> children>
+ * 
+ * It mimics the least common ground between data structures that can be written in xml, json, yaml and others.
+ * 
+ * The Element allows you to pass structured data throughout Nectar and between various markup languages. 
  * 
  * @author skander
  * 
@@ -40,7 +44,7 @@ public class Element {
 	 */
 	public Element(String name, Map<String, String> attributes) {
 		this.name = name;
-		this.attributes = attributes;
+		add(attributes);
 	}
 
 	/**
@@ -50,10 +54,10 @@ public class Element {
 	 * @param attributes
 	 * @param elms
 	 */
-	public Element(String name, Map<String, String> attributes, Collection<Element> elms) {
+	public Element(String name, Map<String, String> attributes, Collection<Element> children) {
 		this.name = name;
 		this.attributes = attributes;
-		this.children.addAll(elms);
+		addAll(children);
 	}
 
 	/**
@@ -155,9 +159,19 @@ public class Element {
 	 * @return this Element
 	 */
 	public Element add(Element e) {
+		infiniteLoopTest(e.getChildren());
 		if (e != null)
 			children.add(e);
 		return this;
+	}
+
+	private void infiniteLoopTest(Collection<Element> children) {
+		for (Element e : children) {
+			if (e == this) {
+				throw new IllegalArgumentException("An element cannot be added to itself as a child.");
+			}
+			infiniteLoopTest(e.getChildren());
+		}
 	}
 
 	public Element add(Collection<Element> children) {
@@ -330,6 +344,10 @@ public class Element {
 
 	public void removeChild(Element elm) {
 		this.children.removeFirstOccurrence(elm);
+	}
+
+	public void add(Map<String, String> attributes) {
+		attributes.putAll(attributes);
 	}
 
 	public void addAll(Collection<Element> children) {

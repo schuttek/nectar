@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.service.Service;
-import org.nectarframework.base.service.xml.Element;
 
 public abstract class TemplateService extends Service {
 

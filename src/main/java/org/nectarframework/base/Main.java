@@ -15,13 +15,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.exception.ConfigurationException;
 import org.nectarframework.base.service.BasicConfig;
 import org.nectarframework.base.service.Configuration;
 import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.ServiceRegister;
 import org.nectarframework.base.service.log.LogLevel;
-import org.nectarframework.base.service.xml.Element;
 import org.nectarframework.base.service.xml.XmlService;
 import org.xml.sax.SAXException;
 

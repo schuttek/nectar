@@ -1,5 +1,6 @@
 package org.nectarframework.base.service.xml;
 
+import org.nectarframework.base.element.Element;
 import org.nectarframework.base.service.thread.ThreadServiceTask;
 
 public class XmlResponse extends ThreadServiceTask {
