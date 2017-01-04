@@ -36,12 +36,10 @@ public class FileService extends Service {
 	private File tempDirectory;
 	private ArrayList<File> tempFilesList;
 
-	private static final int maxReadBufferSize = 10485760; // 10MB
 	private static final int maxTotalFileCacheSize = Integer.MAX_VALUE; // 2GB
 	private static final int maxMaxFilesInCache = 50000;
 	private static final int maxMaxCachedFileSize = Integer.MAX_VALUE; // 2GB
 
-	private static final int defaultReadBufferSize = 65536; // 64KB
 	private static final int defaultTotalFileCacheSize = 104857600; // 100MB
 	private static final int defaultMaxFilesInCache = 1000;
 	private static final int defaultMaxCachedFileSize = 134217728; // 128KB

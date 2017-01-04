@@ -4,9 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nectarframework.base.Main;
 import org.nectarframework.base.element.Element;
-import org.nectarframework.base.service.Log;
 import org.nectarframework.base.service.cache.CacheableObject;
 import org.nectarframework.base.service.datastore.DataStoreObjectDescriptorColumn.Type;
 import org.nectarframework.base.service.sql.ResultRow;
